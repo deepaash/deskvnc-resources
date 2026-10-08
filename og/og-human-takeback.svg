@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-labelledby="toghumantakebacksvg">
+  <title id="toghumantakebacksvg">DeskVNC: A person takes control back at any moment. Revoke or end it at any time.</title>
+  <desc>A social card for the DeskVNC project, a native client for VNC, RDP and SSH with an MCP server that lets an AI agent drive a remote desktop.</desc>
+  <style>
+    .bg { fill: #fbfcfd; }
+    .accent { fill: #0a58c2; }
+    .accentSoft { fill: rgba(10, 88, 194, 0.09); }
+    .hl { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 680; fill: #12161c; letter-spacing: -0.02em; }
+    .kick { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 19px; font-weight: 650; fill: #0a58c2; letter-spacing: 0.09em; }
+    .foot { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 23px; font-weight: 600; fill: #414b57; }
+    .foot2 { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 20px; fill: #414b57; }
+  </style>
+
+<rect class="bg" x="0" y="0" width="1200" height="630"/>
+<rect class="accent" x="0" y="0" width="1200" height="12"/>
+<circle class="accent" cx="1050" cy="510" r="150" opacity="0.09"/>
+<circle class="accentSoft" cx="1050" cy="510" r="94"/>
+
+<text class="kick" x="72" y="118">SUPERVISED AT MACHINE SPEED</text>
+<rect class="accent" x="72" y="142" width="72" height="5" rx="2"/>
+
+<text class="hl" x="72" y="238.88" font-size="54">A person takes control</text>
+<text class="hl" x="72" y="339.76" font-size="54">back at any moment.</text>
+<text class="hl" x="72" y="440.64" font-size="54">Revoke or end it at any time.</text>
+
+<rect class="accent" x="72" y="522" width="4" height="46" rx="2"/>
+<text class="foot" x="94" y="552">DeskVNC</text>
+<text class="foot2" x="94" y="580">github.com/psmux/DeskVNC</text>
+</svg>
