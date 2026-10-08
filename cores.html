@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One client, three protocols, three operating systems</title>
+<meta name="description" content="Most remote desktop clients wrap somebody else's library. They link libvncclient for VNC, FreeRDP for RDP, libssh for SSH, and the wrapper code stitches the three into one UI. The ">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/cores">
+<meta property="og:type" content="article">
+<meta property="og:title" content="One client, three protocols, three operating systems">
+<meta property="og:description" content="Most remote desktop clients wrap somebody else's library. They link libvncclient for VNC, FreeRDP for RDP, libssh for SSH, and the wrapper code stitches the three into one UI. The ">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/cores">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<hr>
+<p>title: &quot;Three protocol cores written from scratch, and what that buys across Windows, macOS and Linux&quot; description: &quot;Why DeskVNC writes its VNC, RDP and SSH cores directly rather than wrapping other libraries, and how one rendering path, one input path and one MCP server fall out of that choice.&quot; date: 2026-10-09 tags: [&quot;rust&quot;, &quot;vnc&quot;, &quot;rfb&quot;, &quot;rdp&quot;, &quot;ssh&quot;, &quot;tauri&quot;, &quot;webgl2&quot;, &quot;remote-desktop&quot;]</p>
+<hr>
+<p>Most remote desktop clients wrap somebody else's library. They link libvncclient for VNC, FreeRDP for RDP, libssh for SSH, and the wrapper code stitches the three into one UI. The wrapper works, and the wrapper is what a sane team ships on day one. The cost shows up on day ninety, when a wrapped library stops shipping the version the wrapper assumed, when a protocol feature the wrapper does not expose turns out to be the feature the customer needs, and when the three rendering paths disagree about how a screen should look on a Retina display.</p>
+<p><a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">DeskVNC</a> takes the other route. Three protocol cores, written here rather than wrapped around somebody else's library. That choice ripples through everything else, from the rendering pipeline to the MCP server the agent drives. This post is about the engineering inside that choice, and what it buys the operator who runs the same client on Windows, macOS and Linux.</p>
+<h3 id="the-vnc-core-against-real-servers">The VNC core, against real servers</h3>
+<p>The VNC core speaks RFB 3.3 through 3.8 with every common encoding. It handles VeNCrypt, RA2 and Apple authentication, and continuous updates. The &quot;common encoding&quot; set covers the encodings a Windows, Linux or macOS server is likely to send: Tight, ZRLE, Zlib, CoRRE, RRE, CopyRect, and the raw fallback. VeNCrypt is the TLS-based auth tunnel modern x11vnc and TigerVNC use by default. RA2 is the RSA/AES variant some RealVNC deployments keep for compatibility. Apple authentication is the short-lived credential macOS Screen Sharing hands to a paired client and refuses on the third machine.</p>
+<p>The &quot;verified against&quot; line is the part that earns the engineering. The protocol cores have been filed against real servers: x11vnc on a Linux desktop, TigerVNC on the same desktop, QEMU's built-in VNC server on a Linux VM, RealVNC's commercial server on a Raspberry Pi, and macOS Screen Sharing on a Mac workstation. Each speaks a slightly different dialect of RFB and reacts differently to negotiation. The from-scratch core negotiates correctly on the first handshake with each of them, because it was shaped by that reality.</p>
+<p>Continuous updates change the agent's experience. The continuous updates extension lets the server push frames as they become available, instead of waiting for the client to poll. With continuous updates negotiated, a <code>dvv_screen</code> call against a frame the server has already painted is the time it takes the bytes to cross the wire. Without it, the client pays the round trip twice. On a remote site the saving is the difference between a frame that arrives before the agent's next think and a frame that arrives after.</p>
+<h3 id="the-rdp-core-with-nla-and-remoteapp">The RDP core, with NLA and RemoteApp</h3>
+<p>The RDP core covers Windows desktops with NLA, RemoteApp, resolution control and the usual codecs. NLA is Network Level Authentication: the client authenticates the user before the server opens a session, which is why a logged-out Windows desktop refuses the protocol until the credentials are right. The from-scratch core speaks NLA on the first packet, which is why <code>dvv_open</code> against a Windows desktop gets a session in the published-milliseconds range on a warm cache.</p>
+<p>RemoteApp is the Citrix-style published application shape that shows up in mixed estates: a single window of a server-side application, with the rest of the desktop hidden, streamed to the user's endpoint. The core negotiates the RemoteApp channel and surfaces the application window through the same rendering path the full desktop uses, which is why the same MCP loop drives both a full Windows desktop and a single RemoteApp window without a special case.</p>
+<p>Resolution control and the usual codecs round out the surface. Resolution control lets the agent resize the remote session to match the picture it is reasoning about. The usual codecs cover the bitmaps the Windows server hands out, including the Progressive codec and the RemoteFX variants that show up on Windows Server with the Desktop Experience installed. The core decodes each into the same frame buffer the VNC core fills, which is the engineering fact that lets the rendering pipeline be one pipeline, not three.</p>
+<h3 id="the-ssh-core-terminal-that-survives-a-drop">The SSH core, terminal that survives a drop</h3>
+<p>The SSH core gives a terminal that survives a drop, SFTP transfers, tunnels, and PuTTY key files. The &quot;terminal that survives a drop&quot; half is the part that earns the engineering, because it is what every other SSH client gets wrong. A network blip on coffee-shop Wi-Fi or a sleeping laptop used to mean losing the session and reconnecting to a fresh shell that had lost the working directory, the half-typed command, and the output the operator had not yet read.</p>
+<p>The from-scratch core reconnects the SSH transport on the same channel without bringing down the shell. The shell's process on the server is preserved across the reconnect. The bytes in flight are replayed. The agent driving the terminal sees a brief pause and then the session continues. A <code>dvv_term_send</code> that lands on a dropped session gets a transparent reconnect, not an error.</p>
+<p>SFTP is the file transfer side. Tunnels are the port-forwarding side. PuTTY key files are the import side, so the same saved host library that lists VNC and RDP hosts can list SSH hosts with the operator's existing private key. The three pieces share the same SSH transport underneath, and the transport is one piece of code rather than three wrapped libraries.</p>
+<h3 id="the-rendering-pipeline-that-ties-them-together">The rendering pipeline that ties them together</h3>
+<h3 id="the-rendering-pipeline-that-ties-them-together">The rendering pipeline that ties them together</h3>
+<p>The three cores agree on the shape they put pixels into. The picture is decoded in Rust and painted through WebGL2, so whole frames never cross the process boundary. The picture the VNC core produces, the picture the RDP core produces, and the glyphs the SSH core produces flow into the same Rust-owned frame buffer, uploaded to the GPU as a texture in the same webview the rest of the UI lives in.</p>
+<p>The WebGL2 part is the load-bearing piece. WebGL2 is a thin layer over the platform's GPU: Metal on macOS, DXGI on Windows, OpenGL on Linux. The webview already exposes it. The Rust side uploads the frame as a texture, draws a textured quad, and hands the result back to the frontend. The texture lives on the GPU, the GPU paints it, and the operator's eye sees the picture. No second copy in memory, no encode/decode pair, no IPC hop for the pixels themselves.</p>
+<p>The same pipeline runs an H.264 decode with hardware acceleration where the webview offers it, the case for remote sites and mobile endpoints on cellular where bandwidth matters more than latency. The hardware acceleration keeps the decode from burning the CPU on a laptop battery. Everywhere else the software decoder handles it through the same pipeline, without the GPU assist.</p>
+<h3 id="why-one-pipeline-buys-one-mcp-server">Why one pipeline buys one MCP server</h3>
+<p>The MCP server inside the DeskVNC binary sees the same picture the human sees. The server is the same binary, with the same frame buffer, served by the same code that paints the window. The agent's <code>dvv_screen</code> call returns the texture the GPU just painted, at the scale the agent asked for, with the generation counter the input tools enforce.</p>
+<p>That is the engineering reason one MCP server handles three protocols. The cores put pixels into the same buffer. The buffer is shared with the agent's tools by construction, because the tools are the same binary. A <code>dvv_screen</code> call against a VNC host and a <code>dvv_screen</code> call against an RDP host return the same kind of picture, in the same format, with the same generation counter, and the agent's code does not have to special-case which protocol is on the wire.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 31,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_screen&quot;,
+    &quot;arguments&quot;: {
+      &quot;limbId&quot;: &quot;L-vnc&quot;,
+      &quot;form&quot;: &quot;full&quot;,
+      &quot;scale&quot;: 0.25
+    }
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 32,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_screen&quot;,
+    &quot;arguments&quot;: {
+      &quot;limbId&quot;: &quot;L-rdp&quot;,
+      &quot;form&quot;: &quot;full&quot;,
+      &quot;scale&quot;: 0.25
+    }
+  }
+}</code></pre></div>
+<p>The first call reads the screen on the VNC limb. The second reads the screen on the RDP limb. Both go through the same tool handler, which asks the frame buffer for the current picture, scales it, and returns it with a fresh generation. The agent sees two screens in the same shape, and the engineering underneath is the same engineering.</p>
+<h3 id="what-one-rendering-path-buys-across-platforms">What one rendering path buys across platforms</h3>
+<p>The same pipeline runs on Windows, macOS and Linux. The webview is the platform's webview: WebKit on macOS, WebView2 on Windows, and WebKitGTK on Linux. WebGL2 is the same in all three. The Rust code that uploads the texture to the GPU is the same in all three, modulo the upload the webview abstracts.</p>
+<p>The picture looks the same on all three. A Windows desktop over RDP, a Linux box over VNC, and a Mac over Apple authentication land in the same window with the same chrome, the same scroll wheel direction, the same trackpad behaviour, and the same keyboard layout handling. The operator who switches between a Windows laptop and a Mac laptop does not retrain on the client.</p>
+<p>The same cross-platform story holds for the input path. A click in the window goes through one input handler the Rust core owns. The handler routes the click through the same protocol channel the core negotiated, with the same lease the MCP server minted, with the same generation the screen read returned. The three protocols present the same shape to the input path.</p>
+<p>The shell form on the same wiring shows the same cross-protocol shape without the JSON framing:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-sh">dvv open design-srv-01 --protocol rdp --perceive
+dvv open build-box-03   --protocol vnc --perceive
+dvv open edge-fw-09     --protocol ssh --perceive
+dvv screen $(dvv limbs | awk '/design-srv-01/{print $1}') \
+    --scale 0.25 --out ./design.png
+dvv screen $(dvv limbs | awk '/build-box-03/{print $1}') \
+    --scale 0.25 --out ./build.png
+dvv term_read $(dvv limbs | awk '/edge-fw-09/{print $1}')</code></pre></div>
+<p>Three protocols, three limbs, three independent screens. The shell form is the same on all three because the underlying transport is the same Rust binary, with the same MCP server, and the same input handler.</p>
+<h3 id="what-the-engineering-buys-for-the-agent">What the engineering buys for the agent</h3>
+<p>The from-scratch cores and the single rendering path give the agent four properties a wrapped client gives up on.</p>
+<p>The first is consistent latency. A 19 millisecond observe-then-act cycle holds across the three protocols because the path from the wire to the picture is the same path. The agent does not have to know which protocol it is on to know how long its next read will take.</p>
+<p>The second is consistent geometry. The <code>imageSpace</code> line a <code>dvv_screen</code> returns is the same line regardless of protocol, in the same coordinate system at the same scale. A click at (700, 400) lands at (700, 400) on the remote, with no per-protocol fudge factor.</p>
+<p>The third is consistent safety. The generation counter is enforced by the same input handler regardless of protocol. A click against a stale screen is refused by the same code, on the same lock, before the click reaches the protocol layer.</p>
+<p>The fourth is consistent extension. A protocol feature the from-scratch core does not yet expose can be added without negotiating with an upstream library. The same engineering that wrote the VNC core can write the support for an encoding a future server ships, without waiting for a third-party release.</p>
+<p>The repository at <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">github.com/psmux/DeskVNC</a> has the client, the three cores, the rendering pipeline, the MCP server, and the installable agent skill. One client that looks and behaves the same on every machine. One MCP loop that behaves the same on every protocol. The from-scratch cores are how that bet is paid off.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "One client, three protocols, three operating systems",
+  "description": "Most remote desktop clients wrap somebody else's library. They link libvncclient for VNC, FreeRDP for RDP, libssh for SSH, and the wrapper code stitches the three into one UI. The ",
+  "url": "https://deskvnc-hub.pages.dev/cores",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

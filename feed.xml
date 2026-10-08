@@ -14,10 +14,24 @@
       <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
+      <title><![CDATA[Two kinds of desktop automation, and what each one inherits]]></title>
+      <link>https://deskvnc-hub.pages.dev/automation</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/automation</guid>
+      <description><![CDATA[There are two fundamentally different ways to automate a desktop. The first is to install software on the desktop and let that software drive the desktop. The second is to speak th]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title><![CDATA[Benchmarks: 19 ms from screen to action on a real desktop]]></title>
       <link>https://deskvnc-hub.pages.dev/benchmarks</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/benchmarks</guid>
       <description><![CDATA[Measured agent plane performance for DeskVNC: 19 ms per observe then act cycle, 4 ms to open and attach, under 1 ms to acquire control, 25 ms for a quarter scale screen and 447 characters per second typing, on a real 1920x1080 Windows desktop over a LAN.]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[One client, three protocols, three operating systems]]></title>
+      <link>https://deskvnc-hub.pages.dev/cores</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/cores</guid>
+      <description><![CDATA[Most remote desktop clients wrap somebody else]]></description>
       <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
@@ -77,6 +91,20 @@
       <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
+      <title><![CDATA[DeskVNC: AIエージェントによるリモートデスクトップ操作]]></title>
+      <link>https://deskvnc-hub.pages.dev/ja</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/ja</guid>
+      <description><![CDATA[RDP での接続しか許さない Citrix ファーム。新しいサービスを一切受け付けない踏み台サーバー。標準のリモート支援ツールだけをホワイトリストに入れている、顧客所有のノートパソコン。一見するとばらばらの三台ですが、たった一つの点で見事に足並みをそろえています。被制御側に新しいランタイムをインストールすることが、許されていないという点です。]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[The loop that does not blink: how an agent drives a real desktop]]></title>
+      <link>https://deskvnc-hub.pages.dev/loop</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/loop</guid>
+      <description><![CDATA[The shape that decides whether an agent can drive a real machine is a single idea, and it has almost nothing to do with how clever the agent is. The idea is a loop: look at the scr]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title><![CDATA[DeskVNC MCP endpoint: let any AI agent learn to drive a real desktop]]></title>
       <link>https://deskvnc-hub.pages.dev/mcp</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/mcp</guid>
@@ -105,6 +133,13 @@
       <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
+      <title><![CDATA[The human in the loop, at machine speed]]></title>
+      <link>https://deskvnc-hub.pages.dev/supervision</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/supervision</guid>
+      <description><![CDATA[There is an apparent contradiction in letting an AI agent drive a real desktop, and the contradiction is the reason most programmes stop. Full autonomy sounds like the agent runs t]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title><![CDATA[When the agent cannot drive the machine: a symptom-first decision tree]]></title>
       <link>https://deskvnc-hub.pages.dev/troubleshooting</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/troubleshooting</guid>
@@ -116,6 +151,13 @@
       <link>https://deskvnc-hub.pages.dev/usecases</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/usecases</guid>
       <description><![CDATA[DeskVNC in practice: Citrix, VDI, jump hosts and client owned desktops that refuse installed agents, an agent that needs to read a screen and act, one window for a mixed Windows, macOS and Linux estate, and support sessions where a person takes the wheel back.]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[DeskVNC: 让 AI 智能体驱动真实远程桌面]]></title>
+      <link>https://deskvnc-hub.pages.dev/zh</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/zh</guid>
+      <description><![CDATA[一台只允许你用 RDP 连进去的 Citrix 农场,一台不允许任何新服务的堡垒机,一台客户自己拥有、只让标准远程协助工具白名单放行的笔记本。它们看上去全然不同,却在一件事上态度一致:被控端不允许安装任何新的运行体。]]></description>
       <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
     </item>
   </channel>

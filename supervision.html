@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The human in the loop, at machine speed</title>
+<meta name="description" content="There is an apparent contradiction in letting an AI agent drive a real desktop, and the contradiction is the reason most programmes stop. Full autonomy sounds like the agent runs t">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/supervision">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The human in the loop, at machine speed">
+<meta property="og:description" content="There is an apparent contradiction in letting an AI agent drive a real desktop, and the contradiction is the reason most programmes stop. Full autonomy sounds like the agent runs t">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/supervision">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<hr>
+<p>title: &quot;Human in the loop, as a property of the lease and a person at the other end&quot; description: &quot;Why full autonomy and instant human takeover are not in tension in DeskVNC: the lease plus revocation model, and the attended Boundary path for the person who has not saved a machine yet.&quot; date: 2026-10-09 tags: [&quot;ai-agents&quot;, &quot;human-in-the-loop&quot;, &quot;mcp&quot;, &quot;remote-desktop&quot;, &quot;support&quot;, &quot;boundary&quot;]</p>
+<hr>
+<p>There is an apparent contradiction in letting an AI agent drive a real desktop, and the contradiction is the reason most programmes stop. Full autonomy sounds like the agent runs the machine on its own. A human being able to take over at any instant sounds like the agent has to wait. The two feel like they point in opposite directions, and the operator's first question is usually which one gets compromised in the design.</p>
+<p>The honest answer is that neither gets compromised, because the property that delivers them is older than both. A lease is a permission to act that someone else can revoke. The agent has full autonomy inside the lease. The human has full authority over the lease. The two are not opposites. They are the same primitive, seen from two sides.</p>
+<p><a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">DeskVNC</a> builds the property into the same binary that drives the screen, and the property shows up in two places. On the operator side, a per-machine lease the human can revoke by focusing the window. On the recipient side, an attended Boundary path where the person who needs help presses a button, approves the connection, and can revoke or end the session at any time, with no account required. The autonomy is full. The oversight is full. The two are not trading against each other.</p>
+<h3 id="the-lease-from-the-agent-s-side">The lease, from the agent's side</h3>
+<p>An agent that opens a saved machine through the <code>dvv</code> MCP server gets a lease handle back. The lease is per machine, with a timeout the server renews while the agent is making progress. Every input the agent sends goes through the lease. Every screen the agent reads is tagged with a generation counter tied to the lease. The agent's loop is the lease's loop, and the two are the same thing.</p>
+<p>The loop runs at the speed of the wire. A 1920x1080 Windows desktop over a LAN answers an observe-then-act cycle in 19 ms end to end, with one <code>dvv_screen</code> at scale 0.25, one <code>dvv_click</code>, and one damage-crop screen read. The reciprocal is roughly 52 actions a second per machine, which is the budget the agent plans against. Within the lease, the agent has all of that budget. Nothing the human does to the keyboard on the operator's side is in the way, because the human is not at the keyboard while the agent is running.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 12,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_open&quot;,
+    &quot;arguments&quot;: {
+      &quot;hostId&quot;: &quot;design-srv-01&quot;,
+      &quot;perceive&quot;: true
+    }
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 13,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_control&quot;,
+    &quot;arguments&quot;: {
+      &quot;limbId&quot;: &quot;L-design&quot;,
+      &quot;action&quot;: &quot;acquire&quot;
+    }
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 14,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_screen&quot;,
+    &quot;arguments&quot;: {
+      &quot;limbId&quot;: &quot;L-design&quot;,
+      &quot;form&quot;: &quot;damage-crop&quot;,
+      &quot;scale&quot;: 0.25
+    }
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 15,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_click&quot;,
+    &quot;arguments&quot;: {
+      &quot;limbId&quot;: &quot;L-design&quot;,
+      &quot;x&quot;: 412,
+      &quot;y&quot;: 188,
+      &quot;generation&quot;: 9131
+    }
+  }
+}</code></pre></div>
+<p>That block of JSON is four calls, two seconds apart from the agent's reasoning time, all on the same machine. The lease is the handle. The generation is the safety property. The agent plans in this budget and acts in this budget, and nothing inside the lease says the human is supposed to be involved.</p>
+<h3 id="the-revocation-from-the-human-s-side">The revocation, from the human's side</h3>
+<p>The human's authority over the lease is not a feature flag. It is the same mechanism that delivers the autonomy. The <code>dvv</code> MCP server runs inside the same binary as the DeskVNC client UI. The agent's input queue and the operator's input queue are the same input queue, owned by the same code. When the operator clicks into the window, the same keystroke that paints the focus highlight also invalidates the lease the agent was holding.</p>
+<p>The agent's next call comes back with a structured error rather than a silently swallowed click. The error code is <code>LEASE_REVOKED</code>. The agent's recovery is to ask <code>dvv_control yield_status</code> to find out what happened, and the answer is &quot;human_input_on_window&quot; or &quot;lease_lapsed&quot;. On the human side, that is a single click. On the agent side, that is a structured error with a reason the agent can act on.</p>
+<p>The recovery is the design. A well-built agent treats <code>LEASE_REVOKED</code> the way a polite coworker treats &quot;I'll take that one&quot;. The agent stops, asks the operator whether to continue, and either resumes when asked or hands the task back. The pattern shows up in the installable agent skill that ships with the repository: a <code>LEASE_REVOKED</code> is the one case where the agent stops and tells the user, because the only thing that triggers it is a person who wants control back.</p>
+<p>Three error codes an agent has to handle shape the autonomy. They are real codes the <code>dvv</code> server returns, not invented ones, and every agent built on this control plane handles them:</p>
+<ul><li><code>LIMB_GONE</code>: list limbs, reopen the machine.</li><li><code>SCREEN_CHANGED</code>: read the screen, retry the click or key.</li><li><code>LEASE_REVOKED</code>: ask <code>dvv_control yield_status</code>, stop if a person took over, reopen if the lease lapsed.</li></ul>
+<p>Each one is a structured response with a known recovery. None of them is an exception. None of them is a hang. The loop continues after the recovery the same way it was running before.</p>
+<h3 id="the-attended-path-from-the-recipient-s-side">The attended path, from the recipient's side</h3>
+<p>The lease story covers the operator's side: a saved machine the agent opens. The other half of the human-in-the-loop story is the person on the other end of the wire, the one who has not saved a machine and probably does not want a saved machine. That person needs help with a desktop they are sitting in front of, and they want to approve the connection before it happens. That is the attended Boundary path.</p>
+<p>The recipient does not need an account. They do not need a saved machine. They do not need to install anything other than the small DeskVNC Support app, which the operator sends them as a download from the same release page as the main client. The app is signed and notarized on macOS, signed on Windows, and ships as an x86_64 tarball on Linux. The recipient runs it, and the app shows a single button: <strong>Get a code</strong>. Pressing it does one of two things, depending on whether a code service is configured.</p>
+<p>When a code service is configured, the operator can share a short number directly. The app displays four digit groups like <code>1234 5678 9012</code>. The number expires after a single lookup, and the person at the remote computer still approves the session. The operator types the number into Boundary support in the main DeskVNC client and connects. Boundary tries a direct encrypted path first and falls back to its relay when the networks do not allow a direct path, which is the part that means the support call works the same way whether the two machines are on the same LAN or separated by a corporate NAT.</p>
+<p>When no code service is configured, the button reads <strong>Create invitation</strong> instead, and the app generates a full invitation the operator pastes into the main client. Either path lands at the same approval screen on the recipient's side. The recipient sees who is connecting, what the connection is for, and the controls to revoke or end the session at any time. The recipient approves, and the session opens.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-sh"># The recipient's view, before approval
+DeskVNC Support is waiting for your approval.
+Session requested by: ops@example.com
+Network: direct encrypted path (preferred)
+Controls: revoke control at any time, end session at any time
+[ Approve ]   [ Decline ]</code></pre></div>
+<p>The approval screen is the human-in-the-loop half of the lease contract. The operator's authority on the operator side is a lease the agent holds. The recipient's authority on the recipient side is an approval gate the recipient holds. Both sides have full authority over their half of the connection, and both halves meet in the same moment of approval.</p>
+<h3 id="what-revocation-looks-like-in-attended-boundary">What revocation looks like in attended Boundary</h3>
+<p>The attended Boundary session has the same revocation property as the operator-side lease, with the roles reversed. The recipient can revoke control without ending the session. Revoking control stops the operator's input but keeps the connection open, so the recipient can watch, take screenshots, or hand control back. The recipient can also end the session entirely. Either action takes one button press on the recipient's DeskVNC Support app.</p>
+<p>The operator sees the revocation as the same structured error the agent saw in the operator-side lease: <code>LEASE_REVOKED</code>. The MCP loop on the agent side, if the agent is driving this session, asks <code>dvv_control yield_status</code>, sees that a recipient revoked control, and stops. The session is not just paused. The session is over on the agent's authority, because the recipient said so. There is no override on the agent's side. The recipient's authority is final.</p>
+<p>This is the part of the design where autonomy and oversight meet. The agent is allowed to drive the machine. The recipient is allowed to stop the agent. The two are not in tension, because the second is the condition that makes the first acceptable. The agent is not a free roaming process on the recipient's desktop. The agent is a tenant on a lease the recipient can revoke. The revocation is one click away, always, on either end.</p>
+<h3 id="why-this-is-the-property-that-lets-the-agent-touch-real-machines">Why this is the property that lets the agent touch real machines</h3>
+<p>The QA team that wants an agent to drive a hundred Citrix desktops has to answer the question &quot;what if it goes wrong&quot; before the deposit clears. The right answer is not &quot;the agent is well trained&quot;. The right answer is &quot;the human can stop it in one keystroke, and the agent hears about it in band&quot;. That answer is the lease and the generation counter from the operator side, and the approval gate and the recipient-side revocation from the support side. Same primitive, both halves of the connection.</p>
+<p>The same answer applies to the helpdesk engineer who has to support a user who does not want their machine in any saved library. The recipient's authority is the only authority. The operator gets a session on the recipient's terms, with the recipient's approval, and the recipient can close the door at any moment. The support app asks for Screen Recording and Accessibility permissions on macOS when the session needs them, and the recipient's approval covers the permissions the same way it covers the connection.</p>
+<p>The repository at <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">github.com/psmux/DeskVNC</a> has the client, the MCP server, the installable agent skill, the attended Boundary support apps for all three platforms, and the release history of a design that puts the human at the centre of the authority model. The agent is fully autonomous inside the lease. The human is fully authoritative over the lease. Both halves are the same property, and both halves are the reason the agent is allowed to touch real machines at all.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "The human in the loop, at machine speed",
+  "description": "There is an apparent contradiction in letting an AI agent drive a real desktop, and the contradiction is the reason most programmes stop. Full autonomy sounds like the agent runs t",
+  "url": "https://deskvnc-hub.pages.dev/supervision",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

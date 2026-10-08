@@ -14,7 +14,7 @@
       "deskvnc_setup"
     ]
   },
-  "generated": "2026-10-08T21:21:37.818Z",
+  "generated": "2026-10-08T21:25:23.237Z",
   "pages": [
     {
       "path": "/",
@@ -25,12 +25,28 @@
       "words": 1217
     },
     {
+      "path": "/automation",
+      "url": "https://deskvnc-hub.pages.dev/automation",
+      "title": "Two kinds of desktop automation, and what each one inherits",
+      "description": "There are two fundamentally different ways to automate a desktop. The first is to install software on the desktop and let that software drive the desktop. The second is to speak th",
+      "lastmod": "2026-10-08",
+      "words": 2071
+    },
+    {
       "path": "/benchmarks",
       "url": "https://deskvnc-hub.pages.dev/benchmarks",
       "title": "Benchmarks: 19 ms from screen to action on a real desktop",
       "description": "Measured agent plane performance for DeskVNC: 19 ms per observe then act cycle, 4 ms to open and attach, under 1 ms to acquire control, 25 ms for a quarter scale screen and 447 characters per second typing, on a real 1920x1080 Windows desktop over a LAN.",
       "lastmod": "2026-10-08",
       "words": 942
+    },
+    {
+      "path": "/cores",
+      "url": "https://deskvnc-hub.pages.dev/cores",
+      "title": "One client, three protocols, three operating systems",
+      "description": "Most remote desktop clients wrap somebody else",
+      "lastmod": "2026-10-08",
+      "words": 2054
     },
     {
       "path": "/glossary",
@@ -97,6 +113,22 @@
       "words": 1070
     },
     {
+      "path": "/ja",
+      "url": "https://deskvnc-hub.pages.dev/ja",
+      "title": "DeskVNC: AIエージェントによるリモートデスクトップ操作",
+      "description": "RDP での接続しか許さない Citrix ファーム。新しいサービスを一切受け付けない踏み台サーバー。標準のリモート支援ツールだけをホワイトリストに入れている、顧客所有のノートパソコン。一見するとばらばらの三台ですが、たった一つの点で見事に足並みをそろえています。被制御側に新しいランタイムをインストールすることが、許されていないという点です。",
+      "lastmod": "2026-10-08",
+      "words": 482
+    },
+    {
+      "path": "/loop",
+      "url": "https://deskvnc-hub.pages.dev/loop",
+      "title": "The loop that does not blink: how an agent drives a real desktop",
+      "description": "The shape that decides whether an agent can drive a real machine is a single idea, and it has almost nothing to do with how clever the agent is. The idea is a loop: look at the scr",
+      "lastmod": "2026-10-08",
+      "words": 2120
+    },
+    {
       "path": "/mcp",
       "url": "https://deskvnc-hub.pages.dev/mcp",
       "title": "DeskVNC MCP endpoint: let any AI agent learn to drive a real desktop",
@@ -129,6 +161,14 @@
       "words": 2027
     },
     {
+      "path": "/supervision",
+      "url": "https://deskvnc-hub.pages.dev/supervision",
+      "title": "The human in the loop, at machine speed",
+      "description": "There is an apparent contradiction in letting an AI agent drive a real desktop, and the contradiction is the reason most programmes stop. Full autonomy sounds like the agent runs t",
+      "lastmod": "2026-10-08",
+      "words": 1977
+    },
+    {
       "path": "/troubleshooting",
       "url": "https://deskvnc-hub.pages.dev/troubleshooting",
       "title": "When the agent cannot drive the machine: a symptom-first decision tree",
@@ -143,6 +183,14 @@
       "description": "DeskVNC in practice: Citrix, VDI, jump hosts and client owned desktops that refuse installed agents, an agent that needs to read a screen and act, one window for a mixed Windows, macOS and Linux estate, and support sessions where a person takes the wheel back.",
       "lastmod": "2026-10-08",
       "words": 1508
+    },
+    {
+      "path": "/zh",
+      "url": "https://deskvnc-hub.pages.dev/zh",
+      "title": "DeskVNC: 让 AI 智能体驱动真实远程桌面",
+      "description": "一台只允许你用 RDP 连进去的 Citrix 农场,一台不允许任何新服务的堡垒机,一台客户自己拥有、只让标准远程协助工具白名单放行的笔记本。它们看上去全然不同,却在一件事上态度一致:被控端不允许安装任何新的运行体。",
+      "lastmod": "2026-10-08",
+      "words": 468
     }
   ]
 }

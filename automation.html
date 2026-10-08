@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two kinds of desktop automation, and what each one inherits</title>
+<meta name="description" content="There are two fundamentally different ways to automate a desktop. The first is to install software on the desktop and let that software drive the desktop. The second is to speak th">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/automation">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Two kinds of desktop automation, and what each one inherits">
+<meta property="og:description" content="There are two fundamentally different ways to automate a desktop. The first is to install software on the desktop and let that software drive the desktop. The second is to speak th">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/automation">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<hr>
+<p>title: &quot;Two kinds of desktop automation, and what each one costs to deploy&quot; description: &quot;An honest comparison between installing an agent on the endpoint and speaking the protocol the endpoint already offers, walked through a QA team driving a hundred Citrix desktops.&quot; date: 2026-10-09 tags: [&quot;ai-agents&quot;, &quot;citrix&quot;, &quot;vdi&quot;, &quot;remote-desktop&quot;, &quot;rpa&quot;, &quot;vnc&quot;, &quot;rdp&quot;, &quot;ssh&quot;]</p>
+<hr>
+<p>There are two fundamentally different ways to automate a desktop. The first is to install software on the desktop and let that software drive the desktop. The second is to speak the protocol the desktop already speaks and let the desktop drive itself. Both paths have a place. The interesting question for a programme that wants to automate a hundred machines it does not own is which path inherits which kind of cost.</p>
+<p>The QA team at a midsize financial back office is the honest place to compare them. The team owns the test plan and the test harness. The team does not own the desktops. The desktops sit on a Citrix farm, each one a published resource that comes back to a gold image on reboot, accessed through a broker, governed by a Citrix operations group that does not accept new software on the image. The test budget is fixed. The hundred machines are not optional. The harness on the wall is the deciding factor.</p>
+<p>This post walks that programme through both paths, states the genuine strengths of the first, and shows what the second makes possible.</p>
+<h3 id="what-an-installed-agent-path-buys-honestly">What an installed-agent path buys, honestly</h3>
+<p>The installed-agent path is the dominant shape in the RPA market, and for good reasons. UiPath, Microsoft Power Automate, Automation Anywhere, and the long tail of RPA platforms install a runtime on the target machine. That runtime is what gives the platform four properties that are hard to recreate any other way.</p>
+<p>The first property is deep process introspection. An installed agent can attach to the running processes, read the accessibility tree of a Windows application, follow the model-view-controller boundaries of a WPF window, and surface structural data the protocol layer never sees. That is the right tool for a back-office workflow that lives inside a single thick-client application and wants the screen capture plus the internal state.</p>
+<p>The second property is native UI hooks. An installed agent can register window messages, listen to the same input queue the user application listens to, and synthesise input the application trusts as native. For some legacy applications this is the difference between &quot;the agent can drive the dialog&quot; and &quot;the agent can move the dialog but cannot click the button inside it&quot;.</p>
+<p>The third property is pixel-perfect orchestration under a vision model. Some workflows are not in the accessibility tree at all. A canvas application with custom-drawn controls and a Windows 95-era LOB tool with no accessibility surface both reward the runtime that can do template matching and OCR on the screen. The latency is local, the templates are stable, the match is reliable.</p>
+<p>The fourth property is offline scheduling. An installed runtime owns its own schedule. It can run at 03:00 on a Sunday without anyone at a console, persist state across reboots, and retry on its own without a control plane in the middle.</p>
+<p>These are real strengths. A programme that lives entirely inside the enterprise, on machines the enterprise owns, with applications that expose a usable accessibility tree and workflows that benefit from deep introspection, gets a working answer from the installed-agent path on day one. The strengths are not a marketing claim. They are the reason the installed-agent market exists.</p>
+<h3 id="what-the-same-path-inherits-when-the-desktop-is-not-yours">What the same path inherits when the desktop is not yours</h3>
+<p>The moment the desktop belongs to someone else, the strengths become budget lines. The QA team in our scenario runs a hundred Citrix published desktops. The desktops are owned by the Citrix operations group. The installed-agent path inherits four new properties the programme did not ask for.</p>
+<p>The first inherited property is the install problem. A runtime cannot sit on a Citrix published desktop because the desktop is rebuilt from a gold image every reboot, and the operations group does not accept new software on the gold image. The runtime that worked on a developer laptop cannot sit on the Citrix farm at all. The programme would need to negotiate a gold image change for every dependency, or stand up a side pool of persistent VDI that the runtime can live on, or write an exception process with the Citrix team that adds weeks of lead time per machine.</p>
+<p>The second inherited property is the policy surface. An installed agent arrives on the desktop with its own service account, its own network egress, and its own patch cadence. The change board has to approve it, the audit team has to record it, and the security team has to monitor it. Every one of those approvals is a multi-week review on an enterprise change calendar, and the review repeats every time the runtime ships a new version.</p>
+<p>The third inherited property is the footprint on the image. A runtime that does process introspection is doing process introspection. That is a syscall-heavy, memory-resident, sometimes-kernel-touching piece of software. The Citrix image was sized for the user workload, not for the runtime plus the user workload, and the runtime's CPU and RAM cost is a real line on the Citrix capacity plan.</p>
+<p>The fourth inherited property is the legacy of being the thing every security team has had to harden against. The installed-agent category includes the genuine attackers. The agents that phishing frameworks drop on endpoints to scrape credentials, the agents that ransomware installs to move laterally, the agents that insider threats use to log keystrokes: they all look the same on the wire as the legitimate runtime. Endpoint protection suites watch for them. EDR products flag their behaviour. The legitimate runtime ends up running inside a sandbox of detectors that were written to catch its evil twin, and the sandbox is occasionally right.</p>
+<h3 id="the-protocol-path-on-the-same-estate">The protocol path on the same estate</h3>
+<p>The protocol path does not need to solve any of those four problems, because it did not create them. The Citrix farm already publishes RDP. That is the protocol the helpdesk uses, the protocol the broker negotiates, the protocol the operations team has already approved and audited and signed off on. An agent that speaks that protocol arrives through a door the security team has already vetted. The agent does not install anything, does not register a service, does not show up in the EDR queue, and does not change the gold image.</p>
+<p>The QA programme in this scenario lands as a control plane that runs on the operator's workstation, opens saved hosts over the existing RDP, drives the published desktop through the same session a person would drive, and reports back over the same channel. The <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">DeskVNC client</a> is the machine that holds the saved hosts and the MCP server that the agent drives. The agent loop is the <code>dvv</code> control plane: open the machine, take an exclusive lease, read the screen, click, read again. The same script runs on a hundred saved hosts and the hundred run as ten parallel loops because every machine is its own limb with its own lease.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 1,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_hosts&quot;,
+    &quot;arguments&quot;: {}
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 2,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_open&quot;,
+    &quot;arguments&quot;: {
+      &quot;hostId&quot;: &quot;citrix-qa-001&quot;,
+      &quot;perceive&quot;: true
+    }
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 3,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_screen&quot;,
+    &quot;arguments&quot;: {
+      &quot;limbId&quot;: &quot;L-citrix-001&quot;,
+      &quot;form&quot;: &quot;full&quot;,
+      &quot;scale&quot;: 0.25
+    }
+  }
+}</code></pre></div>
+<p>That block of JSON is one machine being opened by name and read at a quarter scale. The full loop is the same loop an operator would drive by hand, only the agent is the one who decides where to click. The cost is the cost of the protocol the operations team already knows.</p>
+<h3 id="why-the-protocol-path-simply-works-in-this-scenario">Why the protocol path simply works in this scenario</h3>
+<p>Three properties fall out of the design for free in the QA scenario.</p>
+<p>The first is that the agent arrives without a procurement conversation. The Citrix operations team has already approved RDP for helpdesk access. The audit team has already approved RDP for helpdesk access. The change board has already approved RDP for helpdesk access. The agent is a tenant on the existing approval, not a new approval. The conversation that would have taken twelve weeks takes zero weeks, and the tickets that would have piled up do not.</p>
+<p>The second is that the screen the agent sees is the screen the helpdesk would see. There is no extra layer of abstraction between the agent and the desktop, and the desktop behaves as it always behaved. The published application opens the same way it opens for a person, the dialog boxes dismiss the same way, the errors appear in the same place. The test plan the QA team already wrote is the test plan the agent runs. No translation, no runtime exceptions, no &quot;this works in our test environment but not on the Citrix image&quot;.</p>
+<p>The third is that the agent loop closes on the operator's side. Every screen the agent reads, every click it sends, every key it types is going over a session the operator can watch in real time on the same DeskVNC client that the agent is driving. A person can focus the window and take control back. The next agent call returns <code>LEASE_REVOKED</code>, the agent stops, and the person is back at the mouse. The agent is a true utility on the existing session, not a black box on a side pool.</p>
+<p>The fourth is that the lease per machine is what makes the parallel work honest. The QA scenario wants to drive a hundred machines in parallel, with each one at its own stage of the test. Every saved Citrix host opens as its own limb with its own lease, the screen reads are independent, the clicks land independently. The hundred machines do not contend for a global lock, and a stalled loop on machine 23 does not block the other ninety-nine. The same MCP server runs them all in one DeskVNC process, and the process is one the operator already has running.</p>
+<p>The shell form, for an agent without MCP tools, after <code>dvv setup</code>, shows the same loop without the JSON framing:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-sh">dvv hosts
+dvv open citrix-qa-001 --perceive
+dvv wait $(dvv limbs | awk '/citrix-qa-001/{print $1}') --until connected
+dvv control acquire $(dvv limbs | awk '/citrix-qa-001/{print $1}')
+dvv screen $(dvv limbs | awk '/citrix-qa-001/{print $1}') \
+    --scale 0.25 --out ./citrix-qa-001.png
+dvv click $(dvv limbs | awk '/citrix-qa-001/{print $1}') 412 188
+dvv key $(dvv limbs | awk '/citrix-qa-001/{print $1}') Return</code></pre></div>
+<p>The agent with <code>dvv_</code> MCP tools gets the JSON form. The agent without them gets the shell form. Both forms speak the same protocol on the same wire, and the wire is one the Citrix team already knows.</p>
+<h3 id="what-the-qa-team-walks-away-with">What the QA team walks away with</h3>
+<p>The two paths end with the QA team in different rooms. The installed-agent path ends with a runtime on a side pool of persistent VDI, a negotiated exception with the Citrix team, a running tab on the EDR queue, and a per-machine cost that includes the runtime's share of the Citrix image. The protocol path ends with a control plane that runs on the operator's workstation, a saved-host library for the hundred Citrix hosts, and an MCP server the agent drives through the existing RDP approval.</p>
+<p>The programme that ships is the one that lives where the budget lives. The protocol path keeps the budget there, because it does not ask the Citrix operations team to spend anything new. The <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">DeskVNC repository</a> has the client, the MCP server, the installable agent skill, and the release history of practice against real Citrix farms. The QA team reaches the hundred machines it does not own through the protocol they already speak.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Two kinds of desktop automation, and what each one inherits",
+  "description": "There are two fundamentally different ways to automate a desktop. The first is to install software on the desktop and let that software drive the desktop. The second is to speak th",
+  "url": "https://deskvnc-hub.pages.dev/automation",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

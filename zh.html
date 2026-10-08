@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeskVNC: 让 AI 智能体驱动真实远程桌面</title>
+<meta name="description" content="一台只允许你用 RDP 连进去的 Citrix 农场,一台不允许任何新服务的堡垒机,一台客户自己拥有、只让标准远程协助工具白名单放行的笔记本。它们看上去全然不同,却在一件事上态度一致:被控端不允许安装任何新的运行体。">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/zh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DeskVNC: 让 AI 智能体驱动真实远程桌面">
+<meta property="og:description" content="一台只允许你用 RDP 连进去的 Citrix 农场,一台不允许任何新服务的堡垒机,一台客户自己拥有、只让标准远程协助工具白名单放行的笔记本。它们看上去全然不同,却在一件事上态度一致:被控端不允许安装任何新的运行体。">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/zh">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" hreflang="en" href="https://deskvnc-hub.pages.dev/">
+<link rel="alternate" hreflang="x-default" href="https://deskvnc-hub.pages.dev/">
+<link rel="alternate" hreflang="zh" href="https://deskvnc-hub.pages.dev/zh">
+<link rel="alternate" hreflang="x-default" href="https://deskvnc-hub.pages.dev/">
+<link rel="alternate" hreflang="ja" href="https://deskvnc-hub.pages.dev/ja">
+<link rel="alternate" hreflang="x-default" href="https://deskvnc-hub.pages.dev/">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<hr>
+<p>title: &quot;那些不让 Agent 装上去的机器,恰恰是 Agent 真正该进去的地方&quot; description: &quot;Citrix、VDI、跳板机和客户自有的工作站,几乎一致地拒绝在被控端安装运行体。DeskVNC 用它们已经在用的协议把 AI 智能体送进去,远端无需任何安装,且操作员随时可以接管回来。&quot; date: 2026-10-09 tags: [&quot;远程桌面&quot;, &quot;ai-智能体&quot;, &quot;mcp&quot;, &quot;vnc&quot;, &quot;rdp&quot;, &quot;ssh&quot;, &quot;citrix&quot;, &quot;vdi&quot;]</p>
+<hr>
+<p>一台只允许你用 RDP 连进去的 Citrix 农场,一台不允许任何新服务的堡垒机,一台客户自己拥有、只让标准远程协助工具白名单放行的笔记本。它们看上去全然不同,却在一件事上态度一致:被控端不允许安装任何新的运行体。</p>
+<p>这恰好是自动化项目最想触及的那批机器。RPA 平台把一个后台服务装进桌面,去截屏、监听输入事件、把数据回传给控制面,这套路在开发者的笔记本上很顺畅,搬进生产环境却屡屡撞墙。被控端拒绝安装,根本不是个例,而是受监管与运维成熟环境中最常见生产端点的默认姿态。</p>
+<p>协议是绕过这道墙的那扇门。下面把整件事拆开看。</p>
+<h3 id="agent">被安装型 Agent 拒之门外的六类机器</h3>
+<p><strong>Citrix 发布应用和 RemoteApp。</strong> 用户在终端上看到的只是一个应用窗口,进程、文件系统、剪贴板和 GPU 都跑在数据中心的 Citrix 主机上。被控端并不存在,没有可以装东西的那台机器,终端只是一个渲染器;主机共享、组策略锁死,RPA 运行体根本没有安装位置。</p>
+<p><strong>池化 VDI 桌面。</strong> 用户每次登录拿到的都是从黄金镜像派生的全新桌面,登出即归还。用户配置文件被重定向,磁盘按设计就是非持久的。装在用户侧的会随会话被扔掉,装在系统侧的违反镜像基线。</p>
+<p><strong>跳板机和堡垒网关。</strong> 跳板机的本职工作就是拒绝一切,只放行安全团队钦定的那几种协议。允许装新软件,就不再是跳板机,审计面一夜变大,会话录像也失去意义。</p>
+<p><strong>客户自有、严格管控的工作站。</strong> 客户 IT 团队掌管应用白名单,跑 AppLocker 或 MDM,移除本地管理员权限,阻止未知二进制运行。代理服务商想装点东西上去,是一场以月为单位的采购谈判。</p>
+<p><strong>信息亭 (Kiosk) 与 Shell 替换。</strong> 机器被改造成只能跑一个应用或一个网页,Explorer 被替换、任务管理器被关掉、签名镜像按流程下发。能允许另一二进制启动的 Shell 已不是信息亭的 Shell。</p>
+<p><strong>锁定的服务器镜像。</strong> 经常是 Windows Server Core,没有桌面,没有 Explorer,白名单写着&quot;不允许装 Agent 软件&quot;。即便带&quot;桌面体验&quot;,变更控制委员会也会驳回安装请求。</p>
+<h3 id="">协议路径是怎么把这些机器一一接上的</h3>
+<p>每一类机器,无论出于设计还是合规,都在监听一种它原本就接受的显示或终端协议。Citrix 主机为运维开放 RDP,VNC 服务随镜像一并下发;跳板机放行 SSH;客户的 IT 部门早已用标准远程协助工具打通了笔记本这条路;信息亭镜像里给运维留好了 RDP;锁定服务器本来就靠 RDP、WinRM 或 SSH 来管理。</p>
+<p>DeskVNC 的 <code>dvv</code> 控制面直接讲这几种协议。被控端不装东西,客户端不引入新进程,人侧与代理侧看到同一帧画面。Lease 机制逐会话、可撤销:操作员在终端或被控端点一下窗口,就把控制权从 Agent 手里拿回来,后续 <code>dvv_click</code> 返回 <code>LEASE_REVOKED</code>,Agent 立刻知道该停手。</p>
+<p>这正是 README 里那句话的工程化版本:被控端拒绝安装新的运行体,但它已经在用的那种协议,会照常放行。</p>
+<h3 id="">观察与执行的循环,真实可复制</h3>
+<p><code>dvv</code> 这个 MCP 服务器和 DeskVNC 客户端同进程运行,客户端负责到远端的连接,Agent 只决定要敲什么键、点哪个坐标。每一次点击都带一个从最近一帧屏幕里读到的 <code>generation</code>,基于过期画面算出的点击会在到达协议层之前被拒绝。</p>
+<p><code>dvv_hosts</code> 列出有哪些机器可以开,<code>dvv_open</code> 带 <code>perceive: true</code> 时会一次性把连接、画面、状态都准备好,<code>dvv_control</code> 拿到一个独占的输入租约,接着 Agent 跑一个稳定的双调用循环:看一眼,动一下,再看一眼,再动一下。</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_hosts   {}                                    // what there is to open
+dvv_open    {&quot;hostId&quot;: &quot;&lt;id&gt;&quot;, &quot;perceive&quot;: true}  // -&gt; limbId, size, state
+dvv_control {&quot;limbId&quot;: &quot;...&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}
+dvv_click   {&quot;limbId&quot;: &quot;...&quot;, &quot;x&quot;: 700, &quot;y&quot;: 400, &quot;generation&quot;: 1}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;damage-crop&quot;}  // look again
+dvv_type    {&quot;limbId&quot;: &quot;...&quot;, &quot;text&quot;: &quot;notepad&quot;, &quot;wpm&quot;: 3000}
+dvv_key     {&quot;limbId&quot;: &quot;...&quot;, &quot;keys&quot;: &quot;meta+r&quot;}</code></pre></div>
+<p>没有 MCP 工具的 Agent,<code>dvv</code> 命令行在 <code>dvv setup</code> 之后是一条等价路径:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-sh">dvv hosts
+dvv limbs
+dvv open &lt;name or hostId&gt; --perceive
+dvv wait &lt;limbId&gt; --until connected
+dvv control acquire &lt;limbId&gt;
+dvv screen &lt;limbId&gt; --scale 0.5 --out ./dvv-screen.png
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt;
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt; --action double
+dvv type &lt;limbId&gt; &quot;text to type&quot;
+dvv key &lt;limbId&gt; super+r
+dvv wait &lt;limbId&gt; --until screen-stable
+dvv reconnect &lt;limbId&gt;
+dvv close &lt;limbId&gt;</code></pre></div>
+<p>每台机器都是独立的 limb,自带独立的租约,十台机器就是十条互不干扰的循环。<code>dvv_screen</code> 还会打印一行 <code>imageSpace</code>,把缩放后坐标与机器真实坐标的换算关系写清楚,点错比例的点击会被坐标不一致检测直接挡掉。</p>
+<p><code>generation</code> 是一道状态机级别的安全围栏。Agent 的内层循环是感知-决策-执行,执行那一段如果作用在一个已经不再存在的世界里,后果很严重。<code>generation</code> 这个单调递增的整数随着每一帧屏幕一起下发,下一次输入必须带着它回去;画面一旦推进,基于旧 <code>generation</code> 的点击就被拒绝,Agent 重新读屏、重新决策,落到一个能反映当前状态的位置上。</p>
+<h3 id="">测出来的数字</h3>
+<p>这些数字来自项目发布的基准,在一台 1920x1080 的真实 Windows 桌面上经局域网测得:</p>
+<ul><li><code>dvv_open</code> 并完成连接:4 ms</li><li><code>dvv_control</code> 获取租约:低于 1 ms</li><li><code>dvv_screen</code> 在 <code>scale: 0.25</code> 下:25 ms</li><li>一次完整的&quot;观察再执行&quot;循环:19 ms,大约 52 次动作每秒</li><li><code>dvv_type</code>:<code>wpm: 12000</code> 模式下,447 字符每秒</li></ul>
+<p>19 ms 之所以被专门指出,是因为它和 Agent 外层调用语言模型的成本(低端几百毫秒,高端以秒计)是错位的。一次 19 ms 的内层循环,意味着模型在每两次思考之间可以夹几十次动作,不必等屏幕,等得像人在慢速 VNC 前面干等。</p>
+<h3 id="dvv-mcp-agent">把 <code>dvv</code> MCP 服务器注册到你的 Agent</h3>
+<p>DeskVNC 客户端的发布包已经把 <code>dvv</code> 服务和它的技能描述一起打进去,仓库的 <code>skills/deskvnc/SKILL.md</code> 就是给 Agent 扫描用的入口文件,这意味着任何扫到技能目录的 Agent 可以自行发现这个能力。</p>
+<p>把它接进常见客户端只需要两步。第一,把客户端装到操作员这一侧:Windows、macOS 或 Linux 任选其一,凭据交给操作系统钥匙串,默认就是安全的;第二,在 Agent 客户端的配置里把 <code>dvv</code> 注册为 MCP 服务器,通常是一条 stdio 命令加上客户端自带二进制所在的路径(Windows 常见是 <code>%LOCALAPPDATA%\DeskVNCViewer\dvv.exe</code>,macOS 是 <code>/Applications/DeskVNCViewer.app/Contents/MacOS/dvv</code>,Linux 是 <code>/usr/bin/dvv</code>)。</p>
+<p>注册完成后,Agent 端会看到一组 <code>dvv_*</code> 工具,涵盖主机发现、连接、租约、画面抓取、点击、键入、键位、剪贴板、文件、终端读写、SSH 命令执行,以及一组 <code>dvv_group_</code> 开头的批量工具,把多台机器当作一个整体去操作。</p>
+<p>Agent 在循环里需要处理的错误码只有两个:<code>LIMB_GONE</code> 意味着 limb 已经不在了,先列一遍再重连;<code>SCREEN_CHANGED</code> 意味着画面已经推进,重新读屏再重试一次即可。这两个错误码都是可恢复的,设计上把&quot;停下来读一遍&quot;作为唯一正确的回应。</p>
+<h3 id="">整件事的边界</h3>
+<p>被控端拒绝安装新的运行体,这是默认设定;但每一种拒绝安装的环境都保留着它自己的显示或终端协议,因为这是它本身的运维人员到达它的方式。协议是安全模型里真正承重的那根梁,安全团队信任它、审计团队已经签过它、变更委员会也已经批准过它。讲这种协议的 Agent,是从被控端本来就开着的门进去;要求被控端安装新东西的 Agent,是在让安全团队花了好几年缩小的攻击面重新张开。前者铺得开,后者铺不开。</p>
+<p>DeskVNC 客户端是 Rust + Tauri 2 写的原生应用,跑在 Windows、macOS、Linux 上,以 MIT OR Apache-2.0 双重许可开源。<code>dvv</code> MCP 服务器、远端无需任何安装、操作员随时可以接管回来,这三件事合起来,就是这条协议路径的工程化形态。</p>
+<p>仓库在 <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">github.com/psmux/DeskVNC</a>,更多面向中文使用者的资料与更新在 <a href="https://deskvnc-hub.pages.dev/" target="_blank" rel="noopener noreferrer">deskvnc-hub.pages.dev</a>。</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "DeskVNC: 让 AI 智能体驱动真实远程桌面",
+  "description": "一台只允许你用 RDP 连进去的 Citrix 农场,一台不允许任何新服务的堡垒机,一台客户自己拥有、只让标准远程协助工具白名单放行的笔记本。它们看上去全然不同,却在一件事上态度一致:被控端不允许安装任何新的运行体。",
+  "url": "https://deskvnc-hub.pages.dev/zh",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

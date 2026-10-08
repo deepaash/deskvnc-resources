@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeskVNC: AIエージェントによるリモートデスクトップ操作</title>
+<meta name="description" content="RDP での接続しか許さない Citrix ファーム。新しいサービスを一切受け付けない踏み台サーバー。標準のリモート支援ツールだけをホワイトリストに入れている、顧客所有のノートパソコン。一見するとばらばらの三台ですが、たった一つの点で見事に足並みをそろえています。被制御側に新しいランタイムをインストールすることが、許されていないという点です。">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/ja">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DeskVNC: AIエージェントによるリモートデスクトップ操作">
+<meta property="og:description" content="RDP での接続しか許さない Citrix ファーム。新しいサービスを一切受け付けない踏み台サーバー。標準のリモート支援ツールだけをホワイトリストに入れている、顧客所有のノートパソコン。一見するとばらばらの三台ですが、たった一つの点で見事に足並みをそろえています。被制御側に新しいランタイムをインストールすることが、許されていないという点です。">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/ja">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" hreflang="en" href="https://deskvnc-hub.pages.dev/">
+<link rel="alternate" hreflang="x-default" href="https://deskvnc-hub.pages.dev/">
+<link rel="alternate" hreflang="zh" href="https://deskvnc-hub.pages.dev/zh">
+<link rel="alternate" hreflang="x-default" href="https://deskvnc-hub.pages.dev/">
+<link rel="alternate" hreflang="ja" href="https://deskvnc-hub.pages.dev/ja">
+<link rel="alternate" hreflang="x-default" href="https://deskvnc-hub.pages.dev/">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<hr>
+<p>title: &quot;「入れてくれない」機械ほど、AIエージェントが本来行くべき場所である&quot; description: &quot;Citrix、VDI、踏み台サーバー、そして顧客所有の端末は、いずれも被制御側にランタイムをインストールする方式を一様に拒みます。DeskVNC は、その機械たちがすでに喋っているプロトコルで AI エージェントを届け、遠端には何も入れず、しかも人がいつでも制御を取り戻せます。&quot; date: 2026-10-09 tags: [&quot;リモートデスクトップ&quot;, &quot;ai-エージェント&quot;, &quot;mcp&quot;, &quot;vnc&quot;, &quot;rdp&quot;, &quot;ssh&quot;, &quot;citrix&quot;, &quot;vdi&quot;]</p>
+<hr>
+<p>RDP での接続しか許さない Citrix ファーム。新しいサービスを一切受け付けない踏み台サーバー。標準のリモート支援ツールだけをホワイトリストに入れている、顧客所有のノートパソコン。一見するとばらばらの三台ですが、たった一つの点で見事に足並みをそろえています。<strong>被制御側に新しいランタイムをインストールすることが、許されていない</strong>という点です。</p>
+<p>皮肉なことに、それはまさに多くの自動化プロジェクトが触れたいと願っている一群の機械でもあります。RPA プラットフォームは、スクリーンショットを撮り、入力イベントを待ち受けて、制御面にデータを送り返す小さな常駐サービスをデスクトップにインストールします。開発者のラップトップではこれが実にうまく動きます。しかし本番環境に持ち出すと、次々と壁にぶつかります。被制御側がインストールを拒むというのは例外ではなく、規制環境や運用が成熟した環境で<strong>最も一般的な本番エンドポイントのデフォルト姿勢</strong>です。</p>
+<p>「エージェントで自動化したい」と言った瞬間に、その対象は最も触れにくい機械たちであるという皮肉な構図が、産業全体の足かせになってきました。壁をくぐり抜ける鍵は、別の場所にありました。</p>
+<p>壁をくぐり抜ける扉は、プロトコルの中にあります。以下、順を追って解きほぐします。</p>
+<h3 id="">インストール型エージェントを拒む六つの機械</h3>
+<p>以下の六つは別々の事情に見えますが、結論は一つです。<strong>被制御側に新しいソフトウェアを入れさせてくれない</strong>。RPA の自動化プログラムは、対象を「インストールできる機械」と「インストールできない機械」に分けて、後者を「自動化できない箱」リストに追いやることが、長年のデフォルトでした。DeskVNC はそのリストを空に近いところまで縮めます。</p>
+<p><strong>Citrix のパブリッシュアプリと RemoteApp。</strong> ユーザーが端末で見ているのはアプリの一枚窓だけで、プロセスもファイルシステムもクリップボードも GPU も、データセンターの Citrix ホスト側で動いています。被制御側という概念そのものが存在せず、インストール先となる「あの機械」はありません。端末はただのレンダラーであり、ホストは共有され、グループポリシーで固くロックされ、イメージ管理チームが RPA ランタイムを入れることを許しません。</p>
+<p><strong>プール型の VDI デスクトップ。</strong> ユーザーがサインインするたびに、ゴールデンイメージから派生した真新しいデスクトップが配られ、サインアウトで返却されます。ユーザープロファイルはリダイレクトされ、ディスクは仕様上非永続的です。ユーザー側にインストールしたものはセッションと一緒に捨て去られ、システム側にインストールしたものはイメージの規約違反になります。</p>
+<p><strong>踏み台サーバーと要塞ゲートウェイ。</strong> 踏み台サーバーの仕事は、何かを<strong>拒む</strong>ことです。セキュリティチームが選んだ数種類のプロトコルだけを通します。新しいソフトウェアのインストールを許した瞬間、それはもう踏み台サーバーではなくなり、監査面が一晩で膨れ上がります。</p>
+<p><strong>顧客所有で厳格に管理されたワークステーション。</strong> 顧客側の IT チームがアプリケーションのホワイトリストを敷き、AppLocker や MDM を動かし、ローカル管理者権限を剥奪し、未知のバイナリを止めます。代理店が何かをインストールしたければ、何ヶ月もかける調達手続きが必要になります。</p>
+<p><strong>キオスクとシェル差し替え。</strong> 機械全体が、一つのアプリか一つの Web ページだけを動かし、それ以外を一切表示しないように作り変えられています。Explorer は置き換えられ、タスクマネージャーは閉じられ、署名済みイメージが正規のフローで配布されます。別のバイナリの起動を許すようなシェルは、もはやキオスクのシェルではありません。</p>
+<p><strong>ロックダウンされたサーバーイメージ。</strong> 多くの場合 Windows Server Core で、デスクトップすらず、Explorer もなく、管理用ツールだけが厳選され、ローカルポリシーが「エージェントソフトのインストール禁止」と宣告しています。「デスクトップ体験」付きのバージョンであったとしても、変更管理委員会が申請を却下します。</p>
+<h3 id="">プロトコルの道筋が、これらの機械をどう次々につなぐか</h3>
+<p>上記六つの機械は、設計であるにせよコンプライアンスであるにせよ、<strong>すでに受け付けている</strong>表示プロトコルまたはターミナルプロトコルを一つだけ聴いています。Citrix ホストは運用向けに RDP を解放し、VNC サーバーはイメージと一緒に配布されます。踏み台サーバーは SSH を通します。顧客のノートパソコンには、顧客の IT 部門が標準のリモート支援ツールで遠端支援への道筋をすでに開いています。キオスクのイメージには、運用者向けに RDP が最初から仕込まれています。ロックダウンされたサーバーはそもそも RDP、WinRM、SSH で管理されるものです。</p>
+<p>DeskVNC の <code>dvv</code> 制御面は、この三つのプロトコルを直接喋ります。被制御側には何もインストールしません。クライアント側に新しいプロセスを持ち込むこともありません。人とエージェントが同じ一フレームの画面を見ているのは、構成上そうなるように作られているからです。リースのモデルは<strong>セッションごとに</strong>割り当てられ、いつでも取り消すことができます。オペレーターが被制御側でウィンドウをクリックした瞬間、エージェントから制御は人側へ戻り、その後の <code>dvv_click</code> は <code>LEASE_REVOKED</code> を返し、エージェントは直ちに停止すべきだと判断します。エージェントはオペレーターの操作を奪い返すのではなく、譲る側として最初から設計されています。誰の画面であるかが、いつも明確です。</p>
+<p>これは README の次の一文を、エンジニアリングの言葉で展開したものです。</p>
+<blockquote><p>資金を集めた Windows デスクトップ用エージェントツールは、すべてそのデスクトップにエージェントをインストールします。Citrix でも、VDI でも、踏み台サーバーでも、顧客所有のマシンでも、それは拒まれます。<strong>しかし、その機械がすでに喋っているプロトコルは通る</strong>のです。</p></blockquote>
+<h3 id="json">観察と実行のループ。実際の JSON、そのもの</h3>
+<p><code>dvv</code> MCP サーバーは DeskVNC クライアントと同じプロセスで動作します。クライアントが遠端への接続を保持し、エージェントは「何を打ち、どこをクリックするか」だけを判断します。クリックには、直近のスクリーンから読み取った <code>generation</code> が常に付与されます。<strong>古くなった画面を根拠に計算されたクリックは、プロトコルの層に到達する前</strong>に拒否されます。これはエージェント側にも被制御側にも「思っていた場所と違う場所にクリックが届く」という事故を残しません。</p>
+<p><code>dvv_hosts</code> で開ける対象を列挙し、<code>dvv_open</code> に <code>perceive: true</code> を付ければ接続と画面と状態が一度に整い、<code>dvv_control</code> で排他的な入力リースを取得します。そこから先は、エージェントは安定した二呼び出しのループに入ります。見て、動く。もう一度見て、もう一度動く。最初の呼び出しが機械を開き、二つ目以降はそのループを保ったまま動作し続けます。</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_hosts   {}                                    // what there is to open
+dvv_open    {&quot;hostId&quot;: &quot;&lt;id&gt;&quot;, &quot;perceive&quot;: true}  // -&gt; limbId, size, state
+dvv_control {&quot;limbId&quot;: &quot;...&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}
+dvv_click   {&quot;limbId&quot;: &quot;...&quot;, &quot;x&quot;: 700, &quot;y&quot;: 400, &quot;generation&quot;: 1}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;damage-crop&quot;}  // look again
+dvv_type    {&quot;limbId&quot;: &quot;...&quot;, &quot;text&quot;: &quot;notepad&quot;, &quot;wpm&quot;: 3000}
+dvv_key     {&quot;limbId&quot;: &quot;...&quot;, &quot;keys&quot;: &quot;meta+r&quot;}</code></pre></div>
+<p>MCP ツールを持たないエージェントでも、<code>dvv setup</code> を一度実行すれば、シェルから等価な経路が使えます。</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-sh">dvv hosts
+dvv limbs
+dvv open &lt;name or hostId&gt; --perceive
+dvv wait &lt;limbId&gt; --until connected
+dvv control acquire &lt;limbId&gt;
+dvv screen &lt;limbId&gt; --scale 0.5 --out ./dvv-screen.png
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt;
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt; --action double
+dvv type &lt;limbId&gt; &quot;text to type&quot;
+dvv key &lt;limbId&gt; super+r
+dvv wait &lt;limbId&gt; --until screen-stable
+dvv reconnect &lt;limbId&gt;
+dvv close &lt;limbId&gt;</code></pre></div>
+<p>一台の機械はそれ自体が独立した limb であり、独立したリースを携えています。つまり十台の機械があれば、それは十本の互いに干渉しないループです。<code>dvv_screen</code> は <code>imageSpace</code> 行も出力し、縮小後の座標と機械の実座標との換算関係を明示します。スケールを誤ったクリックは、幾何不一致のチェックではじかれます。<code>--scale 0.5</code> で見ているとき、画像の (mx, my) は機械の (mx<em>2, my</em>2) を意味します。エージェントはクリックの前に必ずこの換算を行い、換算を欠いたクリックは座標の不一致を理由に拒否されます。</p>
+<p><code>generation</code> は状態機械レベルの安全柵です。エージェントの内側ループは、見て、考えて、動くの三段です。この三段目の「動く」が、すでに存在しない世界に対して発動されれば、結果は深刻になります。<code>generation</code> は各フレームに付随する単調増加の整数で、次の入力には必ずこの値を添えて返さなければなりません。画面が前へ進んだ瞬間、古い <code>generation</code> を根拠にしたクリックは拒否され、エージェントはスクリーンを読み直し、現在の状況を反映した座標で再判断します。柵は追加の視覚モデルや計画モデルを必要とせず、二つの整数をすべての呼び出しに添えるだけで成立します。</p>
+<h3 id="">測定された数字</h3>
+<p>以下の数字は、プロジェクトが公式に公開しているベンチマークを、1920x1080 の本物の Windows デスクトップ越しに、LAN 環境で測定したものです。</p>
+<ul><li><code>dvv_open</code> と接続完了まで:<strong>4 ms</strong></li><li><code>dvv_control</code> によるリース取得:<strong>1 ms 未満</strong></li><li><code>dvv_screen</code> (<code>scale: 0.25</code>):<strong>25 ms</strong></li><li>一回の「観察してから実行する」サイクル:<strong>19 ms</strong>、およそ<strong>1 秒あたり 52 アクション</strong></li><li><code>dvv_type</code> (<code>wpm: 12000</code> 時):<strong>447 文字/秒</strong></li></ul>
+<p>19 ms という数字がわざわざ強調される理由は明白で、エージェントの外側ループ、つまり言語モデル呼び出しのコスト(低端で数百 ms、高端で秒単位)とは桁が違うからです。19 ms の内側ループであれば、モデルは二回の思考のあいだに数十回のアクションを挟めます。エージェントが画面を「待つ」必要はなく、人が低速な VNC を眺めながら待つような、あの待ち方とは無縁です。</p>
+<p>比較を一つ添えると、通常の対話セッションで人がクリックしてから次の描画を見るまでの知覚上のラウンドトリップがあります。19 ms の内側ループは、その人参知のラウンドトリップより短い数字です。エージェントは人のふりをしているのではなく、人には回せないループを回しています。</p>
+<h3 id="dvv-mcp"><code>dvv</code> MCP サーバーをエージェントに登録する</h3>
+<p>DeskVNC クライアントの配布物には、<code>dvv</code> サーバー本体と、それを説明するスキル記述が同梱されています。リポジトリの <code>skills/deskvnc/SKILL.md</code> はエージェントがスキルディレクトリを走査する際に読む入口であり、エージェント側が自律的にこの能力を発見できる導線が最初から敷かれています。</p>
+<p>これを一般的な MCP クライアントへ登録する手順は実質二段です。第一に、クライアントを<strong>操作する側</strong>の端末(Windows、macOS、Linux のいずれか)へインストールします。資格情報は OS のキーチェーンに預けられるので、初期状態で安全です。第二に、エージェント側の設定ファイルに <code>dvv</code> を MCP サーバーとして登録します。多くの場合は stdio 経由の一行設定で、実行ファイルのパスは OS ごとに次のようになります。Windows では <code>%LOCALAPPDATA%\DeskVNCViewer\dvv.exe</code> または <code>C:\Program Files\DeskVNCViewer\dvv.exe</code>、macOS では <code>/Applications/DeskVNCViewer.app/Contents/MacOS/dvv</code>、Linux では <code>/usr/bin/dvv</code> です。インストール直後から、エージェントは保存済みのホストを列挙し、選んで、開いて、回し始められます。</p>
+<p>登録が完了すると、エージェント側には <code>dvv_*</code> のツール群が並んでいます。ホスト一覧、接続、リース、画面取得、クリック、文字入力、キー、クリップボード、ファイル、ターミナル読み書き、SSH でのコマンド実行、そして <code>dvv_group_</code> で始まる複数台一括操作用のツールが揃っています。すべてはインストール直後から使えます。エージェント側に必要なのは接続先と権限の境界だけであり、被制御側に対する前提条件は何もありません。</p>
+<p>エージェントがループ内で扱うべきエラーコードは二つだけです。<code>LIMB_GONE</code> は limb が失われたことを意味し、<code>dvv_limbs</code> で再列挙してから開き直します。<code>SCREEN_CHANGED</code> は画面が先に進んだことを意味し、もう一度スクリーンを読み直してから再試行します。どちらも<strong>回復可能な</strong>エラーであり、設計上「一旦止まって読み直す」ことだけが正しい応答です。エラーは失敗ではなく、合図です。</p>
+<h3 id="">全体としての境界線</h3>
+<p>被制御側が新しいランタイムのインストールを拒むのはデフォルトです。しかし、インストールを拒むどの環境にも、その機械自身の運用者が普段使いで通している表示プロトコルかターミナルプロトコルが必ず残っています。セキュリティチームが信頼し、監査チームがすでに承認し、変更管理委員会がすでに通りにした道、それがプロトコルです。このプロトコルを喋るエージェントは、被制御側が<strong>はじめから開けてくれている扉</strong>を通ります。インストールを求めるエージェントは、セキュリティチームが何年もかけて縮めてきた面を、もう一度広げさせようとします。前者はスケールし、後者はしません。</p>
+<p>DeskVNC クライアントは Rust と Tauri 2 で書かれたネイティブアプリで、Windows、macOS、Linux で動作し、MIT OR Apache-2.0 のデュアルライセンスで公開されています。<code>dvv</code> MCP サーバー、遠端には何も入れないこと、そして人がいつでも制御を取り戻せること。この三つが合わさった姿が、プロトコルの道筋のエンジニアリングのかたちです。</p>
+<p>三つ目が重要です。人がいつでも制御を取り戻せるからこそ、はじめて自動化は「誰かのマシンで誰かが動かしている」という当たり前の事実の上に乗ります。エージェントは主役ではなく、客人です。客人は主人の画面を借りて動き、主人が戻ってきたら、席を譲る。それだけのことを、当たり前に、かつ高速にやる。それだけで、被制御側がインストールを拒む機械たちの多くは、もう「自動化できない機械」ではなくなります。</p>
+<p>リポジトリは <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">github.com/psmux/DeskVNC</a>、日本語環境向けの追加の資料と更新は <a href="https://deskvnc-hub.pages.dev/" target="_blank" rel="noopener noreferrer">deskvnc-hub.pages.dev</a> にあります。</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "DeskVNC: AIエージェントによるリモートデスクトップ操作",
+  "description": "RDP での接続しか許さない Citrix ファーム。新しいサービスを一切受け付けない踏み台サーバー。標準のリモート支援ツールだけをホワイトリストに入れている、顧客所有のノートパソコン。一見するとばらばらの三台ですが、たった一つの点で見事に足並みをそろえています。被制御側に新しいランタイムをインストールすることが、許されていないという点です。",
+  "url": "https://deskvnc-hub.pages.dev/ja",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The loop that does not blink: how an agent drives a real desktop</title>
+<meta name="description" content="The shape that decides whether an agent can drive a real machine is a single idea, and it has almost nothing to do with how clever the agent is. The idea is a loop: look at the scr">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/loop">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The loop that does not blink: how an agent drives a real desktop">
+<meta property="og:description" content="The shape that decides whether an agent can drive a real machine is a single idea, and it has almost nothing to do with how clever the agent is. The idea is a loop: look at the scr">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/loop">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<hr>
+<p>title: &quot;The loop that does not blink: an architectural idea for an agent that looks before it acts&quot; description: &quot;Why an observe-then-act loop at 19 ms a cycle is a different shape of automation from a human-shaped remote control, and what the generation fence does that blind commands cannot.&quot; date: 2026-10-09 tags: [&quot;ai-agents&quot;, &quot;mcp&quot;, &quot;remote-desktop&quot;, &quot;rust&quot;, &quot;vnc&quot;, &quot;rdp&quot;, &quot;ssh&quot;]</p>
+<hr>
+<p>The shape that decides whether an agent can drive a real machine is a single idea, and it has almost nothing to do with how clever the agent is. The idea is a loop: look at the screen, decide what to do, act, look again. A person running a remote desktop runs that loop too. The person runs it at the speed of human perception and human motor control. An agent can run it at the speed of a wire round trip. The interesting question is what becomes possible when the loop runs faster than a blink, and what keeps the loop honest when the screen it is reasoning about is older than the click it sends.</p>
+<p>Most agent designs answer that second question by accident. They fall back on a vision model to recheck the click, on a guard model to double check the call, or on a planner to reason about whether the click is sane. Every one of those fixes runs in the agent's outer loop, where the costs are hundreds of milliseconds. The architecture in <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">DeskVNC</a> answers it lower down, in the protocol layer, with a single integer that travels next to every input call. That integer is the generation counter, and the property it enforces is what makes the loop trustworthy at machine speed.</p>
+<p>This post is about the loop as an idea, not the loop as a recipe. The recipe is in the <a href="https://psmux.github.io/deskvnc/" target="_blank" rel="noopener noreferrer">project README</a> and in the installable agent skill that ships in the same repository. The idea is what changes when an agent is allowed to drive a machine at 52 actions a second, and what has to be true about the click before the click lands.</p>
+<h3 id="why-the-loop-is-the-load-bearing-piece">Why the loop is the load-bearing piece</h3>
+<p>Two different shapes of automation sit on top of a remote desktop. The first shape sends commands. It does not look, it issues a click at coordinates and trusts that the coordinates were right when the agent decided. It is the shape remote shells, RPA runtimes, and a lot of agent frameworks use today: issue a command, wait, issue the next command, hope. The hope is the load.</p>
+<p>The second shape sends commands after looking. It captures the screen, reasons about what is there, sends the click, captures the screen again, reasons again. The shape is older than agents. Every game-playing system that beats a human at a real-time game runs a loop of this kind. The screen is the world, the click is the action, the next screen is the next world.</p>
+<p>The cost of the loop is what divides the two shapes. A loop slow enough to matter is a tool the agent calls occasionally between thoughts. A loop that takes 19 milliseconds is fast enough that the agent can run dozens of them inside a single reasoning step, with frames to spare for the model to think in. The 19 millisecond figure is the wall clock for one full observe-then-act cycle on a 1920x1080 Windows desktop over a LAN: one <code>dvv_screen</code> at scale 0.25, one <code>dvv_click</code>, one <code>dvv_screen</code> of just the damage crop. The reciprocal is roughly 52 actions a second per machine. That is the cost the agent pays per decision, and it is small enough that the agent's model call no longer has to wait on the screen.</p>
+<p>The number changes the shape of what the agent can do. A loop at 19 ms means a button click can be checked before the menu collapses. Slow the loop by an order of magnitude and the agent finds the menu collapsed on the next read, then retries the whole flow. The first is a system that keeps up with the desktop. The second is a system that keeps up with the operator.</p>
+<h3 id="what-reading-before-acting-buys-that-blind-commands-cannot">What reading before acting buys that blind commands cannot</h3>
+<p>A blind command sends a click at coordinates the agent believes are correct. The belief is the entire safety story. The click lands wherever it lands, and the desktop has to be robust enough to absorb the click landing in the wrong place. Reading before acting turns that around. The screen is a typed object the agent can inspect, with elements that have semantics the agent can reason about. The click is the smallest possible action: do this one thing at this one location, against the screen the agent just saw.</p>
+<p>Two things follow. The first is that the agent can catch its own mistakes before they hit the wire. A button at coordinate (700, 400) can vanish between the read and the act. A dialog can appear on top. A dropdown can collapse. Without reading between, every one of those events is a missed click the operator finds out about later. With reading between, every one of those events is a new frame, a re-decision, and a click computed against the current state.</p>
+<p>The second thing is that the screen is small. A 1920x1080 desktop captured at scale 0.25 is about 112 kilobytes, and that captures the geometry an agent needs to decide where to click. Most agent decisions are about roughly button shaped regions at roughly the right coordinates. A quarter-scale picture is the right resolution for that decision, and the right resolution is what makes the 19 millisecond cycle honest. The wrong resolution would be a 1.5 megabyte full frame at 70 milliseconds a read, too slow to keep up with the screen. The agent picks the resolution it needs for the decision, and the protocol layer returns the matching picture.</p>
+<h3 id="the-generation-fence-and-why-it-makes-blind-risk-disappear">The generation fence, and why it makes blind risk disappear</h3>
+<p>The architectural property the protocol layer adds on top of reading is the generation counter. Every <code>dvv_screen</code> call returns a monotonic integer called the generation, tied to the screen the call returned. Every input tool call then requires the agent to include that generation in its arguments. The server checks, before the click leaves the binary, that the generation matches the current screen for that machine. If the screen has moved on, the click is refused. The agent gets a structured error and a fresh generation to read against, and the machine never sees the wrong click.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 47,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_click&quot;,
+    &quot;arguments&quot;: {
+      &quot;limbId&quot;: &quot;L-a1b2c3&quot;,
+      &quot;x&quot;: 700,
+      &quot;y&quot;: 400,
+      &quot;generation&quot;: 1284
+    }
+  }
+}</code></pre></div>
+<p>The agent in the example above clicked at (700, 400) against generation</p>
+<ol><li>If the screen has already moved to 1285, the server replies with the</li></ol>
+<p>refusal. The agent reads the screen again, picks up the new generation, and clicks against that one instead. The shape of that retry is the same as the first click, with one field updated.</p>
+<p>Two refusals show up enough to deserve names in agent code. They are real error codes the <code>dvv</code> MCP server returns, and they are the two every designated interaction has to handle:</p>
+<ul><li><code>LIMB_GONE</code>: the connection to the machine has dropped or the lease was cleared. The fix is to list limbs with <code>dvv_limbs</code>, then reopen the machine with <code>dvv_open</code> and start the loop again.</li><li><code>SCREEN_CHANGED</code>: the screen has moved between read and act. The fix is to read the screen again, then retry the click, type, or key.</li></ul>
+<p>The shape of both refusals is the same. The server tells the agent what went wrong, the agent takes the obvious recovery step, and the loop continues. There is no exception to catch, no retry storm to design around. The error is data, the data drives the next call, and the next call is the same loop.</p>
+<p>A third refusal shows up when the lease has been invalidated by a person who wants control back. That refusal is <code>LEASE_REVOKED</code>, and the agent's job is to check what happened with <code>dvv_control yield_status</code>. If a person took over, the agent stops and reports. If the lease simply lapsed, the agent reopens and continues. Both paths are the same operation underneath, because the loop was always the load-bearing piece.</p>
+<h3 id="why-ten-machines-are-ten-loops">Why ten machines are ten loops</h3>
+<p>The architectural payoff of the loop is that it composes. A single machine runs one loop: look, act, look. Two machines run two loops. Ten machines run ten loops. None of them share a lock. Each machine is its own limb in the protocol, with its own input queue, its own screen buffer, and its own generation counter. The MCP server inside <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">DeskVNC</a> holds them all in one process, but they are isolated from each other in the way the agent's plan needs them to be.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 8,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_hosts&quot;,
+    &quot;arguments&quot;: {}
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 9,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_open&quot;,
+    &quot;arguments&quot;: {
+      &quot;hostId&quot;: &quot;build-box-04&quot;,
+      &quot;perceive&quot;: true
+    }
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 10,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_open&quot;,
+    &quot;arguments&quot;: {
+      &quot;hostId&quot;: &quot;design-srv-01&quot;,
+      &quot;perceive&quot;: true
+    }
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 11,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_screen&quot;,
+    &quot;arguments&quot;: {
+      &quot;limbId&quot;: &quot;L-build&quot;,
+      &quot;form&quot;: &quot;damage-crop&quot;,
+      &quot;scale&quot;: 0.25
+    }
+  }
+}
+
+{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 12,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;dvv_screen&quot;,
+    &quot;arguments&quot;: {
+      &quot;limbId&quot;: &quot;L-design&quot;,
+      &quot;form&quot;: &quot;damage-crop&quot;,
+      &quot;scale&quot;: 0.25
+    }
+  }
+}</code></pre></div>
+<p>That block of JSON is two machines being read in one round trip. The agent holds the lease on <code>L-build</code> and the lease on <code>L-design</code> independently, so a stalled loop on the build box never blocks the loop on the design server. The screen reads are parallel, the generations are tracked separately, and the model call that decides what to click on each is its own reasoning step. A 19 ms loop on each machine is what makes the parallelism real: the cost of two reads is the cost of one, in the agent's mental budget.</p>
+<p>The same compositional property scales up. A hundred machines on a build farm can each be a limb, each with its own lease, each in its own loop, all driven by one MCP server in one client. The agent reads the hosts list, opens what it needs, reads the screens in parallel, decides what to type on each, types on each, and reads again. There is no central lock, no global queue, and no shared screen buffer to keep coherent. Each machine is its own loop and each loop is its own loop.</p>
+<h3 id="the-architectural-idea-in-one-sentence">The architectural idea in one sentence</h3>
+<p>Read the screen before acting, send the click against the screen you read, read the screen again before the next click, and let a counter called the generation reject any click that was computed against a world that no longer exists. Run the loop at the speed of the wire, not at the speed of a person's hand, and run it on as many machines in parallel as the estate holds. The loop is the agent's relationship to the machine. The generation is the agent's promise to the machine. The protocol layer keeps both.</p>
+<p>That promise is what changes the conversation from &quot;we cannot let an agent touch this box&quot; to &quot;the agent touches the box through the same protocol we already trust, with a counter on every click&quot;. The trust is not new. The door is the door the human operator uses. The agent is just another tenant on the lease, and the lease is revocable in a single keystroke the moment a person wants control back.</p>
+<p>The <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">DeskVNC repository</a> has the client, the MCP server, the installable agent skill, and the release history. The loop is the idea. The 19 millisecond cycle is the budget. The generation is the safety property. Together they are the architecture the rest of the agent loop assumes.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "The loop that does not blink: how an agent drives a real desktop",
+  "description": "The shape that decides whether an agent can drive a real machine is a single idea, and it has almost nothing to do with how clever the agent is. The idea is a loop: look at the scr",
+  "url": "https://deskvnc-hub.pages.dev/loop",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>
