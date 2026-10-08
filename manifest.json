@@ -14,7 +14,7 @@
       "deskvnc_setup"
     ]
   },
-  "generated": "2026-10-08T20:54:25.590Z",
+  "generated": "2026-10-08T21:04:58.119Z",
   "pages": [
     {
       "path": "/",
@@ -110,7 +110,7 @@
       "title": "How the DeskVNC agent benchmark was measured",
       "description": "A benchmark number without a method is a slogan. A number with a method is a fact. This page is the method behind the numbers the DeskVNC project publishes for the dvv agent contro",
       "lastmod": "2026-10-08",
-      "words": 1592
+      "words": 1583
     },
     {
       "path": "/README.md",
