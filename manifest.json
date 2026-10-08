@@ -1,0 +1,148 @@
+{
+  "name": "DeskVNC hub",
+  "origin": "https://deskvnc-hub.pages.dev",
+  "repository": "https://github.com/psmux/DeskVNC",
+  "mcp": {
+    "endpoint": "https://deskvnc-mcp.deepika-aaish.workers.dev/mcp",
+    "transport": "streamable-http",
+    "tools": [
+      "deskvnc_overview",
+      "deskvnc_machine_refusal",
+      "deskvnc_agent_loop",
+      "deskvnc_tool_reference",
+      "deskvnc_safety_model",
+      "deskvnc_setup"
+    ]
+  },
+  "generated": "2026-10-08T20:52:06.966Z",
+  "pages": [
+    {
+      "path": "/",
+      "url": "https://deskvnc-hub.pages.dev/",
+      "title": "DeskVNC: an AI agent that can drive your remote desktops",
+      "description": "DeskVNC is one native client for VNC, RDP and SSH on Windows, macOS and Linux. Its dvv MCP server lets an AI agent open a saved machine, read the screen and send clicks and keystrokes over the protocol, with nothing installed on the target.",
+      "lastmod": "2026-10-08",
+      "words": 1217
+    },
+    {
+      "path": "/benchmarks",
+      "url": "https://deskvnc-hub.pages.dev/benchmarks",
+      "title": "Benchmarks: 19 ms from screen to action on a real desktop",
+      "description": "Measured agent plane performance for DeskVNC: 19 ms per observe then act cycle, 4 ms to open and attach, under 1 ms to acquire control, 25 ms for a quarter scale screen and 447 characters per second typing, on a real 1920x1080 Windows desktop over a LAN.",
+      "lastmod": "2026-10-08",
+      "words": 942
+    },
+    {
+      "path": "/glossary",
+      "url": "https://deskvnc-hub.pages.dev/glossary",
+      "title": "Protocol glossary for remote desktop and MCP",
+      "description": "The words below are the ones a developer reaches for when reading the DeskVNC source, the docs for the protocols it speaks, or the diagnostics it ships. Every entry is two or three",
+      "lastmod": "2026-10-08",
+      "words": 1726
+    },
+    {
+      "path": "/guides",
+      "url": "https://deskvnc-hub.pages.dev/guides",
+      "title": "Guides: driving VNC, RDP and SSH machines with an AI agent",
+      "description": "Step by step DeskVNC guides: install on Windows, macOS and Linux, register the dvv MCP server with Claude Code and OpenCode, then the four call loop, file transfer, clipboard, SSH terminals, several machines at once, the keychain, discovery and Wake on LAN.",
+      "lastmod": "2026-10-08",
+      "words": 4798
+    },
+    {
+      "path": "/guides/claude-code",
+      "url": "https://deskvnc-hub.pages.dev/guides/claude-code",
+      "title": "Registering DeskVNC with Claude Code",
+      "description": "Claude Code is Anthropic",
+      "lastmod": "2026-10-08",
+      "words": 999
+    },
+    {
+      "path": "/guides/codex",
+      "url": "https://deskvnc-hub.pages.dev/guides/codex",
+      "title": "Registering DeskVNC with Codex CLI",
+      "description": "Codex CLI is OpenAI",
+      "lastmod": "2026-10-08",
+      "words": 1013
+    },
+    {
+      "path": "/guides/cursor",
+      "url": "https://deskvnc-hub.pages.dev/guides/cursor",
+      "title": "Registering DeskVNC with Cursor",
+      "description": "Cursor is the AI code editor that reads a project-scoped MCP config. Pairing it with DeskVNC",
+      "lastmod": "2026-10-08",
+      "words": 1000
+    },
+    {
+      "path": "/guides/gemini-cli",
+      "url": "https://deskvnc-hub.pages.dev/guides/gemini-cli",
+      "title": "Registering DeskVNC with Gemini CLI",
+      "description": "Gemini CLI is Google",
+      "lastmod": "2026-10-08",
+      "words": 1137
+    },
+    {
+      "path": "/guides/opencode",
+      "url": "https://deskvnc-hub.pages.dev/guides/opencode",
+      "title": "Registering DeskVNC with OpenCode",
+      "description": "OpenCode is the open source terminal agent that reads a project-scoped opencode.json. It speaks the Model Context Protocol over both stdio and Streamable HTTP, and DeskVNC",
+      "lastmod": "2026-10-08",
+      "words": 948
+    },
+    {
+      "path": "/guides/vscode",
+      "url": "https://deskvnc-hub.pages.dev/guides/vscode",
+      "title": "Registering DeskVNC with Visual Studio Code",
+      "description": "Visual Studio Code is the editor most teams already have open, and it speaks the Model Context Protocol. Pairing it with DeskVNC",
+      "lastmod": "2026-10-08",
+      "words": 1070
+    },
+    {
+      "path": "/mcp",
+      "url": "https://deskvnc-hub.pages.dev/mcp",
+      "title": "DeskVNC MCP endpoint: let any AI agent learn to drive a real desktop",
+      "description": "A hosted read-only MCP server with verified DeskVNC facts. Any MCP client can connect and get the exact dvv tool calls, the observe-then-act loop, and the safety model, in one call.",
+      "lastmod": "2026-10-08",
+      "words": 445
+    },
+    {
+      "path": "/methodology",
+      "url": "https://deskvnc-hub.pages.dev/methodology",
+      "title": "How the DeskVNC agent benchmark was measured",
+      "description": "A benchmark number without a method is a slogan. A number with a method is a fact. This page is the method behind the numbers the DeskVNC project publishes for the dvv agent contro",
+      "lastmod": "2026-10-08",
+      "words": 1592
+    },
+    {
+      "path": "/README.md",
+      "url": "https://deskvnc-hub.pages.dev/README.md",
+      "title": "README.md",
+      "description": "# DeskVNC resource hub DeskVNC is one native client for every machine you look after, whether it speaks **VNC**, **RDP** or **SSH**, written in **Rust** on **Tauri 2** and running ",
+      "lastmod": "2026-10-08",
+      "words": 1546
+    },
+    {
+      "path": "/refusal",
+      "url": "https://deskvnc-hub.pages.dev/refusal",
+      "title": "Machines that refuse an installed agent",
+      "description": "The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic",
+      "lastmod": "2026-10-08",
+      "words": 2027
+    },
+    {
+      "path": "/troubleshooting",
+      "url": "https://deskvnc-hub.pages.dev/troubleshooting",
+      "title": "When the agent cannot drive the machine: a symptom-first decision tree",
+      "description": "You set up dvv, your agent is in the loop, and something refuses to do what you asked. Most refusals are not the tool failing. They are the tool protecting you from a click that wo",
+      "lastmod": "2026-10-08",
+      "words": 1602
+    },
+    {
+      "path": "/usecases",
+      "url": "https://deskvnc-hub.pages.dev/usecases",
+      "title": "Use cases: what an agent driven remote desktop is for",
+      "description": "DeskVNC in practice: Citrix, VDI, jump hosts and client owned desktops that refuse installed agents, an agent that needs to read a screen and act, one window for a mixed Windows, macOS and Linux estate, and support sessions where a person takes the wheel back.",
+      "lastmod": "2026-10-08",
+      "words": 1508
+    }
+  ]
+}

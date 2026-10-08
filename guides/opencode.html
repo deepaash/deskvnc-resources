@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registering DeskVNC with OpenCode</title>
+<meta name="description" content="OpenCode is the open source terminal agent that reads a project-scoped opencode.json. It speaks the Model Context Protocol over both stdio and Streamable HTTP, and DeskVNC's dvv an">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/guides/opencode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Registering DeskVNC with OpenCode">
+<meta property="og:description" content="OpenCode is the open source terminal agent that reads a project-scoped opencode.json. It speaks the Model Context Protocol over both stdio and Streamable HTTP, and DeskVNC's dvv an">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/guides/opencode">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides">Guides</a>
+    <a href="/usecases">Use cases</a>
+    <a href="/benchmarks">Benchmarks</a>
+    <a href="/mcp">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="registering-deskvnc-with-opencode">Registering DeskVNC with OpenCode</h2>
+<p>OpenCode is the open source terminal agent that reads a project-scoped <code>opencode.json</code>. It speaks the Model Context Protocol over both stdio and Streamable HTTP, and DeskVNC's <code>dvv</code> answers on both. Pairing them turns OpenCode into an agent that can see and click a real remote desktop, with no software installed on the remote machine, and the user can take the wheel back with one click. The two transports are both verified end to end by the project's own workflow against the shipped build.</p>
+<h3 id="prerequisite-the-dvv-binary">Prerequisite: the <code>dvv</code> binary</h3>
+<p><code>dvv</code> is the executable that ships inside DeskVNCViewer. Install the viewer, open it once, and save a machine with its password. The binary lives next to the application:</p>
+<ul><li>macOS: <code>/Applications/DeskVNCViewer.app/Contents/MacOS/dvv</code></li><li>Windows: <code>%LOCALAPPDATA%\DeskVNCViewer\dvv.exe</code> for a per-user install, or <code>C:\Program Files\DeskVNCViewer\dvv.exe</code> for the all-users install</li><li>Linux: <code>/usr/bin/dvv</code> on the standard <code>.deb</code>. The AppImage copies <code>dvv</code> to <code>~/.local/share/DeskVNCViewer/bin/dvv</code></li></ul>
+<p>The path you point OpenCode at is the path the viewer installed.</p>
+<h3 id="the-registration-step">The registration step</h3>
+<p>OpenCode reads <code>opencode.json</code> at the project root, and <code>~/.config/opencode/opencode.json</code> for the user-level file. Both transports are documented and verified. On macOS:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;$schema&quot;: &quot;https://opencode.ai/config.json&quot;,
+  &quot;mcp&quot;: {
+    &quot;deskvnc&quot;: {
+      &quot;type&quot;: &quot;local&quot;,
+      &quot;command&quot;: [
+        &quot;/Applications/DeskVNCViewer.app/Contents/MacOS/dvv&quot;,
+        &quot;mcp&quot;,
+        &quot;--stdio&quot;
+      ],
+      &quot;enabled&quot;: true
+    },
+    &quot;deskvnc-http&quot;: {
+      &quot;type&quot;: &quot;remote&quot;,
+      &quot;url&quot;: &quot;http://127.0.0.1:7333/mcp&quot;,
+      &quot;headers&quot;: { &quot;Authorization&quot;: &quot;Bearer &lt;token&gt;&quot; },
+      &quot;enabled&quot;: true
+    }
+  }
+}</code></pre></div>
+<p>On Linux and Windows, swap the <code>command</code> path to <code>/usr/bin/dvv</code> or <code>%LOCALAPPDATA%\DeskVNCViewer\dvv.exe</code> and use the platform's path separator. The <code>deskvnc-http</code> entry is identical across platforms once you substitute a token. Set the token yourself with <code>DVV_MCP_TOKEN</code> so it survives a restart, and <code>dvv</code> mints one and prints it once if you do not.</p>
+<p>The same wiring from a terminal is <code>dvv setup opencode</code>. It writes the same MCP entries into <code>opencode.json</code>, keeping a backup and any comments, and repoints an older entry that names a stale <code>dvv</code>. The shell form covers the case where you do not want to hand-edit the JSON.</p>
+<h3 id="a-first-agent-session">A first agent session</h3>
+<p>OpenCode's free vision models can drive a Windows desktop end to end. A typical opening prompt is short:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code>You: Open &quot;build-server&quot; and tell me the load average.</code></pre></div>
+<p>The agent drives the four-call loop against the saved machine:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_hosts   {}
+dvv_open    {&quot;hostId&quot;: &quot;build-server&quot;, &quot;perceive&quot;: true}
+dvv_control {&quot;limbId&quot;: &quot;limb-2c4e&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;limb-2c4e&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}</code></pre></div>
+<p>The screenshot comes back with a <code>geometry_generation</code> of, say, 17. The agent reads the picture, finds the terminal, and acts:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_click   {&quot;limbId&quot;: &quot;limb-2c4e&quot;, &quot;x&quot;: 612, &quot;y&quot;: 348, &quot;generation&quot;: 17}
+dvv_type    {&quot;limbId&quot;: &quot;limb-2c4e&quot;, &quot;text&quot;: &quot;uptime&quot;, &quot;wpm&quot;: 3000}
+dvv_key     {&quot;limbId&quot;: &quot;limb-2c4e&quot;, &quot;keys&quot;: &quot;Return&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;limb-2c4e&quot;, &quot;form&quot;: &quot;damage-crop&quot;}</code></pre></div>
+<p>A second <code>dvv_screen</code> confirms the load average printed where the agent expected it. The whole observe-then-act cycle is well under fifty milliseconds on a LAN-attached machine, so the agent keeps up with a real human workflow.</p>
+<h3 id="the-coordinate-generation-fence">The coordinate <code>generation</code> fence</h3>
+<p><code>dvv_screen</code> reports two generations: a <code>geometry_generation</code> and a <code>content_generation</code>. Clicks must carry the geometry generation they were computed against. A click computed against a screen that has since resized is refused rather than landing somewhere unintended. Typing and keys carry no coordinate, so they need the content generation: a keystroke lands wherever focus is, and focus moves when a dialog or a new window appears. <code>dvv_type</code> and <code>dvv_key</code> are refused with <code>SCREEN_CHANGED</code> when something window-sized has repainted since the last <code>dvv_screen</code>.</p>
+<p>The fence protects the user. An agent that read the screen three seconds ago and decides to type into a coordinate it computed then is exactly the agent that ends up typing into a different window. A single fresh <code>dvv_screen</code> clears the fence, and there is no override. Terminal limbs are not fenced, because a PTY echoes what it is sent into a stream the agent reads back.</p>
+<h3 id="human-takeover">Human takeover</h3>
+<p>The person at the remote machine can take the wheel back at any moment. The viewer shows an &quot;agent driving&quot; badge while the agent holds the lease, and one click in the viewer hands the desktop back to the person. The plane releases every held key and every held button when a person takes over, so a half-finished drag cannot strand the desktop. The recipient can also revoke the agent's control or end the session outright. This is attended automation by design: the agent never has a stronger position than the person at the keyboard.</p>
+<h3 id="troubleshooting">Troubleshooting</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>Try this</th>
+</tr></thead><tbody>
+<tr>
+<td><code>LIMB_GONE</code> from any tool</td>
+<td>The viewer closed the connection or the last <code>dvv_close</code> detached the limb</td>
+<td>Run <code>dvv limbs</code> to list live limbs, then <code>dvv open &lt;host&gt;</code> again</td>
+</tr>
+<tr>
+<td><code>SCREEN_CHANGED</code> on <code>dvv_type</code> or <code>dvv_key</code></td>
+<td>A window-sized region repainted since the last <code>dvv_screen</code></td>
+<td>Call <code>dvv_screen</code> once, then retry the action</td>
+</tr>
+<tr>
+<td>OpenCode does not list <code>deskvnc</code> after editing <code>opencode.json</code></td>
+<td>The JSON did not parse, or the file is in the wrong place</td>
+<td>Validate the JSON, then restart OpenCode</td>
+</tr>
+<tr>
+<td>HTTP transport returns 401</td>
+<td>The bearer token changed</td>
+<td>Re-export <code>DVV_MCP_TOKEN</code> to the same value, then restart <code>dvv</code></td>
+</tr>
+<tr>
+<td>Click lands in the wrong place</td>
+<td>Stale <code>geometry_generation</code> after a resize</td>
+<td>Take a fresh <code>dvv_screen</code>, then send the new <code>generation</code> with the click</td>
+</tr>
+</tbody></table></div>
+<h3 id="links">Links</h3>
+<ul><li>Project: &lt;https://github.com/psmux/DeskVNC&gt;</li><li>Hub: &lt;https://deskvnc-hub.pages.dev/&gt;</li><li>Raw agent skill: &lt;https://github.com/psmux/DeskVNC/blob/main/skills/deskvnc/SKILL.md&gt;</li><li>Integration notes for every client: &lt;https://github.com/psmux/DeskVNC/blob/main/docs/AGENTS.md&gt;</li></ul>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Registering DeskVNC with OpenCode",
+  "description": "OpenCode is the open source terminal agent that reads a project-scoped opencode.json. It speaks the Model Context Protocol over both stdio and Streamable HTTP, and DeskVNC's dvv an",
+  "url": "https://deskvnc-hub.pages.dev/guides/opencode",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

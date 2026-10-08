@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benchmarks: 19 ms from screen to action on a real desktop</title>
+<meta name="description" content="Measured agent plane performance for DeskVNC: 19 ms per observe then act cycle, 4 ms to open and attach, under 1 ms to acquire control, 25 ms for a quarter scale screen and 447 characters per second typing, on a real 1920x1080 Windows desktop over a LAN.">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/benchmarks.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DeskVNC">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="Benchmarks: 19 ms from screen to action on a real desktop">
+<meta property="og:description" content="19 ms per observe then act cycle, 4 ms to open and attach, 25 ms for a quarter scale screen, 447 characters per second. Measured on a 1920x1080 Windows desktop over a LAN.">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/benchmarks.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Benchmarks: 19 ms from screen to action on a real desktop">
+<meta name="twitter:description" content="The measured agent plane numbers for DeskVNC, with the machine they were measured on.">
+<meta name="theme-color" content="#fbfcfd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0f13" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a58c2'/%3E%3Cpath d='M8 11h16M8 16h11M8 21h7' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark"><img src="logo.svg" alt="">DeskVNC</span> <span class="brand-sub">agent hub</span></a>
+    <nav aria-label="Main">
+      <ul class="nav">
+        <li><a href="/">Overview</a></li>
+        <li><a href="/guides">Guides</a></li>
+        <li><a href="/usecases">Use cases</a></li>
+        <li><a href="benchmarks.html" aria-current="page">Benchmarks</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="page-head">
+    <span class="eyebrow">Benchmarks</span>
+    <h1>19 ms from seeing a screen to acting on it</h1>
+    <p class="lede">These are the project's own measurements, taken on real hardware rather than a mock. The machine, the conditions and the meaning of each number are all below, so you can judge whether it fits the loop you intend to write.</p>
+  </div>
+</div>
+
+<main id="main" class="wrap">
+
+  <section class="section">
+    <ul class="metrics metrics-4">
+      <li>
+        <span class="metric-value">19 <span class="unit">ms</span></span>
+        <span class="metric-label">One observe then act cycle, start to settled result</span>
+      </li>
+      <li>
+        <span class="metric-value">52 <span class="unit">actions/s</span></span>
+        <span class="metric-label">What that cycle rate works out to</span>
+      </li>
+      <li>
+        <span class="metric-value">4 <span class="unit">ms</span></span>
+        <span class="metric-label">Open a saved machine and attach to it</span>
+      </li>
+      <li>
+        <span class="metric-value">447 <span class="unit">chars/s</span></span>
+        <span class="metric-label">Typing throughput at wpm 12000</span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="section" id="methodology">
+    <div class="section-head">
+      <span class="eyebrow">Methodology</span>
+      <h2>What was measured, and on what</h2>
+    </div>
+    <ul>
+      <li><strong>The machine:</strong> a real 1920x1080 Windows desktop, not a synthetic source and not a mock.</li>
+      <li><strong>The network:</strong> a LAN, so the figures are connection time rather than round trip time across a WAN.</li>
+      <li><strong>What a cycle is:</strong> the full loop: observe the screen, then act, and receive one settled result for the action. Not a single call, and not fire and forget.</li>
+      <li><strong>Where the figures come from:</strong> the project measures them as part of its own work, and publishes them in the README. They are reproduced here unchanged.</li>
+    </ul>
+    <div class="note">
+      <span class="note-label">What a LAN means for you</span>
+      <p>The wire between the machine running the agent and the target is an ordinary network connection, so the per call costs scale with the path between them. The shape of the loop is the same wherever the agent runs: a screen back, an action out, one settled result in.</p>
+    </div>
+  </section>
+
+  <section class="section" id="measurements">
+    <div class="section-head">
+      <span class="eyebrow">The numbers</span>
+      <h2>Every measured call</h2>
+    </div>
+    <div class="table-scroll">
+      <table class="spec">
+        <caption>Agent plane measurements, 1920x1080 Windows desktop over a LAN</caption>
+        <thead>
+          <tr>
+            <th scope="col">Call</th>
+            <th scope="col">Time</th>
+            <th scope="col">What it covers</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>dvv_open</code> and attach</th>
+            <td class="figure">4 ms</td>
+            <td>Spawning the session against a saved machine and attaching to it.</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>dvv_control</code> acquire</th>
+            <td class="figure">under 1 ms</td>
+            <td>Taking the control lease. <code>dvv_status</code> measures about the same.</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>dvv_screen</code> at <code>scale: 0.25</code></th>
+            <td class="figure">25 ms</td>
+            <td>A 112 KB image of the whole 1920x1080 framebuffer.</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>dvv_screen</code> at full scale</th>
+            <td class="figure">70 ms</td>
+            <td>A 1.5 MB image of the same frame.</td>
+          </tr>
+          <tr>
+            <th scope="row">One observe then act cycle</th>
+            <td class="figure">19 ms</td>
+            <td>Look, act, settle. About 52 actions per second.</td>
+          </tr>
+          <tr>
+            <th scope="row"><code>dvv_type</code> at <code>wpm: 12000</code></th>
+            <td class="figure">447 chars/s</td>
+            <td>Typing throughput, one key event pair per Unicode code point.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The full table, with the surrounding notes, is in the <a href="https://github.com/psmux/DeskVNC#let-an-agent-drive-it">project README</a>.</p>
+  </section>
+
+  <section class="section" id="in-a-loop">
+    <div class="section-head">
+      <span class="eyebrow">In practice</span>
+      <h2>Choosing the settings a loop should run at</h2>
+    </div>
+
+    <h3 class="subhead">Scale the screen, and the picture shrinks with it</h3>
+    <p>Use <code>scale: 0.25</code> unless you need to read small text. That is 25 ms and 112 KB instead of 70 ms and 1.5 MB, and the loop still has everything a decision needs on it. When you do need a region, ask for one at native resolution rather than asking for an image somebody will resize, because then the scale factor is one you did not choose and cannot invert.</p>
+
+    <figure class="code">
+      <figcaption>MCP <span class="tag">the loop</span></figcaption>
+<pre><code>dvv_screen {"limbId": "...", "form": "full", "scale": 0.25}
+dvv_click  {"limbId": "...", "x": 700, "y": 400, "generation": 1}
+dvv_wait   {"limbId": "...", "until": "screen-stable", "quietMs": 750}
+dvv_screen {"limbId": "...", "form": "damage-crop"}   # only what changed</code></pre>
+    </figure>
+    <p><code>damage-crop</code> is the cheapest useful answer and the one to use after an action: it reads only what moved.</p>
+
+    <h3 class="subhead">Raise wpm for throughput, not for speed</h3>
+    <p><code>wpm</code> is a correctness control rather than a politeness one. Neither wire carries an acknowledgement, so a machine that drops characters under a fast synthetic type does it silently. Raise it when you want throughput, and keep it moderate when the machine is remote enough that the input path is the one under test.</p>
+
+    <h3 class="subhead">Ask for the mirror only where you need one</h3>
+    <p><code>dvv_open</code> with <code>perceive: true</code> attaches a framebuffer mirror, which is what <code>dvv_screen</code> reads. It is off by default, and for good arithmetic: eight 4K mirrors cost 264 MB before anything is decoded. Open mirrors on the limbs you will look at, and leave terminal limbs without one, because a terminal limb answers with text.</p>
+  </section>
+
+  <section class="section" id="scale">
+    <div class="section-head">
+      <span class="eyebrow">Scale</span>
+      <h2>Ten machines are ten loops</h2>
+    </div>
+    <p>Every open machine is its own limb with its own lease. There is no shared queue and no shared lock, so an agent runs as many independent loops as it has machines, and a group runs one action on every member at once, concurrently, rather than in a loop.</p>
+
+    <figure class="code">
+      <figcaption>MCP <span class="tag">one action, every member</span></figcaption>
+<pre><code>dvv_group_open {"hostIds": ["&lt;a&gt;", "&lt;b&gt;", "&lt;c&gt;", "&lt;d&gt;", "&lt;e&gt;",
+                               "&lt;f&gt;", "&lt;g&gt;", "&lt;h&gt;", "&lt;i&gt;", "&lt;j&gt;"],
+                 "perceive": true}
+dvv_group_run  {"groupId": "...",
+                "action": "run",
+                "arguments": {"command": "uptime", "timeoutMs": 5000}}
+dvv_group_close {"groupId": "..."}</code></pre>
+    </figure>
+
+    <div class="note note-signal">
+      <span class="note-label">Two desktops at once</span>
+      <p>One agent holding two desktops and typing a different sum into a calculator on each finished both in 0.95 seconds. Every member starts before any finishes, and one member failing is reported for that member alone without stopping the others.</p>
+    </div>
+
+    <p><a href="guides.html#guide-7">Guide 7</a> has the group calls in full, including growing and shrinking a set.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="eyebrow">Read next</span>
+      <h2>Put the numbers to work</h2>
+    </div>
+    <ul class="grid grid-2">
+      <li class="card">
+        <h3><a href="guides.html#guide-3">The four call loop</a></h3>
+        <p>Read the library, open a machine, take the wheel, look, act, look again. Every argument in the manifest, with the four fences the plane enforces.</p>
+      </li>
+      <li class="card">
+        <h3><a href="usecases.html#case-agent">An agent that reads a screen and acts</a></h3>
+        <p>The situation this is measured for, and the calls that carry it out end to end.</p>
+      </li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <h2>DeskVNC</h2>
+      <p>One window for every machine you look after, whether it speaks VNC, RDP or SSH. Native, written in Rust on Tauri 2, running on Windows, macOS and Linux, dual licensed MIT OR Apache-2.0.</p>
+    </div>
+    <nav aria-label="Footer">
+      <h2>Links</h2>
+      <ul class="footer-links">
+        <li><a href="/">Overview</a></li>
+        <li><a href="/guides">Guides</a></li>
+        <li><a href="/usecases">Use cases</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC/releases/latest">Downloads</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC">Source repository</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC#let-an-agent-drive-it">README, agent section</a></li>
+        <li><a href="https://psmux.github.io/deskvnc/">Official page</a></li>
+      </ul>
+    </nav>
+    <p class="colophon">Every figure on this page is quoted from the project README, measured against a real 1920x1080 Windows desktop over a LAN.</p>
+  </div>
+</footer>
+
+</body>
+</html>

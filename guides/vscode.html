@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registering DeskVNC with Visual Studio Code</title>
+<meta name="description" content="Visual Studio Code is the editor most teams already have open, and it speaks the Model Context Protocol. Pairing it with DeskVNC's dvv turns Copilot Chat or any VS Code MCP client ">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/guides/vscode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Registering DeskVNC with Visual Studio Code">
+<meta property="og:description" content="Visual Studio Code is the editor most teams already have open, and it speaks the Model Context Protocol. Pairing it with DeskVNC's dvv turns Copilot Chat or any VS Code MCP client ">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/guides/vscode">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides">Guides</a>
+    <a href="/usecases">Use cases</a>
+    <a href="/benchmarks">Benchmarks</a>
+    <a href="/mcp">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="registering-deskvnc-with-visual-studio-code">Registering DeskVNC with Visual Studio Code</h2>
+<p>Visual Studio Code is the editor most teams already have open, and it speaks the Model Context Protocol. Pairing it with DeskVNC's <code>dvv</code> turns Copilot Chat (or any VS Code MCP client) into an agent that can see and click a real remote desktop. The protocol that connects to the machine is the same VNC, RDP, or SSH the remote already speaks, so nothing is installed on the remote target, and the user can take the wheel back with one click. The DeskVNC integration notes document the exact shape VS Code reads.</p>
+<h3 id="prerequisite-the-dvv-binary">Prerequisite: the <code>dvv</code> binary</h3>
+<p><code>dvv</code> is the executable that ships inside DeskVNCViewer. Install the viewer, open it once, and save a machine with its password so the agent has something concrete to reach. The binary lives next to the application:</p>
+<ul><li>macOS: <code>/Applications/DeskVNCViewer.app/Contents/MacOS/dvv</code></li><li>Windows: <code>%LOCALAPPDATA%\DeskVNCViewer\dvv.exe</code> for a per-user install, or <code>C:\Program Files\DeskVNCViewer\dvv.exe</code> for the all-users install</li><li>Linux: <code>/usr/bin/dvv</code> on the standard <code>.deb</code>. The AppImage copies <code>dvv</code> to <code>~/.local/share/DeskVNCViewer/bin/dvv</code></li></ul>
+<p>The path you point VS Code at is the path the viewer installed.</p>
+<h3 id="the-registration-step">The registration step</h3>
+<p>VS Code reads a workspace-scoped MCP file. Per the DeskVNC integration notes, the top-level key is <code>servers</code> (not <code>mcpServers</code>) and each entry takes a <code>&quot;type&quot;: &quot;stdio&quot;</code> field. On macOS, drop the following into <code>.vscode/mcp.json</code> in the project root:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;servers&quot;: {
+    &quot;deskvnc&quot;: {
+      &quot;type&quot;: &quot;stdio&quot;,
+      &quot;command&quot;: &quot;/Applications/DeskVNCViewer.app/Contents/MacOS/dvv&quot;,
+      &quot;args&quot;: [&quot;mcp&quot;, &quot;--stdio&quot;]
+    }
+  }
+}</code></pre></div>
+<p>On Linux, the same block with the system path:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;servers&quot;: {
+    &quot;deskvnc&quot;: {
+      &quot;type&quot;: &quot;stdio&quot;,
+      &quot;command&quot;: &quot;/usr/bin/dvv&quot;,
+      &quot;args&quot;: [&quot;mcp&quot;, &quot;--stdio&quot;]
+    }
+  }
+}</code></pre></div>
+<p>On Windows, use a JSON-safe path. Forward slashes keep the file portable:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;servers&quot;: {
+    &quot;deskvnc&quot;: {
+      &quot;type&quot;: &quot;stdio&quot;,
+      &quot;command&quot;: &quot;C:/Program Files/DeskVNCViewer/dvv.exe&quot;,
+      &quot;args&quot;: [&quot;mcp&quot;, &quot;--stdio&quot;]
+    }
+  }
+}</code></pre></div>
+<p>The DeskVNC integration notes call out that VS Code uses <code>servers</code> rather than <code>mcpServers</code> and takes <code>&quot;type&quot;: &quot;stdio&quot;</code> on the entry. The exact key name and type field are worth a glance at the current VS Code MCP docs, in case the schema is renamed in a future release, but the shape above is the documented one today.</p>
+<p>The shell form is <code>dvv setup</code>. It writes the same MCP entry, copies the skill into the skills directory VS Code reads, and points the agent at the right <code>dvv</code>. VS Code's MCP panel then shows <code>deskvnc</code> as connected.</p>
+<p>For the HTTP transport on any platform, replace <code>command</code> and <code>args</code> with a <code>url</code> plus a <code>headers</code> block that carries the bearer token:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;servers&quot;: {
+    &quot;deskvnc&quot;: {
+      &quot;type&quot;: &quot;http&quot;,
+      &quot;url&quot;: &quot;http://127.0.0.1:7333/mcp&quot;,
+      &quot;headers&quot;: { &quot;Authorization&quot;: &quot;Bearer &lt;token&gt;&quot; }
+    }
+  }
+}</code></pre></div>
+<h3 id="a-first-agent-session">A first agent session</h3>
+<p>Open the project, then ask the chat to do something on a saved machine:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code>You: Open &quot;build-server&quot; and list the open Visual Studio windows.</code></pre></div>
+<p>The agent drives the four-call loop. Behind the scenes, VS Code forwards each MCP call to the <code>dvv</code> subprocess:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_hosts   {}
+dvv_open    {&quot;hostId&quot;: &quot;build-server&quot;, &quot;perceive&quot;: true}
+dvv_control {&quot;limbId&quot;: &quot;limb-44d1&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;limb-44d1&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}</code></pre></div>
+<p>The screenshot comes back with a <code>geometry_generation</code> of, say, 41. The agent reads the picture, finds the Window menu, and acts:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_click   {&quot;limbId&quot;: &quot;limb-44d1&quot;, &quot;x&quot;: 92, &quot;y&quot;: 78, &quot;generation&quot;: 41}
+dvv_screen  {&quot;limbId&quot;: &quot;limb-44d1&quot;, &quot;form&quot;: &quot;damage-crop&quot;}</code></pre></div>
+<p>The follow-up screenshot confirms the menu opened where the agent expected it, and the agent reads the list of open windows out loud. The whole observe-then-act cycle is short enough that the agent keeps up with a real desktop.</p>
+<h3 id="the-coordinate-generation-fence">The coordinate <code>generation</code> fence</h3>
+<p>Every <code>dvv_screen</code> carries two fences: a <code>geometry_generation</code> and a <code>content_generation</code>. Clicks must echo the geometry generation they were computed against. A click computed against a screen that has since resized is refused rather than landing in the wrong place. Typing and keys are fenced by the content generation, and <code>dvv_type</code> plus <code>dvv_key</code> are refused with <code>SCREEN_CHANGED</code> when something window-sized has repainted since the last <code>dvv_screen</code>. The fence is the safety net that stops an agent from typing into a dialog that appeared over the editor it was aiming at. One <code>dvv_screen</code> clears the fence, <code>dvv_status</code> does not (it reads no pixels), and there is no override. Terminal limbs are not fenced, because a PTY echoes what it is sent into a stream the agent reads back.</p>
+<h3 id="human-takeover">Human takeover</h3>
+<p>The person at the remote machine can take control back at any moment. The viewer shows an &quot;agent driving&quot; badge while the agent holds the lease, and one click in the viewer hands the desktop back to the person. The plane releases every held key and every held button the moment a person takes over, so a half-finished drag cannot strand the desktop. The recipient can revoke the agent's control or end the session outright. This is attended automation by design: the agent never has a stronger position than the person at the keyboard.</p>
+<h3 id="troubleshooting">Troubleshooting</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>Try this</th>
+</tr></thead><tbody>
+<tr>
+<td><code>LIMB_GONE</code> from any tool</td>
+<td>The viewer closed the connection or the last <code>dvv_close</code> detached the limb</td>
+<td>Run <code>dvv limbs</code> to list live limbs, then <code>dvv open &lt;host&gt;</code> again</td>
+</tr>
+<tr>
+<td><code>SCREEN_CHANGED</code> on <code>dvv_type</code> or <code>dvv_key</code></td>
+<td>A window-sized region repainted since the last <code>dvv_screen</code></td>
+<td>Call <code>dvv_screen</code> once, then retry the action</td>
+</tr>
+<tr>
+<td>VS Code does not list <code>deskvnc</code> in the MCP panel</td>
+<td>JSON parse error, wrong file path, or wrong top-level key</td>
+<td>Validate the JSON, confirm the path is <code>.vscode/mcp.json</code>, and check the current VS Code MCP docs for the expected key name</td>
+</tr>
+<tr>
+<td><code>dvv</code> exits immediately on spawn</td>
+<td>The path in <code>command</code> is wrong or the file is not executable</td>
+<td>Run the <code>command</code> value in a shell and confirm <code>dvv mcp --stdio</code> starts</td>
+</tr>
+<tr>
+<td>Click lands in the wrong place</td>
+<td>Stale <code>geometry_generation</code> after a resize</td>
+<td>Take a fresh <code>dvv_screen</code>, then send the new <code>generation</code> with the click</td>
+</tr>
+</tbody></table></div>
+<h3 id="links">Links</h3>
+<ul><li>Project: &lt;https://github.com/psmux/DeskVNC&gt;</li><li>Hub: &lt;https://deskvnc-hub.pages.dev/&gt;</li><li>Raw agent skill: &lt;https://github.com/psmux/DeskVNC/blob/main/skills/deskvnc/SKILL.md&gt;</li><li>Integration notes for every client: &lt;https://github.com/psmux/DeskVNC/blob/main/docs/AGENTS.md&gt;</li></ul>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Registering DeskVNC with Visual Studio Code",
+  "description": "Visual Studio Code is the editor most teams already have open, and it speaks the Model Context Protocol. Pairing it with DeskVNC's dvv turns Copilot Chat or any VS Code MCP client ",
+  "url": "https://deskvnc-hub.pages.dev/guides/vscode",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

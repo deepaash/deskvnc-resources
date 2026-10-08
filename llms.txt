@@ -1,0 +1,35 @@
+# DeskVNC
+
+> DeskVNC is a native desktop client for VNC, RDP and SSH, written in Rust on Tauri 2, running on Windows, macOS and Linux. It ships an MCP server named dvv, so an AI agent can open a saved machine, observe the screen and send clicks and keystrokes over the ordinary protocol connection, with nothing installed on the remote machine, and a person at that machine can take control back at any moment.
+
+DeskVNC is dual licensed MIT OR Apache-2.0. Repository: https://github.com/psmux/DeskVNC
+
+## Start here
+
+- [Overview and the agent loop](https://deskvnc-hub.pages.dev/)
+- [Guides](https://deskvnc-hub.pages.dev/guides)
+- [Use cases](https://deskvnc-hub.pages.dev/usecases)
+- [Benchmarks](https://deskvnc-hub.pages.dev/benchmarks)
+
+## Machine readable endpoints
+
+- [llms.txt]: the index you are reading
+- [llms-full.txt](https://deskvnc-hub.pages.dev/llms-full.txt): every page with its description
+- [feed.xml](https://deskvnc-hub.pages.dev/feed.xml): RSS
+- [faq.json](https://deskvnc-hub.pages.dev/faq.json): questions and answers as JSON
+- [structured-data.json](https://deskvnc-hub.pages.dev/structured-data.json): JSON-LD
+- [manifest.json](https://deskvnc-hub.pages.dev/manifest.json): the page inventory
+- [MCP endpoint](https://deskvnc-hub.pages.dev/mcp.html): a hosted read-only MCP server with verified DeskVNC facts
+
+## Key verified facts
+
+- One observe-then-act cycle measured at 19 ms on a real 1920x1080 Windows desktop over LAN, about 52 actions per second.
+- dvv_open and attach in 4 ms. dvv_control acquire under 1 ms. dvv_screen at scale 0.25 in 25 ms. dvv_type at 447 characters per second.
+- Every click carries the generation of the screen it was computed against, so a click computed against a stale screen is refused rather than landing in the wrong place.
+- Every machine is its own limb with its own lease, so ten machines are ten independent loops.
+- The VNC core speaks RFB 3.3 through 3.8 with VeNCrypt, RA2 and Apple authentication, plus continuous updates.
+- The RDP core covers NLA, RemoteApp and resolution control. The SSH core gives a terminal that survives a drop, with SFTP and tunnels.
+
+## Optional
+
+- [All pages in this collection](https://deskvnc-hub.pages.dev/manifest.json)

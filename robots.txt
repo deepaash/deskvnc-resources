@@ -1,0 +1,8 @@
+# DeskVNC agent hub
+# Landing page, guides, use cases and benchmarks for DeskVNC.
+# Everything here is public documentation, welcome to any crawler.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://psmux.github.io/deskvnc/hub/sitemap.xml

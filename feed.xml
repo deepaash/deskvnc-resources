@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title><![CDATA[DeskVNC guides and references]]></title>
+    <link>https://deskvnc-hub.pages.dev/</link>
+    <description><![CDATA[Guides, references and copy-pasteable material for driving real remote desktops with an AI agent through DeskVNC over VNC, RDP and SSH.]]></description>
+    <language>en</language>
+    <atom:link href="https://deskvnc-hub.pages.dev/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title><![CDATA[DeskVNC: an AI agent that can drive your remote desktops]]></title>
+      <link>https://deskvnc-hub.pages.dev/</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/</guid>
+      <description><![CDATA[DeskVNC is one native client for VNC, RDP and SSH on Windows, macOS and Linux. Its dvv MCP server lets an AI agent open a saved machine, read the screen and send clicks and keystrokes over the protocol, with nothing installed on the target.]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Benchmarks: 19 ms from screen to action on a real desktop]]></title>
+      <link>https://deskvnc-hub.pages.dev/benchmarks</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/benchmarks</guid>
+      <description><![CDATA[Measured agent plane performance for DeskVNC: 19 ms per observe then act cycle, 4 ms to open and attach, under 1 ms to acquire control, 25 ms for a quarter scale screen and 447 characters per second typing, on a real 1920x1080 Windows desktop over a LAN.]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Protocol glossary for remote desktop and MCP]]></title>
+      <link>https://deskvnc-hub.pages.dev/glossary</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/glossary</guid>
+      <description><![CDATA[The words below are the ones a developer reaches for when reading the DeskVNC source, the docs for the protocols it speaks, or the diagnostics it ships. Every entry is two or three]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Guides: driving VNC, RDP and SSH machines with an AI agent]]></title>
+      <link>https://deskvnc-hub.pages.dev/guides</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/guides</guid>
+      <description><![CDATA[Step by step DeskVNC guides: install on Windows, macOS and Linux, register the dvv MCP server with Claude Code and OpenCode, then the four call loop, file transfer, clipboard, SSH terminals, several machines at once, the keychain, discovery and Wake on LAN.]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Registering DeskVNC with Claude Code]]></title>
+      <link>https://deskvnc-hub.pages.dev/guides/claude-code</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/guides/claude-code</guid>
+      <description><![CDATA[Claude Code is Anthropic]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Registering DeskVNC with Codex CLI]]></title>
+      <link>https://deskvnc-hub.pages.dev/guides/codex</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/guides/codex</guid>
+      <description><![CDATA[Codex CLI is OpenAI]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Registering DeskVNC with Cursor]]></title>
+      <link>https://deskvnc-hub.pages.dev/guides/cursor</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/guides/cursor</guid>
+      <description><![CDATA[Cursor is the AI code editor that reads a project-scoped MCP config. Pairing it with DeskVNC]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Registering DeskVNC with Gemini CLI]]></title>
+      <link>https://deskvnc-hub.pages.dev/guides/gemini-cli</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/guides/gemini-cli</guid>
+      <description><![CDATA[Gemini CLI is Google]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Registering DeskVNC with OpenCode]]></title>
+      <link>https://deskvnc-hub.pages.dev/guides/opencode</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/guides/opencode</guid>
+      <description><![CDATA[OpenCode is the open source terminal agent that reads a project-scoped opencode.json. It speaks the Model Context Protocol over both stdio and Streamable HTTP, and DeskVNC]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Registering DeskVNC with Visual Studio Code]]></title>
+      <link>https://deskvnc-hub.pages.dev/guides/vscode</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/guides/vscode</guid>
+      <description><![CDATA[Visual Studio Code is the editor most teams already have open, and it speaks the Model Context Protocol. Pairing it with DeskVNC]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[DeskVNC MCP endpoint: let any AI agent learn to drive a real desktop]]></title>
+      <link>https://deskvnc-hub.pages.dev/mcp</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/mcp</guid>
+      <description><![CDATA[A hosted read-only MCP server with verified DeskVNC facts. Any MCP client can connect and get the exact dvv tool calls, the observe-then-act loop, and the safety model, in one call.]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[How the DeskVNC agent benchmark was measured]]></title>
+      <link>https://deskvnc-hub.pages.dev/methodology</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/methodology</guid>
+      <description><![CDATA[A benchmark number without a method is a slogan. A number with a method is a fact. This page is the method behind the numbers the DeskVNC project publishes for the dvv agent contro]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[README.md]]></title>
+      <link>https://deskvnc-hub.pages.dev/README.md</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/README.md</guid>
+      <description><![CDATA[# DeskVNC resource hub DeskVNC is one native client for every machine you look after, whether it speaks **VNC**, **RDP** or **SSH**, written in **Rust** on **Tauri 2** and running ]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Machines that refuse an installed agent]]></title>
+      <link>https://deskvnc-hub.pages.dev/refusal</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/refusal</guid>
+      <description><![CDATA[The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[When the agent cannot drive the machine: a symptom-first decision tree]]></title>
+      <link>https://deskvnc-hub.pages.dev/troubleshooting</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/troubleshooting</guid>
+      <description><![CDATA[You set up dvv, your agent is in the loop, and something refuses to do what you asked. Most refusals are not the tool failing. They are the tool protecting you from a click that wo]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[Use cases: what an agent driven remote desktop is for]]></title>
+      <link>https://deskvnc-hub.pages.dev/usecases</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/usecases</guid>
+      <description><![CDATA[DeskVNC in practice: Citrix, VDI, jump hosts and client owned desktops that refuse installed agents, an agent that needs to read a screen and act, one window for a mixed Windows, macOS and Linux estate, and support sessions where a person takes the wheel back.]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

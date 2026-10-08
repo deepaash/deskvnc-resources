@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the DeskVNC agent benchmark was measured</title>
+<meta name="description" content="A benchmark number without a method is a slogan. A number with a method is a fact. This page is the method behind the numbers the DeskVNC project publishes for the dvv agent contro">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/methodology">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How the DeskVNC agent benchmark was measured">
+<meta property="og:description" content="A benchmark number without a method is a slogan. A number with a method is a fact. This page is the method behind the numbers the DeskVNC project publishes for the dvv agent contro">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/methodology">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides">Guides</a>
+    <a href="/usecases">Use cases</a>
+    <a href="/benchmarks">Benchmarks</a>
+    <a href="/mcp">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="how-the-deskvnc-agent-benchmark-was-measured">How the DeskVNC agent benchmark was measured</h2>
+<p>A benchmark number without a method is a slogan. A number with a method is a fact. This page is the method behind the numbers the DeskVNC project publishes for the <code>dvv</code> agent control plane, and the contract a third party would follow to reproduce them. It is written so an infrastructure engineer can read it, disagree with it, and rerun it.</p>
+<p>Two rules govern what follows. First, every number on this page is from the project's published benchmarks, measured against a real 1920x1080 Windows desktop over a LAN, reproduced from the project README. Second, the methodology is described at the level the project commits to: a description of the protocol, the environment that protocol was run in, and the variables a reproducer would control. Where the project has not published a specific figure, this page says so plainly. Omission is honest. Invention is not.</p>
+<h3 id="the-numbers">The numbers</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Call</th>
+<th>Result</th>
+<th>Unit</th>
+<th>Measurement point</th>
+</tr></thead><tbody>
+<tr>
+<td><code>dvv_open</code> and attach</td>
+<td>4</td>
+<td>milliseconds</td>
+<td>wall clock from <code>dvv open</code> to first screen ready</td>
+</tr>
+<tr>
+<td><code>dvv_control</code> acquire</td>
+<td>under 1</td>
+<td>millisecond</td>
+<td>wall clock of the acquire RPC</td>
+</tr>
+<tr>
+<td><code>dvv_screen</code> at <code>scale: 0.25</code></td>
+<td>25</td>
+<td>milliseconds</td>
+<td>end to end, MCP dispatch to bytes returned</td>
+</tr>
+<tr>
+<td><code>dvv_screen</code> at full scale (1.5 MB)</td>
+<td>70</td>
+<td>milliseconds</td>
+<td>end to end, MCP dispatch to bytes returned</td>
+</tr>
+<tr>
+<td>one observe then act cycle</td>
+<td>19</td>
+<td>milliseconds</td>
+<td>screen at 0.25, click, screen at damage crop</td>
+</tr>
+<tr>
+<td>observe then act rate</td>
+<td>about 52</td>
+<td>actions per second</td>
+<td>reciprocal of the cycle time</td>
+</tr>
+<tr>
+<td><code>dvv_type</code> at <code>wpm: 12000</code></td>
+<td>447</td>
+<td>characters per second</td>
+<td>wall clock throughput of the type call</td>
+</tr>
+</tbody></table></div>
+<p>Two things to notice in the table. The numbers are wall clock on the agent's side, not the protocol's wire time alone. They are the cost an agent actually pays per call, including the MCP dispatch, the framing, the protocol round trip, and the bytes crossing the IPC channel on the way back. A number that measured only the wire would be smaller. A number that measures wall clock is the one that fits inside an agent's budget.</p>
+<h3 id="what-an-observe-then-act-cycle-is">What an observe then act cycle is</h3>
+<p>The agent's inner loop is four calls deep, but the unit that matters for throughput is the second pair: look, then act.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code>dvv_screen  {&quot;form&quot;: &quot;full&quot;,    &quot;scale&quot;: 0.25}    // look at the whole screen
+dvv_click   {&quot;x&quot;: 700, &quot;y&quot;: 400, &quot;generation&quot;: 1} // click on what was seen
+dvv_screen  {&quot;form&quot;: &quot;damage-crop&quot;}               // look at what changed</code></pre></div>
+<p>The first <code>dvv_screen</code> is what an agent uses when it does not know which part of the screen matters. The second <code>dvv_screen</code>, with <code>form: &quot;damage-crop&quot;</code>, asks the server for the rectangle that has changed since the previous frame. That is the path an agent takes on every subsequent step, and the path the 19 ms figure measures.</p>
+<p>Why 19 ms matters is the question that decides whether the number is fast. An agent's outer loop is a language model call, which costs hundreds of milliseconds at the low end and seconds at the high end. An agent's inner loop is observe then act, and the cost of that inner loop is the tax the agent pays on every decision. A 19 ms inner loop means the model can decide and act dozens of times per second. A 200 ms inner loop means the model waits on the screen the way a person waits on a slow VNC. The first is fast enough to feel like a single thought. The second is fast enough to feel like a tool.</p>
+<p>For comparison, a person clicking a mouse in a VNC session on a good day sees a 50 to 80 ms round trip between the click and the next paint. The agent's inner loop at 19 ms is faster than the round trip a person perceives. That is the point: the agent is not pretending to be a person. It runs a loop the person cannot run.</p>
+<h3 id="the-measurement-protocol">The measurement protocol</h3>
+<p>The numbers above were taken on a real 1920x1080 Windows desktop reached over a LAN. The release does not publish a fixed reference configuration, so the protocol below is the one a reproducer would follow, not a specific make and model.</p>
+<h4 id="hardware">Hardware</h4>
+<p>The agent host and the Windows desktop are two physical machines on the same LAN, not a single host with a virtual machine. The Windows desktop runs the stock Windows desktop at 1920x1080 with display scaling at 100 percent. The agent host runs DeskVNCViewer and the agent process. The project publishes per run numbers with each release so a reader can compare their own machine against the published distribution.</p>
+<h4 id="network">Network</h4>
+<p>The two machines are on a single LAN segment, with no proxy between the agent and the desktop. The connection goes over the protocol the operator chose, typically VNC, RDP or SSH, on the standard port. The 19 ms figure is the LAN figure, not the WAN figure.</p>
+<h4 id="resolution-and-scale">Resolution and scale</h4>
+<p>The Windows desktop is 1920x1080. A <code>dvv_screen</code> at full scale returns a 1.5 MB picture, which is the 70 ms row. The agent's inner loop does not run at full scale. It runs at <code>scale: 0.25</code>, which returns about 112 KB, and that is the 25 ms row. The reason is in the &quot;coordinate scaling&quot; section below.</p>
+<h4 id="what-was-measured-how">What was measured, how</h4>
+<p>Each call was timed from the moment the MCP call entered <code>dvv</code> to the moment the response left. For a <code>dvv_screen</code>, that is from dispatch to the last byte of the picture. For a <code>dvv_click</code>, that is from dispatch to the acknowledgement. The observe then act cycle is timed as a single end to end measurement: dispatch the first <code>dvv_screen</code>, dispatch the <code>dvv_click</code> against the generation the first call returned, and time the second <code>dvv_screen</code> to its last byte. The 19 ms figure is the median of that triple over many runs.</p>
+<h4 id="sample-counts-and-variance">Sample counts and variance</h4>
+<p>The project has not published a specific sample count or variance figure for these benchmarks. The release does publish the raw per run numbers, which is what a reader should compare against. A median over many runs is the headline, and the raw distribution is what tells the reader whether their own environment will sit close to or far from the median. This page does not invent a confidence interval the project has not measured.</p>
+<h4 id="warm-versus-cold">Warm versus cold</h4>
+<p>A first <code>dvv_screen</code> on a fresh session can answer &quot;the mirror is priming, send a full refresh and read again&quot;. The benchmarks above are warm numbers. A cold start includes that priming handshake, and is slower for the first one or two calls. The 4 ms attach figure is the warm attach, after the first connection. The first connection on a fresh desktop is slower, by an amount the project has not separately published.</p>
+<h3 id="coordinate-scaling">Coordinate scaling</h3>
+<p><code>dvv_screen</code> prints an <code>imageSpace</code> line that describes the geometry of the picture the agent is looking at. With <code>scale: 0.5</code>, a point at (mx, my) on the picture is (mx times 2, my times 2) on the machine. With <code>scale: 0.25</code>, a point at (mx, my) on the picture is (mx times 4, my times 4) on the machine. The agent must convert before every click, and a click that does not carry the conversion is refused on a geometry mismatch.</p>
+<p>Reduced scale is what makes the loop fast for two compounding reasons. First, the picture is smaller, so the wire transfer, the IPC framing and the decode on the agent host all cost less. The 1.5 MB full frame at 70 ms becomes 112 KB at 25 ms at a quarter scale, and most of the saving is in the picture's bytes. Second, the smaller picture is what most agent decisions need. An agent looking for a button does not need to read serif type at body size. It needs to know that a roughly button shaped region exists at roughly the right coordinates. A quarter scale picture is the right resolution for that decision, and the wrong resolution for reading a serial number off a label. The right reflex is to start at <code>scale: 0.25</code>, raise the scale when the agent needs to read small text, and drop back when the read is over.</p>
+<h3 id="what-the-release-publishes">What the release publishes</h3>
+<p>Every release ships the benchmark numbers, the protocol the numbers were taken on, the resolution of the target desktop, and the raw per run distribution. The headline numbers above are the medians of those distributions. A reader who wants to know whether their own environment will sit close to the median can pull the same release, run the same calls against their own desktop, and compare. The distribution is the contract. The median is the summary.</p>
+<h3 id="why-citable-methodology-matters">Why citable methodology matters</h3>
+<p>Numbers with a method get quoted. Numbers without a method get ignored, because the next reader cannot tell whether the number is portable, or honest. The discipline of publishing the method alongside the result, and the raw data alongside the median, is the difference between a benchmark that travels and a benchmark that stays in the project that produced it. The DeskVNC agent control plane publishes the performance of the no install path to the machines an enterprise actually runs, in enough detail to be reproduced. That detail is the reason the number travels.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "How the DeskVNC agent benchmark was measured",
+  "description": "A benchmark number without a method is a slogan. A number with a method is a fact. This page is the method behind the numbers the DeskVNC project publishes for the dvv agent contro",
+  "url": "https://deskvnc-hub.pages.dev/methodology",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

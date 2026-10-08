@@ -1,0 +1,48 @@
+# DeskVNC, full reference
+
+> DeskVNC is a native desktop client for VNC, RDP and SSH, written in Rust on Tauri 2, running on Windows, macOS and Linux, dual licensed MIT OR Apache-2.0. It ships an MCP server named dvv that lets an AI agent drive a real remote desktop over the protocol the machine already speaks, with nothing installed on the remote machine and with a person able to take control back at any moment. Repository: https://github.com/psmux/DeskVNC
+
+## The observe-then-act loop
+
+An agent drives a desktop by looping: `dvv_hosts` lists what there is to open, `dvv_open` with `perceive: true` returns a limbId, a size and a state, `dvv_control` with `action: "acquire"` takes the lease, `dvv_screen` reads the picture and prints an `imageSpace` line plus a `generation`, `dvv_click` acts while carrying that generation, `dvv_screen` with `form: "damage-crop"` looks again at only the region that changed, then `dvv_type` and `dvv_key` continue.
+
+```jsonc
+dvv_hosts   {}
+dvv_open    {"hostId": "<id>", "perceive": true}
+dvv_control {"limbId": "...", "action": "acquire"}
+dvv_screen  {"limbId": "...", "form": "full", "scale": 0.25}
+dvv_click   {"limbId": "...", "x": 700, "y": 400, "generation": 1}
+```
+
+Measured on a real 1920x1080 Windows desktop over LAN, one full observe-then-act cycle takes 19 ms, about 52 actions per second. dvv_open and attach take 4 ms, dvv_control acquire is under 1 ms, dvv_screen at scale 0.25 takes 25 ms, and dvv_type runs at 447 characters per second.
+
+## The generation fence
+
+A click computed against a screen that has since changed is refused rather than landing in the wrong place, and typing and key presses are refused until the screen has been read since it last changed significantly. With scale 0.5, a point at (mx, my) on the picture is (mx*2, my*2) on the machine. Handle LIMB_GONE by listing limbs and reopening the machine, and SCREEN_CHANGED by reading the screen again and retrying.
+
+## Human take-back
+
+The person at the remote machine can take control back at any moment, and can revoke control or end the session. In an attended Boundary support session they approve the connection first, no account is required, and Boundary tries a direct encrypted path before falling back to a relay.
+
+## Machines that refuse installed agents
+
+Funded tools that let an agent use a Windows desktop all install an agent on that desktop, which is refused on Citrix, on VDI, on jump hosts and on anything a client owns. DeskVNC speaks VNC, RDP or SSH, the protocols those machines already answer on, so the connection the environment already permits is the one the agent travels over.
+
+## Pages
+
+- [DeskVNC: an AI agent that can drive your remote desktops](https://deskvnc-hub.pages.dev/): DeskVNC is one native client for VNC, RDP and SSH on Windows, macOS and Linux. Its dvv MCP server lets an AI agent open a saved machine, read the screen and send clicks and keystrokes over the protocol, with nothing installed on the target.
+- [Benchmarks: 19 ms from screen to action on a real desktop](https://deskvnc-hub.pages.dev/benchmarks): Measured agent plane performance for DeskVNC: 19 ms per observe then act cycle, 4 ms to open and attach, under 1 ms to acquire control, 25 ms for a quarter scale screen and 447 characters per second typing, on a real 1920x1080 Windows desktop over a LAN.
+- [Protocol glossary for remote desktop and MCP](https://deskvnc-hub.pages.dev/glossary): The words below are the ones a developer reaches for when reading the DeskVNC source, the docs for the protocols it speaks, or the diagnostics it ships. Every entry is two or three
+- [Guides: driving VNC, RDP and SSH machines with an AI agent](https://deskvnc-hub.pages.dev/guides): Step by step DeskVNC guides: install on Windows, macOS and Linux, register the dvv MCP server with Claude Code and OpenCode, then the four call loop, file transfer, clipboard, SSH terminals, several machines at once, the keychain, discovery and Wake on LAN.
+- [Registering DeskVNC with Claude Code](https://deskvnc-hub.pages.dev/guides/claude-code): Claude Code is Anthropic
+- [Registering DeskVNC with Codex CLI](https://deskvnc-hub.pages.dev/guides/codex): Codex CLI is OpenAI
+- [Registering DeskVNC with Cursor](https://deskvnc-hub.pages.dev/guides/cursor): Cursor is the AI code editor that reads a project-scoped MCP config. Pairing it with DeskVNC
+- [Registering DeskVNC with Gemini CLI](https://deskvnc-hub.pages.dev/guides/gemini-cli): Gemini CLI is Google
+- [Registering DeskVNC with OpenCode](https://deskvnc-hub.pages.dev/guides/opencode): OpenCode is the open source terminal agent that reads a project-scoped opencode.json. It speaks the Model Context Protocol over both stdio and Streamable HTTP, and DeskVNC
+- [Registering DeskVNC with Visual Studio Code](https://deskvnc-hub.pages.dev/guides/vscode): Visual Studio Code is the editor most teams already have open, and it speaks the Model Context Protocol. Pairing it with DeskVNC
+- [DeskVNC MCP endpoint: let any AI agent learn to drive a real desktop](https://deskvnc-hub.pages.dev/mcp): A hosted read-only MCP server with verified DeskVNC facts. Any MCP client can connect and get the exact dvv tool calls, the observe-then-act loop, and the safety model, in one call.
+- [How the DeskVNC agent benchmark was measured](https://deskvnc-hub.pages.dev/methodology): A benchmark number without a method is a slogan. A number with a method is a fact. This page is the method behind the numbers the DeskVNC project publishes for the dvv agent contro
+- [README.md](https://deskvnc-hub.pages.dev/README.md): # DeskVNC resource hub DeskVNC is one native client for every machine you look after, whether it speaks **VNC**, **RDP** or **SSH**, written in **Rust** on **Tauri 2** and running 
+- [Machines that refuse an installed agent](https://deskvnc-hub.pages.dev/refusal): The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic
+- [When the agent cannot drive the machine: a symptom-first decision tree](https://deskvnc-hub.pages.dev/troubleshooting): You set up dvv, your agent is in the loop, and something refuses to do what you asked. Most refusals are not the tool failing. They are the tool protecting you from a click that wo
+- [Use cases: what an agent driven remote desktop is for](https://deskvnc-hub.pages.dev/usecases): DeskVNC in practice: Citrix, VDI, jump hosts and client owned desktops that refuse installed agents, an agent that needs to read a screen and act, one window for a mixed Windows, macOS and Linux estate, and support sessions where a person takes the wheel back.

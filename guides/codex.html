@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registering DeskVNC with Codex CLI</title>
+<meta name="description" content="Codex CLI is OpenAI's terminal agent, and it speaks the Model Context Protocol over stdio. Pairing it with dvv turns the agent into something that can see a real remote desktop, cl">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/guides/codex">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Registering DeskVNC with Codex CLI">
+<meta property="og:description" content="Codex CLI is OpenAI's terminal agent, and it speaks the Model Context Protocol over stdio. Pairing it with dvv turns the agent into something that can see a real remote desktop, cl">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/guides/codex">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides">Guides</a>
+    <a href="/usecases">Use cases</a>
+    <a href="/benchmarks">Benchmarks</a>
+    <a href="/mcp">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="registering-deskvnc-with-codex-cli">Registering DeskVNC with Codex CLI</h2>
+<p>Codex CLI is OpenAI's terminal agent, and it speaks the Model Context Protocol over stdio. Pairing it with <code>dvv</code> turns the agent into something that can see a real remote desktop, click buttons, and type, all through the VNC, RDP, or SSH protocol that the remote machine already speaks. No software is installed on the remote target, and the user can take the wheel back with one click. The DeskVNC documentation ships the exact <code>~/.codex/config.toml</code> shape for this pairing, and <code>dvv setup codex</code> writes the same entry for you.</p>
+<h3 id="prerequisite-the-dvv-binary">Prerequisite: the <code>dvv</code> binary</h3>
+<p><code>dvv</code> is the executable that ships inside DeskVNCViewer. Install the viewer, open it once, and save a machine with its password so Codex can reach it. The binary sits next to the application:</p>
+<ul><li>macOS: <code>/Applications/DeskVNCViewer.app/Contents/MacOS/dvv</code></li><li>Windows: <code>%LOCALAPPDATA%\DeskVNCViewer\dvv.exe</code> for a per-user install, or <code>C:\Program Files\DeskVNCViewer\dvv.exe</code> for the all-users install</li><li>Linux: <code>/usr/bin/dvv</code> on the standard <code>.deb</code>. The AppImage copies <code>dvv</code> to <code>~/.local/share/DeskVNCViewer/bin/dvv</code></li></ul>
+<p>The path you point Codex at is the path the viewer installed.</p>
+<h3 id="the-registration-step">The registration step</h3>
+<p>Codex reads <code>~/.codex/config.toml</code>. Add an <code>[mcp_servers.deskvnc]</code> table that names the <code>dvv</code> binary and the <code>mcp --stdio</code> arguments. The shape is documented in <code>docs/AGENTS.md</code> in the DeskVNC repository.</p>
+<p>On macOS, append this to <code>~/.codex/config.toml</code>:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-toml">[mcp_servers.deskvnc]
+command = &quot;/Applications/DeskVNCViewer.app/Contents/MacOS/dvv&quot;
+args = [&quot;mcp&quot;, &quot;--stdio&quot;]</code></pre></div>
+<p>On Linux, the same table with the system path:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-toml">[mcp_servers.deskvnc]
+command = &quot;/usr/bin/dvv&quot;
+args = [&quot;mcp&quot;, &quot;--stdio&quot;]</code></pre></div>
+<p>On Windows, use a TOML-safe path. The cleanest way is to add the binary's directory to the user's <code>PATH</code> once, then name the bare <code>dvv.exe</code>:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-toml">[mcp_servers.deskvnc]
+command = &quot;dvv.exe&quot;
+args = [&quot;mcp&quot;, &quot;--stdio&quot;]</code></pre></div>
+<p>If you would rather not edit the path, set <code>command</code> to the absolute path with forward slashes, which TOML handles cleanly:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-toml">[mcp_servers.deskvnc]
+command = &quot;C:/Program Files/DeskVNCViewer/dvv.exe&quot;
+args = [&quot;mcp&quot;, &quot;--stdio&quot;]</code></pre></div>
+<p>The shell form, for the case where you do not want to hand-edit TOML, is <code>dvv setup codex</code>. It writes the same <code>[mcp_servers.deskvnc]</code> table into <code>~/.codex/config.toml</code>, keeps a backup of the existing file, drops the skill into <code>~/.codex/skills</code>, and repoints any older entry that names a stale <code>dvv</code>.</p>
+<h3 id="a-first-agent-session">A first agent session</h3>
+<p>A typical first prompt to Codex names a saved machine and asks the agent to do something visible. The agent drives the four-call loop:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_hosts   {}
+dvv_open    {&quot;hostId&quot;: &quot;ci-runner&quot;, &quot;perceive&quot;: true}
+dvv_control {&quot;limbId&quot;: &quot;limb-9b22&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;limb-9b22&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}</code></pre></div>
+<p>The screenshot comes back with a <code>geometry_generation</code>. The agent decides where to click and sends:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_click   {&quot;limbId&quot;: &quot;limb-9b22&quot;, &quot;x&quot;: 480, &quot;y&quot;: 220, &quot;generation&quot;: 8}
+dvv_type    {&quot;limbId&quot;: &quot;limb-9b22&quot;, &quot;text&quot;: &quot;tail -n 50 build.log&quot;, &quot;wpm&quot;: 3000}
+dvv_key     {&quot;limbId&quot;: &quot;limb-9b22&quot;, &quot;keys&quot;: &quot;Return&quot;}</code></pre></div>
+<p>A second <code>dvv_screen</code> reads the damage region and the agent reports the last lines of the build log. Each observe-then-act cycle is short enough that the agent keeps up with a moving desktop, and a <code>damage-crop</code> form keeps the next observation small when only a corner of the screen changed.</p>
+<p>Machines are independent. Each saved machine is its own limb with its own lease, so an agent runs as many loops in parallel as it has machines. The same action across a set of machines is one <code>dvv_group_run</code> call that reports each member's outcome separately, and any single-limb tool accepts a <code>groupId</code> plus a <code>member</code> to address one of them.</p>
+<h3 id="the-coordinate-generation-fence">The coordinate <code>generation</code> fence</h3>
+<p>Every <code>dvv_screen</code> carries a <code>geometry_generation</code> and a <code>content_generation</code>. Clicks must echo the geometry generation they were computed against. A click computed against a stale generation is refused rather than landing in the wrong place after a window resize. Typing and keys are fenced by the content generation: <code>dvv_type</code> and <code>dvv_key</code> are refused with <code>SCREEN_CHANGED</code> when something window-sized has repainted since the last <code>dvv_screen</code>. The fence is the safety net that stops an agent from typing into a text editor that came up holding somebody's file with all of it selected. One <code>dvv_screen</code> clears the fence, <code>dvv_status</code> does not (it reads no pixels), and there is no override. Terminal limbs are not fenced, because a PTY echoes what it is sent into a stream the agent reads back.</p>
+<h3 id="human-takeover">Human takeover</h3>
+<p>The person at the remote machine can take control back at any moment. The viewer shows an &quot;agent driving&quot; badge while the agent holds the lease, and one click in the viewer hands the desktop back to the person. The plane releases every held key and every held button the moment a person takes over, so a half-finished drag cannot strand the desktop. The recipient can revoke the agent's control or end the session outright. This is attended automation by design: the agent never has a stronger position than the person at the keyboard.</p>
+<h3 id="troubleshooting">Troubleshooting</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>Try this</th>
+</tr></thead><tbody>
+<tr>
+<td><code>LIMB_GONE</code> from any tool</td>
+<td>The viewer closed the connection or the last <code>dvv_close</code> detached the limb</td>
+<td>Run <code>dvv limbs</code> to list live limbs, then <code>dvv open &lt;host&gt;</code> again</td>
+</tr>
+<tr>
+<td><code>SCREEN_CHANGED</code> on <code>dvv_type</code> or <code>dvv_key</code></td>
+<td>A window-sized region repainted since the last <code>dvv_screen</code></td>
+<td>Call <code>dvv_screen</code> once, then retry the action</td>
+</tr>
+<tr>
+<td>Codex does not list <code>deskvnc</code> in <code>/mcp</code></td>
+<td>TOML parse error or the file is in the wrong place</td>
+<td>Run <code>tomlq</code> over <code>~/.codex/config.toml</code> to confirm it parses, then restart Codex</td>
+</tr>
+<tr>
+<td><code>dvv</code> exits immediately on spawn</td>
+<td>The path in <code>command</code> is wrong or the file is not executable</td>
+<td>Run the <code>command</code> value in a shell and confirm <code>dvv mcp --stdio</code> starts</td>
+</tr>
+<tr>
+<td>Click lands in the wrong place</td>
+<td>Stale <code>geometry_generation</code> after a resize</td>
+<td>Take a fresh <code>dvv_screen</code>, then send the new <code>generation</code> with the click</td>
+</tr>
+</tbody></table></div>
+<h3 id="links">Links</h3>
+<ul><li>Project: &lt;https://github.com/psmux/DeskVNC&gt;</li><li>Hub: &lt;https://deskvnc-hub.pages.dev/&gt;</li><li>Raw agent skill: &lt;https://github.com/psmux/DeskVNC/blob/main/skills/deskvnc/SKILL.md&gt;</li><li>Integration notes for every client: &lt;https://github.com/psmux/DeskVNC/blob/main/docs/AGENTS.md&gt;</li></ul>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Registering DeskVNC with Codex CLI",
+  "description": "Codex CLI is OpenAI's terminal agent, and it speaks the Model Context Protocol over stdio. Pairing it with dvv turns the agent into something that can see a real remote desktop, cl",
+  "url": "https://deskvnc-hub.pages.dev/guides/codex",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

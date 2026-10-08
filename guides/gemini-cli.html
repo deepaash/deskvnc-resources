@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registering DeskVNC with Gemini CLI</title>
+<meta name="description" content="Gemini CLI is Google's terminal agent, and it speaks the Model Context Protocol. Pairing it with DeskVNC's dvv lets the agent open a saved machine, read the screen, and send clicks">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/guides/gemini-cli">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Registering DeskVNC with Gemini CLI">
+<meta property="og:description" content="Gemini CLI is Google's terminal agent, and it speaks the Model Context Protocol. Pairing it with DeskVNC's dvv lets the agent open a saved machine, read the screen, and send clicks">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/guides/gemini-cli">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides">Guides</a>
+    <a href="/usecases">Use cases</a>
+    <a href="/benchmarks">Benchmarks</a>
+    <a href="/mcp">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="registering-deskvnc-with-gemini-cli">Registering DeskVNC with Gemini CLI</h2>
+<p>Gemini CLI is Google's terminal agent, and it speaks the Model Context Protocol. Pairing it with DeskVNC's <code>dvv</code> lets the agent open a saved machine, read the screen, and send clicks and keystrokes through the VNC, RDP, or SSH protocol the remote already speaks. No software is installed on the remote target, and the user can take the wheel back with one click. The DeskVNC integration notes document the exact shape that <code>~/.gemini/settings.json</code> takes for the DeskVNC MCP server, including the <code>httpUrl</code> key the HTTP transport expects.</p>
+<h3 id="prerequisite-the-dvv-binary">Prerequisite: the <code>dvv</code> binary</h3>
+<p><code>dvv</code> is the executable that ships inside DeskVNCViewer. Install the viewer, open it once, and save a machine with its password so the agent has something concrete to reach. The binary sits next to the application:</p>
+<ul><li>macOS: <code>/Applications/DeskVNCViewer.app/Contents/MacOS/dvv</code></li><li>Windows: <code>%LOCALAPPDATA%\DeskVNCViewer\dvv.exe</code> for a per-user install, or <code>C:\Program Files\DeskVNCViewer\dvv.exe</code> for the all-users install</li><li>Linux: <code>/usr/bin/dvv</code> on the standard <code>.deb</code>. The AppImage copies <code>dvv</code> to <code>~/.local/share/DeskVNCViewer/bin/dvv</code></li></ul>
+<p>The path you point Gemini CLI at is the path the viewer installed.</p>
+<h3 id="the-registration-step">The registration step</h3>
+<p>Gemini CLI reads <code>~/.gemini/settings.json</code>. The DeskVNC integration notes call out that the same <code>mcpServers</code> block used by other clients works here, with one difference for the HTTP transport: the key is <code>httpUrl</code> rather than <code>url</code>. On macOS:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;deskvnc&quot;: {
+      &quot;command&quot;: &quot;/Applications/DeskVNCViewer.app/Contents/MacOS/dvv&quot;,
+      &quot;args&quot;: [&quot;mcp&quot;, &quot;--stdio&quot;]
+    }
+  }
+}</code></pre></div>
+<p>On Linux, the same block with the system path:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;deskvnc&quot;: {
+      &quot;command&quot;: &quot;/usr/bin/dvv&quot;,
+      &quot;args&quot;: [&quot;mcp&quot;, &quot;--stdio&quot;]
+    }
+  }
+}</code></pre></div>
+<p>On Windows, use a JSON-safe path. Forward slashes keep the file portable:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;deskvnc&quot;: {
+      &quot;command&quot;: &quot;C:/Program Files/DeskVNCViewer/dvv.exe&quot;,
+      &quot;args&quot;: [&quot;mcp&quot;, &quot;--stdio&quot;]
+    }
+  }
+}</code></pre></div>
+<p>The top-level key is <code>mcpServers</code>. That is the key the DeskVNC integration notes name for <code>~/.gemini/settings.json</code>, and it matches the standard MCP shape Gemini CLI reads.</p>
+<p>For the HTTP transport, swap <code>command</code> and <code>args</code> for a block whose transport key is <code>httpUrl</code> (per the DeskVNC integration notes) and whose <code>headers</code> carry the bearer token:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;deskvnc&quot;: {
+      &quot;httpUrl&quot;: &quot;http://127.0.0.1:7333/mcp&quot;,
+      &quot;headers&quot;: { &quot;Authorization&quot;: &quot;Bearer &lt;token&gt;&quot; }
+    }
+  }
+}</code></pre></div>
+<p>The shell form is <code>dvv setup</code>. It writes the same MCP entry, copies the skill into the skills directory Gemini CLI reads, and points the agent at the right <code>dvv</code>. After the file is saved, restart Gemini CLI so it picks up the new server, then run <code>/mcp</code> in a session to confirm <code>deskvnc</code> is connected.</p>
+<h3 id="a-first-agent-session">A first agent session</h3>
+<p>A typical first prompt names a saved machine and asks the agent to do something visible:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code>You: Open &quot;qa-runner&quot; and tell me the result of the last test run.</code></pre></div>
+<p>The agent drives the four-call loop. Behind the scenes, Gemini CLI forwards each MCP call to the <code>dvv</code> subprocess:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_hosts   {}
+dvv_open    {&quot;hostId&quot;: &quot;qa-runner&quot;, &quot;perceive&quot;: true}
+dvv_control {&quot;limbId&quot;: &quot;limb-13ac&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;limb-13ac&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}</code></pre></div>
+<p>The screenshot comes back with a <code>geometry_generation</code> of, say, 12. The agent reads the picture, finds the test runner window, and acts:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_click   {&quot;limbId&quot;: &quot;limb-13ac&quot;, &quot;x&quot;: 240, &quot;y&quot;: 96, &quot;generation&quot;: 12}
+dvv_type    {&quot;limbId&quot;: &quot;limb-13ac&quot;, &quot;text&quot;: &quot;pytest -q&quot;, &quot;wpm&quot;: 3000}
+dvv_key     {&quot;limbId&quot;: &quot;limb-13ac&quot;, &quot;keys&quot;: &quot;Return&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;limb-13ac&quot;, &quot;form&quot;: &quot;damage-crop&quot;}</code></pre></div>
+<p>The follow-up screenshot confirms the test run completed, and the agent reports the pass or fail count. Each observe-then-act cycle is well under a second, so the agent keeps up with a moving desktop.</p>
+<p>Machines are independent. Each saved machine is its own limb with its own lease, so an agent runs as many loops in parallel as it has machines. The same action across a set of machines is one <code>dvv_group_run</code> call that reports each member's outcome separately, and any single-limb tool accepts a <code>groupId</code> plus a <code>member</code> to address one of them.</p>
+<h3 id="the-coordinate-generation-fence">The coordinate <code>generation</code> fence</h3>
+<p>Every <code>dvv_screen</code> carries two fences: a <code>geometry_generation</code> and a <code>content_generation</code>. Clicks must echo the geometry generation they were computed against. A click computed against a screen that has since resized is refused rather than landing in the wrong place. Typing and keys are fenced by the content generation, and <code>dvv_type</code> plus <code>dvv_key</code> are refused with <code>SCREEN_CHANGED</code> when something window-sized has repainted since the last <code>dvv_screen</code>. The fence is the safety net that stops an agent from typing into a dialog that appeared over the editor it was aiming at. One <code>dvv_screen</code> clears the fence, <code>dvv_status</code> does not (it reads no pixels), and there is no override. Terminal limbs are not fenced, because a PTY echoes what it is sent into a stream the agent reads back.</p>
+<h3 id="human-takeover">Human takeover</h3>
+<p>The person at the remote machine can take control back at any moment. The viewer shows an &quot;agent driving&quot; badge while the agent holds the lease, and one click in the viewer hands the desktop back to the person. The plane releases every held key and every held button the moment a person takes over, so a half-finished drag cannot strand the desktop. The recipient can revoke the agent's control or end the session outright. This is attended automation by design: the agent never has a stronger position than the person at the keyboard.</p>
+<h3 id="troubleshooting">Troubleshooting</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>Try this</th>
+</tr></thead><tbody>
+<tr>
+<td><code>LIMB_GONE</code> from any tool</td>
+<td>The viewer closed the connection or the last <code>dvv_close</code> detached the limb</td>
+<td>Run <code>dvv limbs</code> to list live limbs, then <code>dvv open &lt;host&gt;</code> again</td>
+</tr>
+<tr>
+<td><code>SCREEN_CHANGED</code> on <code>dvv_type</code> or <code>dvv_key</code></td>
+<td>A window-sized region repainted since the last <code>dvv_screen</code></td>
+<td>Call <code>dvv_screen</code> once, then retry the action</td>
+</tr>
+<tr>
+<td>Gemini CLI does not list <code>deskvnc</code> in <code>/mcp</code></td>
+<td>JSON parse error, wrong file path, or wrong top-level key</td>
+<td>Validate the JSON, confirm the path is <code>~/.gemini/settings.json</code>, and check the current Gemini CLI MCP docs for the expected key name</td>
+</tr>
+<tr>
+<td><code>dvv</code> exits immediately on spawn</td>
+<td>The path in <code>command</code> is wrong or the file is not executable</td>
+<td>Run the <code>command</code> value in a shell and confirm <code>dvv mcp --stdio</code> starts</td>
+</tr>
+<tr>
+<td>HTTP transport returns 401</td>
+<td>The bearer token changed</td>
+<td>Re-export <code>DVV_MCP_TOKEN</code> to the same value, then restart <code>dvv</code></td>
+</tr>
+<tr>
+<td>Click lands in the wrong place</td>
+<td>Stale <code>geometry_generation</code> after a resize</td>
+<td>Take a fresh <code>dvv_screen</code>, then send the new <code>generation</code> with the click</td>
+</tr>
+</tbody></table></div>
+<h3 id="links">Links</h3>
+<ul><li>Project: &lt;https://github.com/psmux/DeskVNC&gt;</li><li>Hub: &lt;https://deskvnc-hub.pages.dev/&gt;</li><li>Raw agent skill: &lt;https://github.com/psmux/DeskVNC/blob/main/skills/deskvnc/SKILL.md&gt;</li><li>Integration notes for every client: &lt;https://github.com/psmux/DeskVNC/blob/main/docs/AGENTS.md&gt;</li></ul>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Registering DeskVNC with Gemini CLI",
+  "description": "Gemini CLI is Google's terminal agent, and it speaks the Model Context Protocol. Pairing it with DeskVNC's dvv lets the agent open a saved machine, read the screen, and send clicks",
+  "url": "https://deskvnc-hub.pages.dev/guides/gemini-cli",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

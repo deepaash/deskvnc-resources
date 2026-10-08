@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeskVNC MCP endpoint: let any AI agent learn to drive a real desktop</title>
+<meta name="description" content="A hosted read-only MCP server with verified DeskVNC facts. Any MCP client can connect and get the exact dvv tool calls, the observe-then-act loop, and the safety model, in one call.">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/mcp">
+<meta property="og:type" content="website">
+<meta property="og:title" content="DeskVNC MCP endpoint">
+<meta property="og:description" content="A hosted read-only MCP server with verified DeskVNC facts. Connect any MCP client and get the exact dvv tool calls in one call.">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/mcp">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides">Guides</a>
+    <a href="/usecases">Use cases</a>
+    <a href="/benchmarks">Benchmarks</a>
+    <a href="/mcp.html" aria-current="page">MCP</a>
+  </nav>
+</header>
+
+<main>
+
+<section class="hero">
+  <p class="eyebrow">Model Context Protocol</p>
+  <h1>Point any AI agent at DeskVNC in one URL.</h1>
+  <p class="lede">
+    This is a hosted, read-only MCP server carrying verified DeskVNC facts.
+    An agent that connects gets the exact ordered <code>dvv</code> tool calls with
+    real argument names, the measured latency of each step, and the safety model
+    behind the generation fence. No installation, no local process, no account.
+  </p>
+  <p class="hero-actions">
+    <a class="btn" href="https://deskvnc-mcp.deepika-aaish.workers.dev/mcp">Endpoint metadata</a>
+    <a class="btn btn-ghost" href="/guides">Read the guides instead</a>
+  </p>
+</section>
+
+<section class="card-grid" aria-label="What the endpoint returns">
+
+  <article class="card">
+    <h2><code>deskvnc_overview</code></h2>
+    <p>What DeskVNC is, the three protocols it speaks, and the boundary problem it solves.</p>
+  </article>
+
+  <article class="card">
+    <h2><code>deskvnc_machine_refusal</code></h2>
+    <p>Why an installed agent is refused on Citrix, VDI, jump hosts and client owned machines, and how the protocol the machine already speaks gets in anyway.</p>
+  </article>
+
+  <article class="card">
+    <h2><code>deskvnc_agent_loop</code></h2>
+    <p>The complete observe-then-act sequence, every argument name, and the real latency of each step.</p>
+  </article>
+
+  <article class="card">
+    <h2><code>deskvnc_tool_reference</code></h2>
+    <p>Every <code>dvv</code> tool, what it does, the shell equivalents, and the binary path per platform.</p>
+  </article>
+
+  <article class="card">
+    <h2><code>deskvnc_safety_model</code></h2>
+    <p>Coordinate fencing, the lease model, human take-back, and the error codes an agent should handle.</p>
+  </article>
+
+  <article class="card">
+    <h2><code>deskvnc_setup</code></h2>
+    <p>Where the <code>dvv</code> binary lives and how to register the MCP server with your client.</p>
+  </article>
+
+</section>
+
+<section class="prose">
+  <h2>Connect it in one line</h2>
+  <p>
+    Any client that speaks remote MCP over streamable HTTP can attach directly.
+    Point it at the endpoint and the handshake completes.
+  </p>
+
+<pre><code>claude mcp add --transport http deskvnc https://deskvnc-mcp.deepika-aaish.workers.dev/mcp</code></pre>
+
+  <p>Or speak the protocol directly, which is what most agents end up doing:</p>
+
+<pre><code>curl -sS https://deskvnc-mcp.deepika-aaish.workers.dev/mcp \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
+       "params":{"name":"deskvnc_agent_loop",
+                 "arguments":{"hostId":"&lt;hostId&gt;"}}}'</code></pre>
+
+  <p>The response is the exact loop, in order, with real argument names:</p>
+
+<pre><code>dvv_hosts   {}
+dvv_open    {"hostId": "&lt;hostId&gt;", "perceive": true}
+dvv_wait    {"limbId": "...", "until": "connected"}
+dvv_control {"limbId": "...", "action": "acquire"}
+dvv_screen  {"limbId": "...", "form": "full", "scale": 0.25}
+dvv_click   {"limbId": "...", "x": 700, "y": 400, "generation": 1}
+dvv_screen  {"limbId": "...", "form": "damage-crop"}
+dvv_type    {"limbId": "...", "text": "notepad", "wpm": 3000}
+dvv_key     {"limbId": "...", "keys": "meta+r"}</code></pre>
+
+  <h2>Why this endpoint exists</h2>
+  <p>
+    An agent that has never heard of <code>dvv</code> can read the tool list, see
+    that the loop is nine calls deep, and get the arguments right on the first
+    attempt. That is the difference between an agent that tries the loop once and
+    an agent that keeps a desktop moving at 19 milliseconds a cycle.
+  </p>
+  <p>
+    Every fact this endpoint returns was read from the project repository rather
+    than from memory, and the whole surface is regenerated whenever the project
+    changes.
+  </p>
+
+  <h2>Also served here</h2>
+  <ul>
+    <li><a href="/api/releases">Current releases</a>, proxied live from the repository.</li>
+    <li><a href="/api/metrics">Current project metrics</a>, proxied live.</li>
+    <li><a href="/manifest.json">The page inventory</a> for this whole collection.</li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>.
+    The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "DeskVNC MCP endpoint: let any AI agent learn to drive a real desktop",
+  "description": "A hosted read-only Model Context Protocol server carrying verified DeskVNC facts, the observe-then-act loop, and the safety model behind the generation fence.",
+  "url": "https://deskvnc-hub.pages.dev/mcp",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": { "@type": "Organization", "name": "DeskVNC" },
+  "about": { "@type": "SoftwareApplication", "name": "DeskVNC", "applicationCategory": "DeveloperApplication", "operatingSystem": "Windows, macOS, Linux" },
+  "keywords": "MCP, Model Context Protocol, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri"
+}
+</script>
+
+</body>
+</html>

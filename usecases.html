@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use cases: what an agent driven remote desktop is for</title>
+<meta name="description" content="DeskVNC in practice: Citrix, VDI, jump hosts and client owned desktops that refuse installed agents, an agent that needs to read a screen and act, one window for a mixed Windows, macOS and Linux estate, and support sessions where a person takes the wheel back.">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/usecases.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DeskVNC">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="Use cases: what an agent driven remote desktop is for">
+<meta property="og:description" content="Four situations DeskVNC is built for: machines that refuse installed agents, an agent that needs to read a screen and act, one window for a mixed estate, and a person taking the wheel back mid task.">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/usecases.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Use cases: what an agent driven remote desktop is for">
+<meta name="twitter:description" content="Citrix, VDI, jump hosts and client owned desktops. An agent that reads a screen and acts. One window for a mixed estate. Support with a person back in the chair.">
+<meta name="theme-color" content="#fbfcfd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0f13" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a58c2'/%3E%3Cpath d='M8 11h16M8 16h11M8 21h7' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark"><img src="logo.svg" alt="">DeskVNC</span> <span class="brand-sub">agent hub</span></a>
+    <nav aria-label="Main">
+      <ul class="nav">
+        <li><a href="/">Overview</a></li>
+        <li><a href="/guides">Guides</a></li>
+        <li><a href="usecases.html" aria-current="page">Use cases</a></li>
+        <li><a href="/benchmarks">Benchmarks</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="page-head">
+    <span class="eyebrow">Use cases</span>
+    <h1>Four situations this is built for</h1>
+    <p class="lede">Each one starts from a real estate and a real job, not from a feature list. What the situation is, what DeskVNC does about it, and the calls that carry it out.</p>
+  </div>
+</div>
+
+<main id="main" class="wrap">
+
+  <article class="case" id="case-locked-down">
+    <h2><span class="case-index">Case 01</span> Machines that refuse installed agents</h2>
+    <p class="case-lede">Citrix sessions, VDI desktops, a jump host, and desktops a client owns.</p>
+
+    <dl class="facts">
+      <div>
+        <dt>The situation</dt>
+        <dd>A Citrix session, a VDI desktop, a jump host, a desktop a client owns. Each has no local administrator rights, no install path and no service that survives the session being rebuilt.</dd>
+      </div>
+      <div>
+        <dt>What DeskVNC does</dt>
+        <dd>The connection is the ordinary VNC, RDP or SSH one that machine already speaks. Nothing is installed on the target, so there is nothing to refuse: no agent, no service, no registry entry, and no change to the far side at all.</dd>
+      </div>
+      <div>
+        <dt>In one line</dt>
+        <dd>A protocol those machines already speak gets in anyway.</dd>
+      </div>
+    </dl>
+
+    <p>A jump host that speaks SSH is opened as a terminal limb, and a command on it comes back with the far side's own exit status. A Citrix or VDI desktop is opened over RDP or VNC, and read the same way: a framebuffer, a pointer and a keyboard.</p>
+
+    <figure class="code">
+      <figcaption>MCP <span class="tag">endpoint</span></figcaption>
+<pre><code>dvv_open {"address": "frontdesk.corp.example", "protocol": "rdp", "perceive": true}
+dvv_open {"address": "10.0.0.4", "port": 5901, "protocol": "vnc", "perceive": true}
+dvv_open {"address": "jump-01", "port": 22, "protocol": "ssh"}
+
+dvv_run  {"limbId": "...", "command": "sudo -n systemctl status deskvnc-agent", "timeoutMs": 10000}</code></pre>
+    </figure>
+
+    <p>The same three machines saved as hosts carry their own credentials and settings, so an agent can name a machine and the application resolves the address, the port, the protocol and the stored credential itself.</p>
+
+    <figure class="code">
+      <figcaption>MCP <span class="tag">saved machines</span></figcaption>
+<pre><code>dvv_hosts {}
+dvv_open {"hostId": "&lt;id&gt;", "perceive": true}</code></pre>
+    </figure>
+  </article>
+
+  <article class="case" id="case-agent">
+    <h2><span class="case-index">Case 02</span> An AI agent that needs to read a screen and act</h2>
+    <p class="case-lede">Verify a change, fill a form, walk a wizard, read what is actually on the screen.</p>
+
+    <dl class="facts">
+      <div>
+        <dt>The situation</dt>
+        <dd>Work that is defined by what a machine is showing rather than by a command to run: a settings dialog, a licence prompt, a checkout, a desktop whose state has to be confirmed before the next step.</dd>
+      </div>
+      <div>
+        <dt>What DeskVNC does</dt>
+        <dd>Hands the agent the same connections you use by hand. It opens one of your saved machines, looks at the screen, clicks and types, over the protocol. One observe then act cycle measured at 19 ms, about 52 actions a second.</dd>
+      </div>
+      <div>
+        <dt>In one line</dt>
+        <dd>Observe, decide, act, and get one settled result back for every intent.</dd>
+      </div>
+    </dl>
+
+    <p>The four call loop, and then acting on what it saw. The <code>generation</code> you read from the screen goes back with the click, so a coordinate computed against a screen that has since resized is refused rather than landing somewhere unintended.</p>
+
+    <figure class="shot">
+      <img src="img/session.jpg" width="1600" height="1086" loading="lazy" decoding="async"
+           alt="A live remote session open in DeskVNC, showing the remote desktop being viewed and controlled.">
+      <figcaption>A live session, the remote desktop being viewed and driven <span class="tag">from the project README</span></figcaption>
+    </figure>
+
+
+    <figure class="code">
+      <figcaption>MCP <span class="tag">the loop</span></figcaption>
+<pre><code>dvv_hosts   {}
+dvv_open    {"hostId": "&lt;id&gt;", "perceive": true}   # -&gt; limbId, size, state
+dvv_control {"limbId": "...", "action": "acquire"}
+dvv_screen  {"limbId": "...", "form": "full", "scale": 0.25}
+dvv_click   {"limbId": "...", "x": 700, "y": 400, "generation": 1}
+dvv_screen  {"limbId": "...", "form": "damage-crop"}  # look again
+dvv_type    {"limbId": "...", "text": "notepad", "wpm": 3000}
+dvv_key     {"limbId": "...", "keys": "meta+r"}</code></pre>
+    </figure>
+
+    <p>Typing is fenced too, because a keystroke aims at no coordinate and focus moves when a window opens. Text is refused with <code>SCREEN_CHANGED</code> if something window sized has repainted since the agent last looked, so it never goes into whatever appeared over the thing it was reading. One <code>dvv_screen</code> clears it, and there is no override.</p>
+
+    <figure class="code">
+      <figcaption>MCP <span class="tag">act, settle, look</span></figcaption>
+<pre><code>dvv_type {"limbId": "...", "text": "sudo systemctl restart nginx\n", "wpm": 12000}
+dvv_wait {"limbId": "...", "until": "screen-stable", "quietMs": 750}
+dvv_screen {"limbId": "...", "form": "damage-crop"}</code></pre>
+    </figure>
+
+    <p>The agent works in the background of your own work: input travels over the protocol to the remote, so the local mouse and keyboard are never involved and the viewer can be minimised while you carry on at your own machine.</p>
+
+    <p><a href="/benchmarks">The measurements behind this</a>, and <a href="guides.html#guide-3">guide 3</a> for every argument in full.</p>
+  </article>
+
+  <article class="case" id="case-mixed-estate">
+    <h2><span class="case-index">Case 03</span> One window for a mixed Windows, macOS and Linux estate</h2>
+    <p class="case-lede">A Windows desktop over RDP, a Linux box over VNC and a shell into a jump host, side by side.</p>
+
+    <dl class="facts">
+      <div>
+        <dt>The situation</dt>
+        <dd>A handful of machines or a few hundred. One client for Windows boxes, another for the Linux server in the cupboard, a terminal for everything else, and a text file of addresses nobody trusts.</dd>
+      </div>
+      <div>
+        <dt>What DeskVNC does</dt>
+        <dd>Three protocol cores in one library and one host library over them. Sessions open as tabs, and any tab splits into panes that can each hold a different machine and a different protocol. Each tile shows what that machine looked like when you last left it.</dd>
+      </div>
+      <div>
+        <dt>In one line</dt>
+        <dd>A Windows desktop over RDP next to a Linux box over VNC next to a shell is an ordinary arrangement here.</dd>
+      </div>
+    </dl>
+
+    <p>Addresses read the way you already think of them, and if you do not know one, <strong>Scan network</strong> finds what is listening nearby.</p>
+
+    <figure class="shot shot-wide">
+      <img src="img/split.jpg" width="1900" height="803" loading="lazy" decoding="async"
+           alt="Two Linux desktops, Ubuntu GNOME and Kubuntu KDE, open side by side in split panes inside a single DeskVNC window.">
+      <figcaption>Two desktops side by side in one window, each its own machine <span class="tag">from the project README</span></figcaption>
+    </figure>
+
+
+    <figure class="code">
+      <figcaption>Viewer <span class="tag">address formats</span></figcaption>
+<pre><code>10.0.0.4
+10.0.0.4:5901
+rdp://frontdesk
+ssh://ops@jump-01</code></pre>
+    </figure>
+
+    <p>For the same action across a set, open them as a group. Every member starts before any finishes, and one member failing is reported for that member alone.</p>
+
+    <figure class="code">
+      <figcaption>MCP <span class="tag">a group</span></figcaption>
+<pre><code>dvv_group_open {"hostIds": ["&lt;windows-box&gt;", "&lt;linux-box&gt;"], "perceive": true}
+dvv_group_run  {"groupId": "...",
+                "action": "run",
+                "arguments": {"command": "systemctl is-active nginx", "timeoutMs": 5000}}
+dvv_group_list  {"groupId": "..."}
+dvv_group_close {"groupId": "..."}</code></pre>
+    </figure>
+
+    <p>Each machine is its own limb with its own lease, so ten machines are ten independent loops from one agent. Discovery results reach an agent too, so a machine nobody saved can still be opened.</p>
+
+    <figure class="code">
+      <figcaption>MCP <span class="tag">what discovery found</span></figcaption>
+<pre><code>dvv_hosts {"discovered": true}</code></pre>
+    </figure>
+
+    <p>More on groups in <a href="guides.html#guide-7">guide 7</a>, and on discovery and Wake on LAN in <a href="guides.html#guide-9">guide 9</a>.</p>
+  </article>
+
+  <article class="case" id="case-handover">
+    <h2><span class="case-index">Case 04</span> Remote support where a person takes the wheel back</h2>
+    <p class="case-lede">An agent is mid task, and someone needs the mouse for a moment.</p>
+
+    <dl class="facts">
+      <div>
+        <dt>The situation</dt>
+        <dd>Support work, and automation on the same machines. The agent has the control lease, the person watching the pane has seen something the agent has not, or the two of them want the keyboard at the same time.</dd>
+      </div>
+      <div>
+        <dt>What DeskVNC does</dt>
+        <dd>Control is leased, and a person outranks an agent by default. Clicking into the pane fences the agent out of that session and hands the wheel over with no application code involved. Handing it back is the same click. Held keys and buttons are released on any lease change, so a half finished drag cannot strand the desktop.</dd>
+      </div>
+      <div>
+        <dt>In one line</dt>
+        <dd>An agent driven pane is an ordinary session, and the take the wheel control is on it.</dd>
+      </div>
+    </dl>
+
+    <p>For the person on the other end of the connection, download <strong>DeskVNC Support</strong> from the same release page and send it to them. They open it and press <strong>Get a code</strong>, or <strong>Create invitation</strong> when no code service is configured, and approve your connection. You open <strong>Boundary support</strong> in DeskVNC, paste the invitation, and connect. It tries a direct encrypted path first and uses its relay fallback when the networks do not allow a direct one. The recipient can revoke control or end the session at any moment, and no account is required for an attended session.</p>
+
+    <p>On the agent side, losing the wheel is an ordinary event with a name. <code>dvv_control</code> with <code>yield_status</code> says whether a person took over, and that is the one case where the right move is to stop rather than retry.</p>
+
+    <figure class="code">
+      <figcaption>MCP <span class="tag">the handover</span></figcaption>
+<pre><code>dvv_control {"limbId": "...", "action": "acquire", "reason": "checking the print queue"}
+dvv_control {"limbId": "...", "action": "yield_status"}
+#  -> lease.human_took_over: true   means a person is driving: stop and say so
+dvv_control {"limbId": "...", "action": "acquire"}   # take it back when they hand over</code></pre>
+    </figure>
+
+    <p>From a shell, <code>dvv stop</code> revokes the wheel outright: keys released, no grace period.</p>
+
+    <figure class="code">
+      <figcaption>Terminal <span class="tag">dvv stop</span></figcaption>
+<pre><code>dvv stop lmb_frontdesk
+dvv control yield_status lmb_frontdesk --json</code></pre>
+    </figure>
+
+    <p>Downloads for the viewer and for DeskVNC Support are on <a href="https://github.com/psmux/DeskVNC/releases/latest">the latest release</a>: the support app ships for macOS, signed and notarised, for Windows, signed, and for Linux as an x86_64 binary in a tarball.</p>
+  </article>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="eyebrow">Read next</span>
+      <h2>The commands behind all four</h2>
+    </div>
+    <ul class="grid grid-2">
+      <li class="card">
+        <h3><a href="/guides">All nine guides</a></h3>
+        <p>Installing on Windows, macOS and Linux, registering the MCP server with Claude Code and OpenCode, the loop, files, clipboard, terminals, groups, the keychain, discovery and Wake on LAN.</p>
+      </li>
+      <li class="card">
+        <h3><a href="/benchmarks">The numbers</a></h3>
+        <p>19 ms per observe then act cycle, 4 ms to open and attach, 25 ms for a quarter scale screen, 447 characters a second, measured on a real 1920x1080 Windows desktop over a LAN.</p>
+      </li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <h2>DeskVNC</h2>
+      <p>One window for every machine you look after, whether it speaks VNC, RDP or SSH. Native, written in Rust on Tauri 2, running on Windows, macOS and Linux, dual licensed MIT OR Apache-2.0.</p>
+    </div>
+    <nav aria-label="Footer">
+      <h2>Links</h2>
+      <ul class="footer-links">
+        <li><a href="/">Overview</a></li>
+        <li><a href="/guides">Guides</a></li>
+        <li><a href="/benchmarks">Benchmarks</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC/releases/latest">Downloads</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC">Source repository</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC/blob/main/docs/AGENTS.md">Agent integration notes</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC/blob/main/docs/INSTALL.md">Install notes</a></li>
+        <li><a href="https://psmux.github.io/deskvnc/">Official page</a></li>
+      </ul>
+    </nav>
+    <p class="colophon">DeskVNC Support and Boundary support ship from the same release page as the viewer.</p>
+  </div>
+</footer>
+
+</body>
+</html>

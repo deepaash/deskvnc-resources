@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Machines that refuse an installed agent</title>
+<meta name="description" content="The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/refusal">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Machines that refuse an installed agent">
+<meta property="og:description" content="The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/refusal">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides">Guides</a>
+    <a href="/usecases">Use cases</a>
+    <a href="/benchmarks">Benchmarks</a>
+    <a href="/mcp">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="machines-that-refuse-an-installed-agent">Machines that refuse an installed agent</h2>
+<p>The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Microsoft Power Automate ships a Desktop service, Automation Anywhere runs a Bot Runner, and the long tail of RPA platforms follows the same shape. That decision is fine on a developer laptop. It collapses on the machines an enterprise actually runs.</p>
+<p>Six categories of machine refuse an installed agent as a matter of policy or design. A programme built on a runtime install hits them as exclusions, every time. The same six categories keep a display protocol open, and DeskVNC's <code>dvv</code> control plane speaks it.</p>
+<p>The argument is structural. None of the categories below are edge cases. They are the most common production endpoints in regulated and operationally mature environments, and they are the reason an agent programme either scales across the real estate or stalls in a list of &quot;we cannot automate these&quot;.</p>
+<hr>
+<h3 id="1-citrix-published-apps-and-remoteapp">1. Citrix published apps and RemoteApp</h3>
+<p>A Citrix published app, including RemoteApp, runs on a server in the data centre. The user sees a single window of the app on their endpoint, while the process, the file system, the clipboard and the GPU work for that window live on the Citrix host. The published surface is not a machine the user owns. It is a process, on a server, streamed through ICA or RDP.</p>
+<p><strong>Why an installed agent is refused.</strong> A published app has no host on which to install. The user's endpoint is just a renderer. The Citrix host is shared, locked down by Group Policy, and managed by an admin team that does not install RPA runtimes on the image. The install permission sits with the Citrix operations team.</p>
+<p><strong>What refusal means for an automation programme.</strong> The published app becomes a black box. The agent cannot reach into the process, cannot read the local file system of the session, and cannot install a runtime to drive the UI. Programmes respond by giving up, by writing a sidecar that screen scrapes, or by negotiating a slow exception with the Citrix team.</p>
+<p><strong>How the protocol path reaches it anyway.</strong> The Citrix host speaks RDP for admin access. A VNC server on the Citrix image, deployed by the Citrix team through the standard image pipeline, is another route. The agent does not need a runtime on the endpoint because the endpoint is the Citrix host, and the host already runs the display protocol.</p>
+<p><strong>Security posture.</strong> A person at the published app or the Citrix console can take the wheel from the agent at any moment. The lease is per-session and revocable. The published app surface is unchanged: the agent is a viewer, not a new process.</p>
+<h3 id="2-pooled-vdi-desktops">2. Pooled VDI desktops</h3>
+<p>In a pooled VDI deployment, every user gets a fresh desktop drawn from a base image on sign-in and returned to the pool on sign-out. The base image is sealed, the user profile is redirected, and the disk is non-persistent by design.</p>
+<p><strong>Why an installed agent is refused.</strong> A pooled VDI desktop is rebuilt on every logon. Anything the agent installs on the user side of the profile is thrown away with the session. Anything the agent installs on the system side violates the image. The base image is built by an image engineering team that does not accept new runtimes without a change request.</p>
+<p><strong>What refusal means for an automation programme.</strong> Personal VDI can be persuaded, with friction, to host a runtime. Pooled VDI cannot. Programmes either carve out dedicated persistent VDI pools for the agent, which doubles the VDI spend, or stop the programme at the VDI gate. Neither outcome scales.</p>
+<p><strong>How the protocol path reaches it anyway.</strong> The user reaches the pooled VDI over RDP. That is the entire point of VDI: the desktop is a remote Windows session delivered by a display protocol. An agent speaking the same RDP protocol reaches the same desktop through the same broker and gateway. No install, no profile pollution, no image change.</p>
+<p><strong>Security posture.</strong> The agent inherits the VDI broker's authentication, the gateway's policy and the VDI image's hardening. A person at the VDI console can take control mid-task. The lease is per-limb and ends when the session ends.</p>
+<h3 id="3-jump-hosts-and-bastion-gateways">3. Jump hosts and bastion gateways</h3>
+<p>A jump host is a server that exists to be the only path from an operator's workstation into a protected subnet. Its job is to refuse everything except the protocols the security team has chosen.</p>
+<p><strong>Why an installed agent is refused.</strong> A jump host that allowed software installs would no longer be a jump host. The image is built once, the allowlist is short, and the audit team wants the surface small enough to read in a single sitting. Pushing an RPA runtime onto a bastion defeats the role of the bastion.</p>
+<p><strong>What refusal means for an automation programme.</strong> The agent cannot reach anything behind the bastion, because the RPA runtime lives on the wrong side of the gate. Programmes route around with screen scraping on the operator's workstation, with brittle SSH expect scripts, or by giving up on the protected estate. The protected estate is, by construction, where the interesting work is.</p>
+<p><strong>How the protocol path reaches it anyway.</strong> A jump host speaks SSH, or RDP, or both. The agent speaks the same. The dvv control plane tunnels VNC and clipboard over an SSH <code>direct-tcpip</code> channel, so even when the bastion exposes SSH only, the same login reaches a VNC server on the next host in the line. No runtime lands on the bastion itself, and the bastion's session recording sees an SSH login, nothing more.</p>
+<p><strong>Security posture.</strong> The bastion's existing session capture, command logging and just-in-time access policies all apply unchanged. A lease on the bastion is a lease on an SSH channel and can be revoked by the bastion operator the moment the lease is over. The protocol the bastion already accepts is the one the agent uses.</p>
+<h3 id="4-client-owned-and-locked-down-workstations">4. Client-owned and locked-down workstations</h3>
+<p>A workstation owned by a client and managed by the client's IT team sits underneath the agency's control in name only. The IT team has the final say on what runs on it.</p>
+<p><strong>Why an installed agent is refused.</strong> The client's IT team enforces an application allowlist, runs AppLocker or a mobile device management product, removes local admin rights, and blocks unknown binaries. Nothing the agency can install is on the list by default, and getting onto the list is a procurement conversation measured in months.</p>
+<p><strong>What refusal means for an automation programme.</strong> &quot;On the client's machine&quot; is where the work often lives, because that is where the user's desktop, data and approval flow sit. Refusal turns the programme into a remote-control exercise for an operator on a different machine, with a person and a screen share in the middle.</p>
+<p><strong>How the protocol path reaches it anyway.</strong> The client's IT team has already solved remote support. The workstation has RDP, or a corporate VNC client, or a managed remote assistance tool with the right posture. An agent speaking the same protocol the IT team uses, behind the same identity provider, reaches the same machine. The client's existing allowlist is the agent's allowlist.</p>
+<p><strong>Security posture.</strong> A person at the workstation can take the wheel from the agent by clicking into the pane. The agent never sees the password for the workstation: the credential is applied on the far side of the same call the click goes through. No binary, driver, or service is installed on the client's machine. The client's IT posture is the agent's posture.</p>
+<h3 id="5-kiosk-shells-and-shell-replace">5. Kiosk shells and shell replace</h3>
+<p>A kiosk is a single-purpose machine. The shell has been replaced so the user sees one application, or one web page, and nothing else. Windows assigned access, a custom shell replacing <code>explorer.exe</code>, a Chromium-based kiosk front-end, and a digital signage player all live in this category.</p>
+<p><strong>Why an installed agent is refused.</strong> The whole point of the kiosk is to restrict the surface. A shell replace strips the desktop, removes the Start menu, kills Explorer, and often removes Task Manager. A shell that allows another binary to launch is not a kiosk shell. The image is built by a kiosk engineering team, signed and deployed, and any new runtime is a forklift upgrade.</p>
+<p><strong>What refusal means for an automation programme.</strong> The kiosk is exactly the machine a programme wants to automate: it runs the same flow a hundred times a day, the same way, in the same place. A runtime install is impossible, so the programme rewrites the kiosk in software, or the kiosk stays manual.</p>
+<p><strong>How the protocol path reaches it anyway.</strong> A Windows kiosk is still a Windows machine. The shell replace runs on top of a full Windows session that still has the display and input stacks. The kiosk image can ship with RDP enabled for remote administration, and the kiosk management system typically already opens that path for the operators who maintain the fleet. An agent speaking that same RDP reaches the full Windows session behind the kiosk shell.</p>
+<p><strong>Security posture.</strong> The agent sits behind the same kiosk management gateway that the human operator sits behind. The kiosk user can take the wheel: closing the kiosk app, or typing the break-out sequence the kiosk shell exposes, hands control back. A lease on the kiosk is a lease on a remote session, not a foothold on the kiosk.</p>
+<h3 id="6-locked-down-server-images">6. Locked-down server images</h3>
+<p>A hardened server, often Windows Server Core, ships without a desktop, often without Explorer, with a curated set of administrative tools, and with a local policy that says &quot;no agent software&quot;.</p>
+<p><strong>Why an installed agent is refused.</strong> The image is the audit boundary. A Server Core image has no place to install a runtime. A hardened Windows Server with the Desktop Experience has a place, and the change-control board will reject the request anyway. Every installed agent is something the patch team has to patch, the monitoring team has to monitor, and the incident team has to assume is compromised on breach.</p>
+<p><strong>What refusal means for an automation programme.</strong> A server is the canonical automation target. The programme exists for the server, and the server exists for the security posture that excludes the programme. The result is a queue of &quot;automate the servers&quot; tickets that never close, because closing them means weakening the image.</p>
+<p><strong>How the protocol path reaches it anyway.</strong> The server speaks RDP for remote administration, or WinRM, or SSH. The agent speaks the same protocol on the same port under the same identity. A VNC server, deployed through the image pipeline alongside the other administrative tools, is one more option. The dvv control plane uses the same SSH login the operator uses when they troubleshoot, and tunnels the rest over it.</p>
+<p><strong>Security posture.</strong> The server keeps its hardened image. The agent never touches the disk. The connection is the same administrative session the operations team already records, the same just-in-time elevation the team approves, and the same break-glass credential the team already stores. The lease ends when the session ends, and the operations team retains every approval flow they had before the agent existed.</p>
+<hr>
+<p>The general principle is the same in every category. A machine that refuses to host new software still runs a display or terminal protocol, because that protocol is how the machine's own operators reach it. The protocol is the load-bearing piece of the security model: it is the path the security team trusts, the path the audit team has already signed, and the path the change board has already approved. An agent that speaks that protocol arrives through a door the machine already holds open. An agent that demands an install is asking the machine to widen a surface the security team has spent years narrowing. The first scales. The second does not.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Machines that refuse an installed agent",
+  "description": "The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic",
+  "url": "https://deskvnc-hub.pages.dev/refusal",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

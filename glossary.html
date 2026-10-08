@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protocol glossary for remote desktop and MCP</title>
+<meta name="description" content="The words below are the ones a developer reaches for when reading the DeskVNC source, the docs for the protocols it speaks, or the diagnostics it ships. Every entry is two or three">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/glossary">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Protocol glossary for remote desktop and MCP">
+<meta property="og:description" content="The words below are the ones a developer reaches for when reading the DeskVNC source, the docs for the protocols it speaks, or the diagnostics it ships. Every entry is two or three">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/glossary">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides">Guides</a>
+    <a href="/usecases">Use cases</a>
+    <a href="/benchmarks">Benchmarks</a>
+    <a href="/mcp">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="protocol-glossary-for-remote-desktop-and-mcp">Protocol glossary for remote desktop and MCP</h2>
+<p>The words below are the ones a developer reaches for when reading the DeskVNC source, the docs for the protocols it speaks, or the diagnostics it ships. Every entry is two or three sentences, in plain language. The project-specific words (limb, lease, generation, coordinate fencing) are verified against the repository. The rest are standard protocol or platform terms.</p>
+<p>For the practical version, see <a href="../methodology/loop.md">the four-call loop</a> and <a href="../refusal-index/">the refusal index</a>.</p>
+<hr>
+<h3 id="rfb">RFB</h3>
+<p>RFB, the Remote Framebuffer protocol, is the wire format that every VNC server and viewer speaks. It is a thin protocol: the client says &quot;send me the rectangle at these coordinates&quot; and the server answers with the pixel data, compressed in one of several encodings the client has advertised. DeskVNC's VNC core implements RFB 3.3 through 3.8 and has been interop tested against x11vnc, TigerVNC, QEMU, RealVNC and macOS Screen Sharing.</p>
+<h3 id="vencrypt">VeNCrypt</h3>
+<p>VeNCrypt is the modern TLS wrapper for RFB, designed to replace the older VncAuth password exchange with a proper X.509 handshake. The client and server negotiate a TLS version, exchange certificates, and then run the usual RFB protocol inside the encrypted channel. DeskVNC supports the VeNCrypt X509 subtypes and pins the server certificate trust-on-first-use so a swap is surfaced, not silently accepted.</p>
+<h3 id="ra2">RA2</h3>
+<p>RA2 is RealVNC's RSA-AES security type, sometimes called &quot;RfbSecurityType 6&quot;. The server sends an RSA public key, the client encrypts a single-use DES key with it, and the rest of the session runs with AES under a key derived from that exchange. It is the strongest of the classic RFB auth methods, and DeskVNC supports it directly without shelling out to another client.</p>
+<h3 id="apple-remote-management">Apple Remote Management</h3>
+<p>Apple Remote Management (ARM) is the macOS facility for administering a machine remotely, and it speaks a VNC-like protocol on top of the operating system's screen sharing stack. The auth phase uses an Apple-specific Diffie-Hellman exchange, which is why &quot;Apple authentication&quot; shows up as a security type in DeskVNC's list. A machine you can address in Screen Sharing you can also address from DeskVNC.</p>
+<h3 id="nla">NLA</h3>
+<p>Network Level Authentication, NLA, is the RDP auth step that proves the user is who they say they are before the server hands out a session. It uses CredSSP under the hood, so the password never crosses the network in the clear. RDP sessions started with NLA on come up faster and put less load on the server, because failed logins bail out before any desktop is allocated.</p>
+<h3 id="remoteapp">RemoteApp</h3>
+<p>RemoteApp is the RDP feature that streams a single application window from a Windows host rather than the whole desktop, so the program feels local to the user. The framing, theming and taskbar integration are all served over the same RDP channel as a full desktop session, just with the shell window list filtered to one entry. DeskVNC's RDP core supports RemoteApp alongside ordinary desktop sessions.</p>
+<h3 id="mdns">mDNS</h3>
+<p>Multicast DNS, mDNS, is the local-network protocol that lets a service announce itself as <code>name.local</code> and a client find it without a central DNS server. VNC servers traditionally advertise on <code>_rfb._tcp</code> and Apple Remote Desktop on <code>_ard._tcp</code>. DeskVNC browses both, so the host library fills itself in as machines wake up on the same subnet.</p>
+<h3 id="llmnr">LLMNR</h3>
+<p>Link-Local Multicast Name Resolution, LLMNR, is the Windows answer to mDNS, used on networks that do not have a DNS server of their own. A host that wants to resolve <code>fileserver</code> shouts the question to the local multicast group and the machine that owns the name answers. DeskVNC uses LLMNR alongside mDNS so a saved host's name keeps working when the network is a Windows workgroup with no DNS at all.</p>
+<h3 id="netbios">NetBIOS</h3>
+<p>NetBIOS name service is the older name-resolution protocol that predates both mDNS and LLMNR, still found on long-lived Windows networks. It runs over a separate set of UDP and TCP ports (137, 138, 139) and is the only name service that consistently works on networks where mDNS and LLMNR have both been turned off. DeskVNC queries it so a saved host still resolves by name on those networks.</p>
+<h3 id="ms-rpc">MS-RPC</h3>
+<p>Microsoft Remote Procedure Call, MS-RPC, is the framework Windows uses for nearly all of its administrative traffic, including the parts of file and printer sharing that have nothing to do with SMB at the surface. DeskVNC uses MS-RPC for name resolution so a machine on a Windows network shows up with its real hostname and the rest of the operating system's tools can find it the same way.</p>
+<h3 id="limb">limb</h3>
+<p>A limb in DeskVNC is one open, attached machine, named after a limb of a body, so a dozen machines you are driving at once are a dozen independent limbs. Each limb has its own <code>limbId</code>, its own lease, and its own state, and ten machines driven from one agent are ten loops running in parallel, not one loop with a queue.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_limbs {}
+dvv_open  {&quot;hostId&quot;: &quot;&lt;id&gt;&quot;, &quot;perceive&quot;: true}  // -&gt; limbId</code></pre></div>
+<h3 id="lease">lease</h3>
+<p>A lease is the time-bounded permission to send input to a session, and the agent holds a lease on every limb it is driving. A person at the remote end can take the wheel at any moment, which revokes the lease; the tool releases any held keys and buttons on the way out so a half-finished drag cannot strand the desktop. <code>LEASE_REVOKED</code> is the code an agent sees when this happens, and it is the one case in the loop where the right move is to stop and tell the user.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_control {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;action&quot;: &quot;yield_status&quot;}</code></pre></div>
+<h3 id="generation">generation</h3>
+<p>A generation is a number DeskVNC hands back with every screen read, identifying the geometry of the desktop at the moment the picture was captured. Every click carries a <code>generation</code> read from a prior <code>dvv_screen</code>; a click computed against a screen that has since resized is refused rather than landing somewhere unintended. There is also a content generation behind the scenes, refreshed by a <code>dvv_screen</code> that actually reads pixels, and typing or keys that would land in a window the agent has not seen are refused with <code>SCREEN_CHANGED</code>.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_screen {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}  // -&gt; generation
+dvv_click  {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;x&quot;: 700, &quot;y&quot;: 400, &quot;generation&quot;: &lt;g&gt;}</code></pre></div>
+<h3 id="coordinate-fencing">coordinate fencing</h3>
+<p>Coordinate fencing is the rule that a click must carry a <code>generation</code> read from a recent screen, and that a type or key must come after a recent screen on a limb the agent has actually read. It is the safety mechanism that stops a click from landing in the wrong place after a resize, and stops a keystroke from being typed into a text editor that opened over the one the agent was looking at. There is no override on this fence, by design, because focus moves when a window appears and the fence is the only thing that knows.</p>
+<h3 id="mcp">MCP</h3>
+<p>The Model Context Protocol, MCP, is the open standard an AI agent uses to discover and call tools exposed by a server. DeskVNC ships <code>dvv</code> as an MCP server that answers the <code>initialize</code> handshake of every MCP revision shipped so far, and the 2026-07-28 revision's <code>server/discover</code> on top, so any client that speaks MCP over stdio or Streamable HTTP can use it. The same dispatch table runs in both transports, so a tool behaves identically regardless of how the agent reached it.</p>
+<h3 id="webgl2">WebGL2</h3>
+<p>WebGL2 is the graphics API the browser-grade webview exposes for hardware-accelerated drawing, and it is what DeskVNC uses to paint the remote screen. The decoded framebuffer never crosses the IPC boundary as a full image; it travels as a list of dirty rectangles, which the renderer uploads into a single WebGL2 texture. That is what makes deltas cheap and full frames fast, on a 1080p desktop and on 4K.</p>
+<h3 id="sftp">SFTP</h3>
+<p>SSH File Transfer Protocol, SFTP, is the file-transfer subsystem layered on top of an SSH connection, and it is the one DeskVNC uses for bidirectional file movement. A dual-pane browser and drag-and-drop ride on top, with remote filenames validated before they are used to build local paths. The same SSH connection that carries your terminal session carries the file transfer, so there is no second port to open.</p>
+<h3 id="wake-on-lan">Wake-on-LAN</h3>
+<p>Wake-on-LAN, WoL, is the small magic-packet trick that powers on a machine that is asleep on the same subnet, sent to its network interface card at the link layer. DeskVNC ships a WoL button for saved hosts, and also tries a magic packet during reconnect attempts, so a machine that went to sleep between sessions wakes back up without you walking to the closet. The packet itself is a broadcast frame with a specific pattern, and the NIC listens for it even when the host is off.</p>
+<hr>
+<h3 id="why-these-words-matter-for-an-agent">Why these words matter for an agent</h3>
+<p>The first nine entries are the wire-level vocabulary of the protocols DeskVNC speaks: RFB on a VNC limb, NLA and RemoteApp on an RDP limb, mDNS and the Windows name services for discovery, SFTP for transfers, and Wake-on-LAN for the machines that are asleep. An agent that knows what each of those buys you can pick the right tool for a job before the loop starts.</p>
+<p>The middle entries are the safety model. Limb, lease, generation, and coordinate fencing together describe the four walls around what the agent is allowed to do. A click is fenced by generation, a key press is fenced by a recent screen read, a session is fenced by a lease a human can revoke, and the whole thing is fenced by a transport the agent does not bypass. Every refusal in the loop is one of those fences catching something. The glossary exists so an agent can recognise the catch and recover, not so the agent can argue with it.</p>
+<p>The last entries cover the surface: MCP for the wire the agent itself speaks to <code>dvv</code> and WebGL2 for what makes the screen fast. Together, the eighteen words above are the language of autonomous remote-desktop work, and an agent that holds them all can drive any machine DeskVNC can open.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Protocol glossary for remote desktop and MCP",
+  "description": "The words below are the ones a developer reaches for when reading the DeskVNC source, the docs for the protocols it speaks, or the diagnostics it ships. Every entry is two or three",
+  "url": "https://deskvnc-hub.pages.dev/glossary",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

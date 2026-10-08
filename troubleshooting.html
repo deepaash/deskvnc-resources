@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When the agent cannot drive the machine: a symptom-first decision tree</title>
+<meta name="description" content="You set up dvv, your agent is in the loop, and something refuses to do what you asked. Most refusals are not the tool failing. They are the tool protecting you from a click that wo">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/troubleshooting">
+<meta property="og:type" content="article">
+<meta property="og:title" content="When the agent cannot drive the machine: a symptom-first decision tree">
+<meta property="og:description" content="You set up dvv, your agent is in the loop, and something refuses to do what you asked. Most refusals are not the tool failing. They are the tool protecting you from a click that wo">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/troubleshooting">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides">Guides</a>
+    <a href="/usecases">Use cases</a>
+    <a href="/benchmarks">Benchmarks</a>
+    <a href="/mcp">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="when-the-agent-cannot-drive-the-machine-a-symptom-first-decision-tree">When the agent cannot drive the machine: a symptom-first decision tree</h2>
+<p>You set up <code>dvv</code>, your agent is in the loop, and something refuses to do what you asked. Most refusals are not the tool failing. They are the tool protecting you from a click that would have landed in the wrong window, a key press that would have typed into a text field you did not see, or a hand off the wheel that you did not notice. Read this tree from the symptom your agent actually hit, not from the part of the protocol you suspect. The shape below is built to get a stuck loop moving again in under a minute, with the exact command for each branch.</p>
+<p>If you want the same idea in a different shape, see <a href="../refusal-index/">the refusal index</a> and <a href="../methodology/loop.md">the four-call loop</a>.</p>
+<hr>
+<h3 id="the-boxed-pattern-read-the-screen-again-before-you-act">The boxed pattern: read the screen again before you act</h3>
+<blockquote><p>One <code>dvv_screen</code> is what clears every &quot;stale state&quot; refusal. It is also the only call that reads pixels. <code>dvv_status</code> reports numbers but does not look, so it never clears a fence. Make this the first thing you try, every time.</p></blockquote>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_screen {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}</code></pre></div>
+<p>That call carries the new <code>generation</code> and refreshes the content fence, so the click, type, and key calls that follow are accepted again.</p>
+<hr>
+<h3 id="symptom-the-screen-looks-stale">Symptom: &quot;the screen looks stale&quot;</h3>
+<p>The picture you read five seconds ago is the picture the server is still sending. The remote did update, but a network blip, a paused client on the other end, or a wake from sleep held the update for long enough that your generation is now behind.</p>
+<p><strong>The one most likely cause:</strong> your last <code>dvv_screen</code> is older than the last &quot;something large repainted&quot; event the server saw, and any typing or keys you try are being refused with <code>SCREEN_CHANGED</code> before they even reach the remote. This is the safety feature working: focus has moved, and the tool refuses to type into a window you have not seen.</p>
+<p><strong>The exact check:</strong> run <code>dvv_wait</code> with <code>until: &quot;screen-stable&quot;</code> and read the return value. If it reports stable but a fresh <code>dvv_screen</code> shows the same image, the connection itself is quiet, not stale.</p>
+<p><strong>The exact fix:</strong> read the screen again, then retry.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_screen {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}
+dvv_wait   {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;until&quot;: &quot;screen-stable&quot;}
+dvv_click  {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;x&quot;: 700, &quot;y&quot;: 400, &quot;generation&quot;: &lt;from screen&gt;}</code></pre></div>
+<p>If the second <code>dvv_screen</code> still shows the old image, the connection is hung. Jump to &quot;the connection keeps dropping&quot; below.</p>
+<hr>
+<h3 id="symptom-my-click-was-refused">Symptom: &quot;my click was refused&quot;</h3>
+<p>Your agent called <code>dvv_click</code> and the call came back with a refusal rather than a settlement.</p>
+<p><strong>The one most likely cause:</strong> the click was computed against a <code>generation</code> that is no longer current. The remote resized, the agent went through a full-screen video, or the screen changed between your <code>dvv_screen</code> and your <code>dvv_click</code>. The click was refused on purpose so it would not land in the wrong place after a resize, and that is the safety feature doing its job.</p>
+<p><strong>The exact check:</strong> read the <code>geometry_generation</code> field out of the <code>dvv_screen</code> result and out of the <code>dvv_click</code> call. If they differ, that is your refusal.</p>
+<p><strong>The exact fix:</strong> read the screen again, copy the new <code>generation</code>, and retry the click. Always convert from picture pixels to remote pixels with the current scale. With <code>scale: 0.5</code>, a point at (mx, my) on the picture is (mx<em>2, my</em>2) on the machine.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_screen {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.5}
+dvv_click  {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;x&quot;: &lt;mx*2&gt;, &quot;y&quot;: &lt;my*2&gt;, &quot;generation&quot;: &lt;g&gt;}</code></pre></div>
+<hr>
+<h3 id="symptom-typing-does-nothing">Symptom: &quot;typing does nothing&quot;</h3>
+<p>You sent <code>dvv_type</code> with a string and the remote end shows nothing, or the key sequence in <code>dvv_key</code> did not open the window you expected.</p>
+<p><strong>The one most likely cause:</strong> something window-sized has repainted since your last <code>dvv_screen</code>, and the fence refuses to let text or keys land in whatever window now has focus. This is the feature that stops an agent typing into a text editor that opened over the one it was looking at, with all of its contents selected. There is no override on this fence, by design.</p>
+<p><strong>The exact check:</strong> try <code>dvv_screen</code> first. If the call returns an image that is different from the one you read before the type or key call, you have your answer. If the image is identical, the issue is below in &quot;the limb is gone&quot; or &quot;the lease was revoked&quot;.</p>
+<p><strong>The exact fix:</strong> read the screen, then retry. A single <code>dvv_screen</code> clears the content fence, and <code>dvv_status</code> does not.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_screen {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}
+dvv_type   {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;text&quot;: &quot;notepad&quot;, &quot;wpm&quot;: 3000}
+dvv_key    {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;keys&quot;: &quot;Enter&quot;}</code></pre></div>
+<hr>
+<h3 id="symptom-the-lease-was-revoked">Symptom: &quot;the lease was revoked&quot;</h3>
+<p>Your agent has the wheel, then the next call comes back <code>LEASE_REVOKED</code> and nothing you send gets acted on.</p>
+<p><strong>The one most likely cause:</strong> a person at the remote end took control. Clicking into the pane is enough to take the wheel from an agent-driven session, and any held keys or buttons are released so a half-finished drag cannot strand the desktop. This is the safety feature that lets a human walk up to a misbehaving agent and take over in one click.</p>
+<p><strong>The exact check:</strong> run <code>dvv_control</code> with <code>action: &quot;yield_status&quot;</code>. It returns who has the wheel and whether you can take it back.</p>
+<p><strong>The exact fix:</strong> if a person is in control, stop and tell the user. That is the only case in the loop where you stop. If the pane is now idle, ask for control again and read the screen, because everything you knew about focus and layout is from before the human moved it.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_control {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;action&quot;: &quot;yield_status&quot;}
+dvv_control {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}</code></pre></div>
+<hr>
+<h3 id="symptom-the-limb-is-gone">Symptom: &quot;the limb is gone&quot;</h3>
+<p>Your agent has a <code>limbId</code> it was using, and the next call comes back <code>LIMB_GONE</code>. The machine is no longer attached to your peer.</p>
+<p><strong>The one most likely cause:</strong> the agent spawned a new process per call, and the new process does not see the limb the old process opened. A limb id belongs to the connection that opened it, and <code>dvv mcp --stdio</code> spawned per command attaches and detaches each time. The tool is doing exactly what it should: it will not let a fresh peer take over a session it did not start.</p>
+<p><strong>The exact check:</strong> run <code>dvv_limbs</code> to see what is open right now. If the machine is not listed, the limb was never reopened on this peer. If the machine is listed under &quot;available&quot;, use that limbId directly.</p>
+<p><strong>The exact fix:</strong> list limbs, then open the machine on the same long-lived peer that will run the rest of the task.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_limbs  {}
+dvv_open   {&quot;hostId&quot;: &quot;&lt;id&gt;&quot;, &quot;perceive&quot;: true}
+dvv_wait   {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;until&quot;: &quot;connected&quot;}</code></pre></div>
+<hr>
+<h3 id="symptom-files-are-unavailable">Symptom: &quot;files are unavailable&quot;</h3>
+<p>You called <code>dvv_files</code> to drag a file across, and the call reports that the remote side is not reachable, or the pane is greyed out.</p>
+<p><strong>The one most likely cause:</strong> the connection is not SSH, and <code>dvv_files</code> needs the SSH transport. VNC and RDP sessions transfer files through their own server-side mechanisms, which DeskVNCViewer surfaces, but the agent-driven <code>dvv_files</code> path is wired only on the SSH limb. That is the shape of the feature: a single tool for the transport that supports it.</p>
+<p><strong>The exact check:</strong> confirm the host is an SSH profile in the saved library. The same machine opened over RDP will not show the file pane to the agent.</p>
+<p><strong>The exact fix:</strong> open the same host over SSH, then transfer.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_files {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;action&quot;: &quot;list&quot;, &quot;remotePath&quot;: &quot;/etc&quot;}
+dvv_files {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;action&quot;: &quot;put&quot;, &quot;localPath&quot;: &quot;./a.txt&quot;, &quot;remotePath&quot;: &quot;/tmp/a.txt&quot;}</code></pre></div>
+<hr>
+<h3 id="symptom-the-connection-keeps-dropping">Symptom: &quot;the connection keeps dropping&quot;</h3>
+<p>The screen goes black, comes back, goes black again, and <code>dvv_screen</code> keeps failing mid-call.</p>
+<p><strong>The one most likely cause:</strong> the remote woke from sleep, lost its network association, or the VNC server restarted. The client reconnects on its own, with a fast first retry and then backoff with jitter, so brief drops recover without you doing anything.</p>
+<p><strong>The exact check:</strong> run <code>dvv_wait</code> with <code>until: &quot;connected&quot;</code> and read the return value. It blocks until the limb is attached again or reports a hard failure.</p>
+<p><strong>The exact fix:</strong> wait for connected, then read the screen, because everything you knew about the layout is from before the drop. If waiting times out, force a reconnect and try once more.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_wait      {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;until&quot;: &quot;connected&quot;}
+dvv_screen    {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}
+dvv_reconnect {&quot;limbId&quot;: &quot;&lt;id&gt;&quot;}</code></pre></div>
+<p>If <code>dvv_reconnect</code> itself fails three times in a row, the saved host is probably pointing at an address the network can no longer reach. Edit the profile, retest with <code>dvv_open</code>, and carry on.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "When the agent cannot drive the machine: a symptom-first decision tree",
+  "description": "You set up dvv, your agent is in the loop, and something refuses to do what you asked. Most refusals are not the tool failing. They are the tool protecting you from a click that wo",
+  "url": "https://deskvnc-hub.pages.dev/troubleshooting",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

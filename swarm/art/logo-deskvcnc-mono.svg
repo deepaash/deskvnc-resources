@@ -1,9 +1,0 @@
-<!-- DeskVNC logomark, monochrome: the same geometry drawn entirely in currentColor. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet" role="img" aria-label="DeskVNC logomark in one colour: a screen shell holding a spine, with a forward chevron leaving through its open edge">
-  <title>DeskVNC</title>
-  <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M96 40V30Q96 18 84 18H30Q18 18 18 30V90Q18 102 30 102H84Q96 102 96 90V80"/>
-    <path d="M40 36V84"/>
-    <path d="M64 38L96 60 64 82" stroke-width="17" stroke-linejoin="miter"/>
-  </g>
-</svg>
