@@ -112,6 +112,13 @@
       <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
+      <title><![CDATA[URL health report]]></title>
+      <link>https://deskvnc-hub.pages.dev/measure-url-health</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/measure-url-health</guid>
+      <description><![CDATA[Checked at: 2026-10-08T22:24:44 UTC]]></description>
+      <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title><![CDATA[How the DeskVNC agent benchmark was measured]]></title>
       <link>https://deskvnc-hub.pages.dev/methodology</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/methodology</guid>

@@ -14,7 +14,7 @@
       "deskvnc_setup"
     ]
   },
-  "generated": "2026-10-08T21:43:48.183Z",
+  "generated": "2026-10-08T22:29:44.806Z",
   "pages": [
     {
       "path": "/",
@@ -135,6 +135,14 @@
       "description": "A hosted read-only MCP server with verified DeskVNC facts. Any MCP client can connect and get the exact dvv tool calls, the observe-then-act loop, and the safety model, in one call.",
       "lastmod": "2026-10-08",
       "words": 445
+    },
+    {
+      "path": "/measure-url-health",
+      "url": "https://deskvnc-hub.pages.dev/measure-url-health",
+      "title": "URL health report",
+      "description": "Checked at: 2026-10-08T22:24:44 UTC",
+      "lastmod": "2026-10-08",
+      "words": 349
     },
     {
       "path": "/methodology",
