@@ -14,7 +14,7 @@
       "deskvnc_setup"
     ]
   },
-  "generated": "2026-10-08T21:36:54.650Z",
+  "generated": "2026-10-08T21:38:20.684Z",
   "pages": [
     {
       "path": "/",
@@ -22,7 +22,7 @@
       "title": "DeskVNC: an AI agent that can drive your remote desktops",
       "description": "DeskVNC is one native client for VNC, RDP and SSH on Windows, macOS and Linux. Its dvv MCP server lets an AI agent open a saved machine, read the screen and send clicks and keystrokes over the protocol, with nothing installed on the target.",
       "lastmod": "2026-10-08",
-      "words": 1217
+      "words": 1704
     },
     {
       "path": "/automation",
