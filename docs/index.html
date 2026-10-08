@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeskVNC: an AI agent that can drive your remote desktops</title>
+<meta name="description" content="DeskVNC is one native client for VNC, RDP and SSH on Windows, macOS and Linux. Its dvv MCP server lets an AI agent open a saved machine, read the screen and send clicks and keystrokes over the protocol, with nothing installed on the target.">
+<link rel="canonical" href="https://psmux.github.io/deskvnc/hub/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DeskVNC">
+<meta property="og:locale" content="en">
+<meta property="og:title" content="DeskVNC: an AI agent that can drive your remote desktops">
+<meta property="og:description" content="One native client for VNC, RDP and SSH. An MCP server, dvv, that lets an AI agent open a saved machine, read the screen and act, with nothing installed on the target and a person able to take the wheel back at any moment.">
+<meta property="og:url" content="https://psmux.github.io/deskvnc/hub/index.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DeskVNC: an AI agent that can drive your remote desktops">
+<meta name="twitter:description" content="One native client for VNC, RDP and SSH. An MCP server, dvv, that lets an AI agent open a saved machine, read the screen and act, with nothing installed on the target.">
+<meta name="theme-color" content="#fbfcfd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0f13" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a58c2'/%3E%3Cpath d='M8 11h16M8 16h11M8 21h7' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="brand-mark">DeskVNC</span> <span class="brand-sub">agent hub</span></a>
+    <nav aria-label="Main">
+      <ul class="nav">
+        <li><a href="index.html" aria-current="page">Overview</a></li>
+        <li><a href="guides.html">Guides</a></li>
+        <li><a href="usecases.html">Use cases</a></li>
+        <li><a href="benchmarks.html">Benchmarks</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <p class="kicker">VNC, RDP and SSH in one native client</p>
+        <h1 class="reveal">Let an agent drive your remote desktops, and take the wheel back at any moment</h1>
+        <p class="lede">DeskVNC is a desktop client written in Rust on Tauri 2 that runs on Windows, macOS and Linux. It holds your saved machines, their credentials and their sessions. It also ships <code>dvv</code>, an agent control plane that hands an <strong>AI agent</strong> those same connections.</p>
+        <p class="plain-sentence"><span class="label">What MCP is</span>The Model Context Protocol, or MCP, is a standard way for an AI agent to call tools inside another program, so it can act in your software rather than only talk about it. <code>dvv</code> is that kind of server, and it speaks about your machines.</p>
+        <ul class="actions">
+          <li><a class="btn btn-primary" href="https://github.com/psmux/DeskVNC/releases/latest">Download <span class="arrow" aria-hidden="true">&gt;</span></a></li>
+          <li><a class="btn" href="guides.html">Read the guides</a></li>
+          <li><a class="btn" href="usecases.html">See who it is for</a></li>
+        </ul>
+      </div>
+
+      <div class="hero-panel">
+        <div class="readout">
+          <p class="readout-head"><span>Agent plane, measured</span><span class="dot" aria-hidden="true"></span></p>
+          <dl>
+            <div class="row">
+              <dt>Observe then act cycle</dt>
+              <dd>19 <span class="unit">ms</span></dd>
+            </div>
+            <div class="row">
+              <dt>Actions per second that implies</dt>
+              <dd>52 <span class="unit">/s</span></dd>
+            </div>
+            <div class="row">
+              <dt><code>dvv_open</code> and attach</dt>
+              <dd>4 <span class="unit">ms</span></dd>
+            </div>
+            <div class="row">
+              <dt>Screen at <code>scale: 0.25</code></dt>
+              <dd>25 <span class="unit">ms</span></dd>
+            </div>
+            <div class="row">
+              <dt>Installed on the target</dt>
+              <dd>none</dd>
+            </div>
+          </dl>
+        </div>
+        <p class="hero-foot">Measured by the project on a real 1920x1080 Windows desktop over a LAN. <a href="benchmarks.html">The full table and the methodology</a>.</p>
+        <p class="hero-foot"><a href="guides.html#guide-3">The four call loop, with every argument</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">What the agent actually does</span>
+        <h2>Open a machine, look at the screen, click and type</h2>
+        <p>The agent works over the ordinary VNC, RDP or SSH connection you already have open. Nothing is installed on the remote machine, because the connection is the one that machine already speaks. Input travels over the protocol to the far end, so the viewer can be minimised while the work carries on.</p>
+      </div>
+
+      <ul class="grid grid-2">
+        <li class="card">
+          <h3>Reads a real desktop</h3>
+          <p><code>dvv_screen</code> returns the framebuffer as an image with the size, the geometry generation and an image space beside it, which is what turns a point you pick on the picture into a coordinate on the remote machine.</p>
+        </li>
+        <li class="card">
+          <h3>Acts on it</h3>
+          <p><code>dvv_click</code>, <code>dvv_type</code> and <code>dvv_key</code> send real pointer and keyboard events. A keystroke follows the remote keyboard layout, so CJK input methods and dead keys arrive intact.</p>
+        </li>
+        <li class="card">
+          <h3>Moves files and text</h3>
+          <p><code>dvv_files</code> transfers over the machine's own SFTP channel, and <code>dvv_clipboard</code> puts text on the remote clipboard in one message instead of hundreds of key events.</p>
+        </li>
+        <li class="card">
+          <h3>Works on SSH terminals</h3>
+          <p><code>dvv_term_send</code> writes to a PTY, and <code>dvv_run</code> runs a command on a channel of its own and returns its stdout, its stderr and the exit status the far side reported.</p>
+        </li>
+        <li class="card">
+          <h3>Runs several machines at once</h3>
+          <p>Every machine is its own limb with its own lease, so ten machines are ten independent loops. <code>dvv_group_open</code> returns a group id and <code>dvv_group_run</code> acts on every member concurrently.</p>
+        </li>
+        <li class="card">
+          <h3>Hands over to a person</h3>
+          <p>Click into the pane and the agent is fenced out of that session. Held keys and buttons are released as it goes, so a half finished drag cannot strand the desktop, and one click hands it back.</p>
+        </li>
+      </ul>
+
+      <p>Every call, with its arguments, is served by the server itself: <code>dvv</code> answers the <code>initialize</code> handshake with its own instructions and returns the full schema for every tool on request. <a href="guides.html#guide-3">Guide 3</a> walks the loop end to end.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Quickstart</span>
+        <h2>From download to an agent holding the wheel</h2>
+        <p>Three steps and four commands. Everything below is real syntax taken from the shipped binaries.</p>
+      </div>
+
+      <ol class="grid grid-3">
+        <li class="card">
+          <span class="num">Step 01</span>
+          <h3>Install it</h3>
+          <p>macOS is signed and notarised, the Windows installer is signed, and Linux ships as a <code>.deb</code>, an <code>.rpm</code> and an AppImage. The page links the build for your platform by name.</p>
+          <p><a href="https://github.com/psmux/DeskVNC/releases/latest">Latest release</a></p>
+        </li>
+        <li class="card">
+          <span class="num">Step 02</span>
+          <h3>Save a machine</h3>
+          <p>Open the app and press <kbd>New Host</kbd>, or paste an address into the bar at the top and press <kbd>Connect</kbd>. Addresses read the way you already think of them.</p>
+        </li>
+        <li class="card">
+          <span class="num">Step 03</span>
+          <h3>Turn the plane on</h3>
+          <p>Switch the agent plane on in the <strong>AI Agents</strong> panel, then register <code>dvv</code> with your agent. The panel also has a button that does the Claude Code registration for you.</p>
+        </li>
+      </ol>
+
+      <h3 class="subhead">Register <code>dvv</code> with Claude Code</h3>
+      <figure class="code">
+        <figcaption>Terminal <span class="tag">claude mcp add</span></figcaption>
+<pre><code>claude mcp add deskvnc -- /Applications/DeskVNCViewer.app/Contents/MacOS/dvv mcp --stdio</code></pre>
+      </figure>
+
+      <h3 class="subhead">Or with OpenCode</h3>
+      <p>Put this in <code>opencode.json</code>, at the project root or in <code>~/.config/opencode/opencode.json</code>.</p>
+      <figure class="code">
+        <figcaption>Config <span class="tag">opencode.json</span></figcaption>
+<pre><code>{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "deskvnc": {
+      "type": "local",
+      "command": ["/Applications/DeskVNCViewer.app/Contents/MacOS/dvv", "mcp", "--stdio"],
+      "enabled": true
+    }
+  }
+}</code></pre>
+      </figure>
+
+      <p>For any other client, <code>dvv</code> prints the exact line for it:</p>
+      <figure class="code">
+        <figcaption>Terminal <span class="tag">dvv doctor</span></figcaption>
+<pre><code>dvv doctor</code></pre>
+      </figure>
+      <p><code>dvv setup</code> writes the registration for OpenCode, Pi, Codex and Claude Code itself, keeping a backup and any comments in your config. <code>dvv setup opencode</code>, <code>dvv setup pi</code>, <code>dvv setup codex</code> and <code>dvv setup claude</code> do one agent each.</p>
+
+      <h3 class="subhead">Ask for something, from a shell</h3>
+      <p>The same surface is available as commands, for an agent that drives a shell rather than an MCP client, and for you at a terminal.</p>
+      <figure class="code">
+        <figcaption>Terminal <span class="tag">dvv</span></figcaption>
+<pre><code>dvv hosts                                  # the saved machines and their ids
+dvv open front-desk --perceive             # open one, with a screen mirror
+dvv control acquire lmb_frontdesk          # take the wheel
+dvv screen lmb_frontdesk --scale 0.5 --out ./dvv-screen.png
+dvv click lmb_frontdesk 700 400
+dvv type lmb_frontdesk "notepad"
+dvv key lmb_frontdesk ctrl+s
+dvv close lmb_frontdesk</code></pre>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">For the person as well as the agent</span>
+        <h2>One window for every machine you look after</h2>
+        <p>The agent plane is optional. The client around it is a working remote desktop tool: a saved host library with live thumbnails, tabs, split panes, credentials in the operating system keychain, clipboard and SFTP file transfer in both directions, reconnection after a drop, screenshots, fullscreen, view only, network discovery and Wake on LAN.</p>
+      </div>
+
+      <ul class="metrics metrics-4">
+        <li>
+          <span class="metric-value">3 <span class="unit">protocols</span></span>
+          <span class="metric-label">VNC, RDP and SSH in one library, each core written rather than wrapped</span>
+        </li>
+        <li>
+          <span class="metric-value">3 <span class="unit">platforms</span></span>
+          <span class="metric-label">Windows, macOS and Linux, native on each</span>
+        </li>
+        <li>
+          <span class="metric-value">RFB 3.3<span class="unit"> to 3.8</span></span>
+          <span class="metric-label">VeNCrypt, RA2 and Apple authentication, continuous updates</span>
+        </li>
+        <li>
+          <span class="metric-value">MIT <span class="unit">or Apache-2.0</span></span>
+          <span class="metric-label">Dual licensed, free and open source</span>
+        </li>
+      </ul>
+
+      <div class="note note-signal">
+        <span class="note-label">Verified interoperability</span>
+        <p>The VNC core is filed down against real servers including x11vnc, TigerVNC, QEMU, RealVNC and macOS Screen Sharing. The RDP core covers Windows desktops with NLA, RemoteApp, resolution control and the usual codecs. The SSH core gives a terminal that survives a drop, SFTP transfers, tunnels and PuTTY key files.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Where to go next</span>
+        <h2>The material to act on</h2>
+      </div>
+      <ul class="grid grid-2">
+        <li class="card">
+          <h3><a href="guides.html">Guides</a></h3>
+          <p>Installing on Windows, macOS and Linux, registering the MCP server, the four call loop, file transfer, clipboard, SSH terminals, several machines at once, the keychain, discovery and Wake on LAN. Copy and paste.</p>
+        </li>
+        <li class="card">
+          <h3><a href="usecases.html">Use cases</a></h3>
+          <p>Machines that refuse installed agents, an agent that needs to read a screen and act, one window for a mixed estate, and remote support where a person takes the wheel back mid task.</p>
+        </li>
+        <li class="card">
+          <h3><a href="benchmarks.html">Benchmarks</a></h3>
+          <p>The measured numbers, the machine they were measured on, and what each one means for a loop you intend to run.</p>
+        </li>
+        <li class="card">
+          <h3><a href="https://psmux.github.io/deskvnc/">The official project page</a></h3>
+          <p>Maintained by the project itself, with the screenshots, the feature tour and the release notes.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <h2>DeskVNC</h2>
+      <p>One window for every machine you look after, whether it speaks VNC, RDP or SSH. Native, written in Rust on Tauri 2, running on Windows, macOS and Linux, dual licensed MIT OR Apache-2.0.</p>
+    </div>
+    <nav aria-label="Footer">
+      <h2>Links</h2>
+      <ul class="footer-links">
+        <li><a href="guides.html">Guides</a></li>
+        <li><a href="usecases.html">Use cases</a></li>
+        <li><a href="benchmarks.html">Benchmarks</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC/releases/latest">Downloads</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC">Source repository</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC/blob/main/docs/AGENTS.md">Agent integration notes</a></li>
+        <li><a href="https://github.com/psmux/DeskVNC/blob/main/docs/INSTALL.md">Install notes</a></li>
+        <li><a href="https://psmux.github.io/deskvnc/">Official page</a></li>
+      </ul>
+    </nav>
+    <p class="colophon">Benchmarks measured by the project on a 1920x1080 Windows desktop over a LAN. Numbers on this site are quoted from the project README.</p>
+  </div>
+</footer>
+
+</body>
+</html>

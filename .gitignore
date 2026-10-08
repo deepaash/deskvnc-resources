@@ -1,0 +1,26 @@
+# Internal strategy and research
+STRATEGY.md
+DISTRIBUTION.md
+research/
+site/
+swarm/queue/
+swarm/CONTEXT.md
+swarm/CONTEXT.md.bak
+swarm/hub/
+swarm/repo/
+swarm/dist/
+scripts/
+docs/show-hn.md
+docs/keyword-map.md
+docs/README.md
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+node_modules/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/

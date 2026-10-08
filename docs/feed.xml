@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DeskVNC updates feed (RSS 2.0).
+  Upstream authoritative source: https://github.com/psmux/DeskVNC/releases.atom
+  This feed is derived from the upstream GitHub releases atom feed.
+-->
+<rss version="2.0"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>DeskVNC Updates</title>
+    <link>https://github.com/psmux/DeskVNC</link>
+    <description>Release and update notifications for DeskVNC, a native cross-platform desktop client for VNC, RDP and SSH, and home of the dvv MCP server that lets AI agents drive remote desktops over the protocols those machines already speak.</description>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 08 Oct 2026 17:00:23 +0000</lastBuildDate>
+    <atom:link href="https://github.com/psmux/DeskVNC/releases.atom" rel="self" type="application/rss+xml"/>
+    <atom:link href="https://github.com/psmux/DeskVNC/releases.atom" rel="alternate" type="application/atom+xml"/>
+    <generator>desk vnc feed generator</generator>
+    <managingEditor>desk-vnc-feed (no-reply)</managingEditor>
+    <webMaster>desk-vnc-feed (no-reply)</webMaster>
+    <category domain="https://github.com/psmux/DeskVNC">remote desktop</category>
+    <category>vnc</category>
+    <category>rdp</category>
+    <category>ssh</category>
+    <category>mcp</category>
+    <category>ai agents</category>
+
+    <item>
+      <title>DeskVNCViewer v0.27.11</title>
+      <link>https://github.com/psmux/DeskVNC/releases/tag/v0.27.11</link>
+      <guid isPermaLink="true">https://github.com/psmux/DeskVNC/releases/tag/v0.27.11</guid>
+      <pubDate>Thu, 08 Oct 2026 17:00:23 +0000</pubDate>
+      <category>vnc</category>
+      <category>rdp</category>
+      <category>ssh</category>
+      <category>mcp</category>
+      <category>cross-platform</category>
+      <author>desk-vnc-feed (no-reply)</author>
+      <description><![CDATA[DeskVNCViewer v0.27.11. Continued work on protocol support for VNC, RDP and SSH, the dvv MCP agent interface, session handling and platform reach across Windows, macOS and Linux. Signed and notarized for macOS, signed for Windows, Linux x86_64 tarball.]]></description>
+    </item>
+
+    <item>
+      <title>DeskVNCViewer v0.27.10</title>
+      <link>https://github.com/psmux/DeskVNC/releases/tag/v0.27.10</link>
+      <guid isPermaLink="true">https://github.com/psmux/DeskVNC/releases/tag/v0.27.10</guid>
+      <pubDate>Wed, 07 Oct 2026 17:25:37 +0000</pubDate>
+      <category>vnc</category>
+      <category>rdp</category>
+      <category>ssh</category>
+      <category>mcp</category>
+      <category>cross-platform</category>
+      <author>desk-vnc-feed (no-reply)</author>
+      <description><![CDATA[DeskVNCViewer v0.27.10. Improvements to the dvv MCP server surface and to the VNC, RDP and SSH protocol cores, plus refinements to session handling and live thumbnails. Signed and notarized for macOS, signed for Windows.]]></description>
+    </item>
+
+    <item>
+      <title>DeskVNCViewer v0.27.9</title>
+      <link>https://github.com/psmux/DeskVNC/releases/tag/v0.27.9</link>
+      <guid isPermaLink="true">https://github.com/psmux/DeskVNC/releases/tag/v0.27.9</guid>
+      <pubDate>Mon, 05 Oct 2026 06:10:59 +0000</pubDate>
+      <category>vnc</category>
+      <category>rdp</category>
+      <category>ssh</category>
+      <category>mcp</category>
+      <category>cross-platform</category>
+      <author>desk-vnc-feed (no-reply)</author>
+      <description><![CDATA[DeskVNCViewer v0.27.9. Steady work on protocol support for VNC, RDP and SSH, the dvv MCP server for AI agents, session handling and discovery. Signed and notarized for macOS.]]></description>
+    </item>
+
+    <item>
+      <title>DeskVNCViewer v0.27.8</title>
+      <link>https://github.com/psmux/DeskVNC/releases/tag/v0.27.8</link>
+      <guid isPermaLink="true">https://github.com/psmux/DeskVNC/releases/tag/v0.27.8</guid>
+      <pubDate>Sun, 04 Oct 2026 11:52:38 +0000</pubDate>
+      <category>vnc</category>
+      <category>rdp</category>
+      <category>ssh</category>
+      <category>mcp</category>
+      <category>cross-platform</category>
+      <author>desk-vnc-feed (no-reply)</author>
+      <description><![CDATA[DeskVNCViewer v0.27.8. Continued polish across the VNC, RDP and SSH protocol cores, the dvv MCP server for AI agents, saved-host library handling and finding machines on the local network through mDNS, LLMNR, NetBIOS and polite subnet scanning. Signed and notarized for macOS.]]></description>
+    </item>
+
+    <item>
+      <title>DeskVNCViewer v0.27.7</title>
+      <link>https://github.com/psmux/DeskVNC/releases/tag/v0.27.7</link>
+      <guid isPermaLink="true">https://github.com/psmux/DeskVNC/releases/tag/v0.27.7</guid>
+      <pubDate>Sun, 04 Oct 2026 04:41:08 +0000</pubDate>
+      <category>vnc</category>
+      <category>rdp</category>
+      <category>ssh</category>
+      <category>mcp</category>
+      <category>cross-platform</category>
+      <author>desk-vnc-feed (no-reply)</author>
+      <description><![CDATA[DeskVNCViewer v0.27.7. Improvements to the dvv MCP server surface, the VNC, RDP and SSH protocol cores, credential storage in the operating system keychain, and bidirectional SFTP file transfer across the SSH core. Signed and notarized for macOS.]]></description>
+    </item>
+
+    <item>
+      <title>DeskVNCViewer v0.27.6</title>
+      <link>https://github.com/psmux/DeskVNC/releases/tag/v0.27.6</link>
+      <guid isPermaLink="true">https://github.com/psmux/DeskVNC/releases/tag/v0.27.6</guid>
+      <pubDate>Sat, 03 Oct 2026 18:52:45 +0000</pubDate>
+      <category>vnc</category>
+      <category>rdp</category>
+      <category>ssh</category>
+      <category>mcp</category>
+      <category>cross-platform</category>
+      <author>desk-vnc-feed (no-reply)</author>
+      <description><![CDATA[DeskVNCViewer v0.27.6. Continued refinement of the dvv MCP server for AI agents, of session handling for the VNC, RDP and SSH protocol cores, and of finding machines on the local network. Signed and notarized for macOS.]]></description>
+    </item>
+
+    <item>
+      <title>DeskVNCViewer v0.27.5</title>
+      <link>https://github.com/psmux/DeskVNC/releases/tag/v0.27.5</link>
+      <guid isPermaLink="true">https://github.com/psmux/DeskVNC/releases/tag/v0.27.5</guid>
+      <pubDate>Fri, 25 Sep 2026 22:00:26 +0000</pubDate>
+      <category>vnc</category>
+      <category>rdp</category>
+      <category>ssh</category>
+      <category>mcp</category>
+      <category>cross-platform</category>
+      <author>desk-vnc-feed (no-reply)</author>
+      <description><![CDATA[DeskVNCViewer v0.27.5. SSH clipboard now uses the native clipboard for Cmd+C and Cmd+V and Ctrl+Shift+C and Ctrl+Shift+V, with newline conversion and bracketed paste preserved. The macOS installers ship the universal dvv executable used by AI agents and MCP clients. Signed and notarized for macOS.]]></description>
+    </item>
+
+    <item>
+      <title>DeskVNCViewer v0.27.4</title>
+      <link>https://github.com/psmux/DeskVNC/releases/tag/v0.27.4</link>
+      <guid isPermaLink="true">https://github.com/psmux/DeskVNC/releases/tag/v0.27.4</guid>
+      <pubDate>Wed, 23 Sep 2026 18:43:13 +0000</pubDate>
+      <category>vnc</category>
+      <category>rdp</category>
+      <category>ssh</category>
+      <category>mcp</category>
+      <category>cross-platform</category>
+      <author>desk-vnc-feed (no-reply)</author>
+      <description><![CDATA[DeskVNCViewer v0.27.4. Improvements to keyboard shortcut handling in session windows across VNC and RDP, and to the dvv MCP server surface for AI agents driving remote desktops. Signed and notarized for macOS.]]></description>
+    </item>
+  </channel>
+</rss>

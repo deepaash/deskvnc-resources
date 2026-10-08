@@ -1,0 +1,21 @@
+<!-- DeskVNC logomark: a screen shell with a spine and a drive chevron leaving through the open edge. -->
+<svg xmlns="http://www.w3.org/2000/svg" class="dv-art" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet" role="img" aria-label="DeskVNC logomark: a screen shell holding a spine, with a forward chevron leaving through its open edge">
+  <title>DeskVNC</title>
+  <style>
+    .dv-art {
+      --dv-ink: #12161c;
+      --dv-accent: #0a58c2;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dv-art {
+        --dv-ink: #e6ecf3;
+        --dv-accent: #74b0ff;
+      }
+    }
+  </style>
+  <g fill="none" stroke="var(--dv-ink)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M96 40V30Q96 18 84 18H30Q18 18 18 30V90Q18 102 30 102H84Q96 102 96 90V80"/>
+    <path d="M40 36V84"/>
+  </g>
+  <path d="M64 38L96 60 64 82" fill="none" stroke="var(--dv-accent)" stroke-width="17" stroke-linecap="round" stroke-linejoin="miter"/>
+</svg>
