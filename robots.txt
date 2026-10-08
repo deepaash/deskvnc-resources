@@ -1,8 +1,50 @@
 # DeskVNC agent hub
-# Landing page, guides, use cases and benchmarks for DeskVNC.
-# Everything here is public documentation, welcome to any crawler.
+# Guides, references and machine readable surfaces for DeskVNC.
+# Everything here is public documentation and is welcome to any crawler.
 
 User-agent: *
 Allow: /
 
-Sitemap: https://psmux.github.io/deskvnc/hub/sitemap.xml
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+Sitemap: https://deskvnc-hub.pages.dev/sitemap.xml
