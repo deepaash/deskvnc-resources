@@ -14,7 +14,7 @@
       "deskvnc_setup"
     ]
   },
-  "generated": "2026-10-08T21:04:58.119Z",
+  "generated": "2026-10-08T21:21:37.818Z",
   "pages": [
     {
       "path": "/",
@@ -124,7 +124,7 @@
       "path": "/refusal",
       "url": "https://deskvnc-hub.pages.dev/refusal",
       "title": "Machines that refuse an installed agent",
-      "description": "The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic",
+      "description": "!Two paths to the same machine: an agent that installs itself on the endpoint is refused by policy, and an agent that speaks the protocol the machine already speaks gets in, with a",
       "lastmod": "2026-10-08",
       "words": 2027
     },

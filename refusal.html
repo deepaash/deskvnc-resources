@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Machines that refuse an installed agent</title>
-<meta name="description" content="The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic">
+<meta name="description" content="!Two paths to the same machine: an agent that installs itself on the endpoint is refused by policy, and an agent that speaks the protocol the machine already speaks gets in, with a">
 <link rel="canonical" href="https://deskvnc-hub.pages.dev/refusal">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Machines that refuse an installed agent">
-<meta property="og:description" content="The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic">
+<meta property="og:description" content="!Two paths to the same machine: an agent that installs itself on the endpoint is refused by policy, and an agent that speaks the protocol the machine already speaks gets in, with a">
 <meta property="og:url" content="https://deskvnc-hub.pages.dev/refusal">
 <meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
 <meta name="twitter:card" content="summary_large_image">
@@ -33,6 +33,7 @@
 
 <main class="prose">
 <h2 id="machines-that-refuse-an-installed-agent">Machines that refuse an installed agent</h2>
+<p><img src="/img/two-paths.svg" alt="Two paths to the same machine: an agent that installs itself on the endpoint is refused by policy, and an agent that speaks the protocol the machine already speaks gets in, with a person at the machine able to take control back at any moment." loading="lazy" decoding="async"></p>
 <p>The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Microsoft Power Automate ships a Desktop service, Automation Anywhere runs a Bot Runner, and the long tail of RPA platforms follows the same shape. That decision is fine on a developer laptop. It collapses on the machines an enterprise actually runs.</p>
 <p>Six categories of machine refuse an installed agent as a matter of policy or design. A programme built on a runtime install hits them as exclusions, every time. The same six categories keep a display protocol open, and DeskVNC's <code>dvv</code> control plane speaks it.</p>
 <p>The argument is structural. None of the categories below are edge cases. They are the most common production endpoints in regulated and operationally mature environments, and they are the reason an agent programme either scales across the real estate or stalls in a list of &quot;we cannot automate these&quot;.</p>
@@ -91,7 +92,7 @@
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "headline": "Machines that refuse an installed agent",
-  "description": "The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic",
+  "description": "!Two paths to the same machine: an agent that installs itself on the endpoint is refused by policy, and an agent that speaks the protocol the machine already speaks gets in, with a",
   "url": "https://deskvnc-hub.pages.dev/refusal",
   "license": "https://www.apache.org/licenses/LICENSE-2.0",
   "author": {

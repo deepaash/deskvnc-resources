@@ -101,7 +101,7 @@
       <title><![CDATA[Machines that refuse an installed agent]]></title>
       <link>https://deskvnc-hub.pages.dev/refusal</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/refusal</guid>
-      <description><![CDATA[The funded tools that let an AI agent drive a real Windows desktop all share one architectural decision: they install a runtime on that desktop. UiPath puts a Robot on the box, Mic]]></description>
+      <description><![CDATA[!Two paths to the same machine: an agent that installs itself on the endpoint is refused by policy, and an agent that speaks the protocol the machine already speaks gets in, with a]]></description>
       <pubDate>Thu, 08 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>

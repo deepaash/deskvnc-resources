@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" width="1200" height="620" role="img" aria-labelledby="tp-title tp-desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <title id="tp-title">Two paths to the same machine</title>
+  <desc id="tp-desc">Two panels side by side. The left panel shows an agent that asks to run on the endpoint and is refused by policy, on Citrix published apps, pooled VDI desktops, jump hosts, client owned machines, locked down images and kiosk shells. The right panel shows an agent that speaks the VNC, RDP or SSH protocol the machine already speaks, reaching the machine with nothing installed on the remote, while a person stays at the machine and can take control back at any moment.</desc>
+
+  <style>
+    .card { fill: var(--tp-bg, #fbfcfd); stroke: var(--tp-rule, #d7dee6); stroke-width: 1; }
+    .h { font-size: 21px; font-weight: 650; fill: var(--tp-fg, #12161c); }
+    .sub { font-size: 13px; fill: var(--tp-muted, #414b57); }
+    .lab { font-size: 15px; fill: var(--tp-fg, #12161c); }
+    .small { font-size: 13px; fill: var(--tp-muted, #414b57); }
+    .chip { font-size: 12.5px; fill: var(--tp-muted, #414b57); }
+    .box { fill: var(--tp-bgsub, #f2f5f8); stroke: var(--tp-rule, #d7dee6); stroke-width: 1; }
+    .chipBox { fill: var(--tp-muted, #414b57); fill-opacity: 0.07; stroke: var(--tp-rule, #d7dee6); stroke-width: 1; }
+    .node { font-size: 15px; font-weight: 600; fill: #ffffff; }
+    .stopFill { fill: var(--tp-muted, #414b57); }
+    .goFill { fill: var(--tp-accent, #0a58c2); }
+    .wireStop { stroke: var(--tp-muted, #414b57); stroke-width: 2; fill: none; }
+    .wireGo { stroke: var(--tp-accent, #0a58c2); stroke-width: 2; fill: none; }
+    .endStop { fill: var(--tp-muted, #414b57); }
+    .endGo { fill: var(--tp-accent, #0a58c2); }
+    .onFill { font-size: 12.5px; fill: #ffffff; }
+    .foot { font-size: 13.5px; fill: var(--tp-fg, #12161c); }
+    @media (prefers-color-scheme: dark) {
+      .h, .lab, .foot { fill: #e6ecf3; }
+      .sub, .small, .chip { fill: #b0bcc9; }
+      .card { fill: #0c0f13; stroke: #2b3441; }
+      .box { fill: #131820; stroke: #2b3441; }
+      .chipBox { fill: #8e9baa; fill-opacity: 0.12; stroke: #2b3441; }
+      .stopFill { fill: #8e9baa; }
+      .goFill { fill: #74b0ff; }
+      .node, .onFill { fill: #0c0f13; }
+      .wireStop { stroke: #8e9baa; }
+      .wireGo { stroke: #74b0ff; }
+      .endStop { fill: #8e9baa; }
+      .endGo { fill: #74b0ff; }
+    }
+  </style>
+
+  <rect class="card" x="30" y="30" width="555" height="560" rx="8"/>
+  <text class="h" x="60" y="74">Install an agent on the endpoint</text>
+  <text class="sub" x="60" y="100">The binary needs approval from whatever governs that machine.</text>
+
+  <rect class="box" x="60" y="128" width="225" height="62" rx="4"/>
+  <text class="lab" x="172" y="155" text-anchor="middle">Agent binary</text>
+  <text class="small" x="172" y="175" text-anchor="middle">asks to run there</text>
+
+  <path class="wireStop" d="M285 159 H344" stroke-dasharray="5 4"/>
+  <path class="endStop" d="M347 146 V172" stroke="var(--tp-muted, #414b57)" stroke-width="3" stroke-linecap="butt"/>
+
+  <rect class="stopFill" x="349" y="128" width="206" height="62" rx="4"/>
+  <text class="node" x="452" y="155" text-anchor="middle">Refused by policy</text>
+  <text class="onFill" x="452" y="177" text-anchor="middle">nothing lands</text>
+
+  <line x1="60" y1="222" x2="555" y2="222" stroke="var(--tp-rule, #d7dee6)" stroke-width="1"/>
+
+  <text class="small" x="60" y="248">Where that approval does not come</text>
+
+  <rect class="chipBox" x="60" y="264" width="237" height="38" rx="4"/>
+  <text class="chip" x="76" y="288">Citrix published apps</text>
+  <rect class="chipBox" x="317" y="264" width="238" height="38" rx="4"/>
+  <text class="chip" x="333" y="288">Pooled VDI desktops</text>
+  <rect class="chipBox" x="60" y="312" width="237" height="38" rx="4"/>
+  <text class="chip" x="76" y="336">Jump hosts and bastions</text>
+  <rect class="chipBox" x="317" y="312" width="238" height="38" rx="4"/>
+  <text class="chip" x="333" y="336">Client owned machines</text>
+  <rect class="chipBox" x="60" y="360" width="237" height="38" rx="4"/>
+  <text class="chip" x="76" y="384">Locked down images</text>
+  <rect class="chipBox" x="317" y="360" width="238" height="38" rx="4"/>
+  <text class="chip" x="333" y="384">Kiosk and shell replace</text>
+
+  <text class="small" x="60" y="436">The refusal is the security boundary doing its job.</text>
+  <text class="small" x="60" y="458">It is also why the automation never arrives.</text>
+
+  <rect class="box" x="60" y="486" width="495" height="80" rx="4"/>
+  <text class="foot" x="80" y="518">An endpoint that governs installs governs</text>
+  <text class="foot" x="80" y="540">the agent as well as the user.</text>
+
+  <rect class="card" x="615" y="30" width="555" height="560" rx="8"/>
+  <text class="h" x="645" y="74">Speak the protocol already in use</text>
+  <text class="sub" x="645" y="100">The connection the environment already permits.</text>
+
+  <rect class="box" x="645" y="128" width="225" height="62" rx="4"/>
+  <text class="lab" x="757" y="155" text-anchor="middle">Agent</text>
+  <text class="small" x="757" y="175" text-anchor="middle">nothing installed remote</text>
+
+  <path class="wireGo" d="M870 159 H932"/>
+  <path class="endGo" d="M932 159 L920 151.5 L920 166.5 Z"/>
+
+  <rect class="goFill" x="933" y="128" width="207" height="62" rx="4"/>
+  <text class="node" x="1036" y="155" text-anchor="middle">VNC, RDP, SSH</text>
+  <text class="onFill" x="1036" y="177" text-anchor="middle">gets in</text>
+
+  <line x1="645" y1="222" x2="1140" y2="222" stroke="var(--tp-rule, #d7dee6)" stroke-width="1"/>
+
+  <text class="small" x="645" y="248">What the endpoint sees instead</text>
+
+  <circle cx="690" cy="302" r="26" fill="none" stroke="var(--tp-accent, #0a58c2)" stroke-width="2"/>
+  <circle cx="690" cy="287" r="7.5" fill="var(--tp-accent, #0a58c2)"/>
+  <path d="M678 318 q12 -13 24 0" fill="none" stroke="var(--tp-accent, #0a58c2)" stroke-width="2" stroke-linecap="round"/>
+  <text class="lab" x="732" y="296">A person stays at the machine</text>
+  <text class="small" x="732" y="318">Takes control back at any moment, revokes, or ends the session.</text>
+
+  <text class="lab" x="645" y="370">The machine already speaks this</text>
+  <text class="small" x="645" y="396">No new software on the endpoint, so no new approval is needed.</text>
+  <text class="small" x="645" y="418">Supervised the whole way: the lease is releasable per machine.</text>
+  <text class="small" x="645" y="440">One client for VNC, RDP and SSH, on Windows, macOS and Linux.</text>
+
+  <rect class="box" x="645" y="486" width="495" height="80" rx="4"/>
+  <text class="foot" x="665" y="518">An endpoint that governs installs still</text>
+  <text class="foot" x="665" y="540">permits the protocol it already runs.</text>
+</svg>
