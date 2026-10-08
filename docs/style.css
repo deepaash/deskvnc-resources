@@ -1518,3 +1518,65 @@ table.spec .figure {
     break-inside: avoid;
   }
 }
+/* ============================================================ screenshots
+   Real product screenshots. Same tokens as everything else: 1px rule, tight
+   radius, mono uppercase caption. aspect-ratio reserves the box so nothing
+   shifts while an image decodes, and loading=lazy keeps the first paint light.
+   ====================================================================== */
+
+.shot {
+  margin: var(--space-6) 0;
+}
+
+.shot > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-inset);
+  box-shadow: var(--shadow-card);
+}
+
+.shot > figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+.shot > figcaption::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--signal);
+}
+
+.shot > figcaption .tag {
+  color: var(--fg-muted);
+  letter-spacing: 0.04em;
+}
+
+.shot-wide > img {
+  aspect-ratio: 1900 / 803;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Brand mark in the masthead, sized to sit on the text baseline. */
+.brand-mark img,
+.brand-mark svg {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  margin-right: 0.4em;
+}

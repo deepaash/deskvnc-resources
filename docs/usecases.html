@@ -25,7 +25,7 @@
 
 <header class="masthead">
   <div class="wrap">
-    <a class="brand" href="/"><span class="brand-mark">DeskVNC</span> <span class="brand-sub">agent hub</span></a>
+    <a class="brand" href="/"><span class="brand-mark"><img src="logo.svg" alt="">DeskVNC</span> <span class="brand-sub">agent hub</span></a>
     <nav aria-label="Main">
       <ul class="nav">
         <li><a href="/">Overview</a></li>
@@ -107,6 +107,13 @@ dvv_open {"hostId": "&lt;id&gt;", "perceive": true}</code></pre>
 
     <p>The four call loop, and then acting on what it saw. The <code>generation</code> you read from the screen goes back with the click, so a coordinate computed against a screen that has since resized is refused rather than landing somewhere unintended.</p>
 
+    <figure class="shot">
+      <img src="img/session.jpg" width="1600" height="1086" loading="lazy" decoding="async"
+           alt="A live remote session open in DeskVNC, showing the remote desktop being viewed and controlled.">
+      <figcaption>A live session, the remote desktop being viewed and driven <span class="tag">from the project README</span></figcaption>
+    </figure>
+
+
     <figure class="code">
       <figcaption>MCP <span class="tag">the loop</span></figcaption>
 <pre><code>dvv_hosts   {}
@@ -153,6 +160,13 @@ dvv_screen {"limbId": "...", "form": "damage-crop"}</code></pre>
     </dl>
 
     <p>Addresses read the way you already think of them, and if you do not know one, <strong>Scan network</strong> finds what is listening nearby.</p>
+
+    <figure class="shot shot-wide">
+      <img src="img/split.jpg" width="1900" height="803" loading="lazy" decoding="async"
+           alt="Two Linux desktops, Ubuntu GNOME and Kubuntu KDE, open side by side in split panes inside a single DeskVNC window.">
+      <figcaption>Two desktops side by side in one window, each its own machine <span class="tag">from the project README</span></figcaption>
+    </figure>
+
 
     <figure class="code">
       <figcaption>Viewer <span class="tag">address formats</span></figcaption>

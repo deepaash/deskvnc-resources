@@ -25,7 +25,7 @@
 
 <header class="masthead">
   <div class="wrap">
-    <a class="brand" href="index.html"><span class="brand-mark">DeskVNC</span> <span class="brand-sub">agent hub</span></a>
+    <a class="brand" href="index.html"><span class="brand-mark"><img src="logo.svg" alt="">DeskVNC</span> <span class="brand-sub">agent hub</span></a>
     <nav aria-label="Main">
       <ul class="nav">
         <li><a href="index.html" aria-current="page">Overview</a></li>
@@ -119,6 +119,12 @@
           <p>Click into the pane and the agent is fenced out of that session. Held keys and buttons are released as it goes, so a half finished drag cannot strand the desktop, and one click hands it back.</p>
         </li>
       </ul>
+
+      <figure class="shot">
+        <img src="img/agent.jpg" width="1600" height="1134" loading="lazy" decoding="async"
+             alt="An agent holding control of two remote machines at once, seen from inside DeskVNC, with the saved host library visible beside the session.">
+        <figcaption>Agent holding the wheel on two machines at once <span class="tag">from the project README</span></figcaption>
+      </figure>
 
       <p>Every call, with its arguments, is served by the server itself: <code>dvv</code> answers the <code>initialize</code> handshake with its own instructions and returns the full schema for every tool on request. <a href="guides.html#guide-3">Guide 3</a> walks the loop end to end.</p>
     </div>
