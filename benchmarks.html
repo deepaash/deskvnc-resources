@@ -41,6 +41,11 @@
   <div class="page-head">
     <span class="eyebrow">Benchmarks</span>
     <h1>19 ms from seeing a screen to acting on it</h1>
+<figure class="figure">
+  <img src="/img/latency-race.svg" alt="One wall clock window drawn twice. The agent inner loop sweeps the whole width in 19 ms for one full observe then act cycle, filling the window with 52 actions per second. A person crosses the same window in three deliberate beats, drawn schematically." width="1200" height="680" loading="lazy" decoding="async">
+  <figcaption>One wall clock window. The agent lane is measured at 19 ms, the person lane is a schematic of the same window.</figcaption>
+</figure>
+
     <p class="lede">These are the project's own measurements, taken on real hardware rather than a mock. The machine, the conditions and the meaning of each number are all below, so you can judge whether it fits the loop you intend to write.</p>
   </div>
 </div>

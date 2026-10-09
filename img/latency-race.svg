@@ -1,0 +1,242 @@
+<!-- DeskVNC latency race: one wall clock window, an agent inner loop sweeping it 52 times over while a person crosses the same window in three deliberate beats. -->
+<svg xmlns="http://www.w3.org/2000/svg" class="dv-art" viewBox="0 0 1200 680" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="lr-title lr-desc" style="display:block;max-width:100%;height:auto">
+  <title id="lr-title">One wall clock, two shapes of loop</title>
+  <desc id="lr-desc">A single wall clock window drawn twice. In the upper lane an agent inner loop sweeps the whole width in 19 ms for one full observe then act cycle, filling the window with 52 actions per second. In the lower lane a person crosses the same window in three deliberate beats, one see, one decide, one move, drawn schematically rather than measured. The measured figures are the agent lane ones, published by the project.</desc>
+
+  <style>
+    .dv-art {
+      --dv-bg: #fbfcfd;
+      --dv-panel: #f2f5f8;
+      --dv-panel-2: #e9eef3;
+      --dv-ink: #12161c;
+      --dv-ink-2: #414b57;
+      --dv-ink-3: #5d6875;
+      --dv-rule: #ccd5de;
+      --dv-rule-2: #9aa7b4;
+      --dv-accent: #0a58c2;
+      --dv-accent-line: rgba(10, 88, 194, 0.32);
+      --dv-accent-soft: rgba(10, 88, 194, 0.09);
+      --dv-focus: #b1450a;
+      --dv-focus-soft: rgba(177, 69, 10, 0.1);
+      --dv-focus-line: rgba(177, 69, 10, 0.34);
+      --dv-signal: #1a6f42;
+      --dv-grid: rgba(18, 22, 28, 0.055);
+      --dv-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --dv-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dv-art {
+        --dv-bg: #0c0f13;
+        --dv-panel: #131820;
+        --dv-panel-2: #090c10;
+        --dv-ink: #e6ecf3;
+        --dv-ink-2: #b0bcc9;
+        --dv-ink-3: #8e9baa;
+        --dv-rule: #2c3641;
+        --dv-rule-2: #4a5764;
+        --dv-accent: #74b0ff;
+        --dv-accent-line: rgba(116, 176, 255, 0.34);
+        --dv-accent-soft: rgba(116, 176, 255, 0.13);
+        --dv-focus: #ffb057;
+        --dv-focus-soft: rgba(255, 176, 87, 0.12);
+        --dv-focus-line: rgba(255, 176, 87, 0.38);
+        --dv-signal: #5fd39b;
+        --dv-grid: rgba(230, 236, 243, 0.05);
+      }
+    }
+
+    text { font-family: var(--dv-sans); fill: var(--dv-ink); }
+    .lr-kick {
+      font-family: var(--dv-mono);
+      font-size: 13px;
+      letter-spacing: 0.09em;
+      fill: var(--dv-ink-3);
+    }
+    .lr-title { font-size: 30px; font-weight: 650; letter-spacing: -0.02em; }
+    .lr-sub { font-size: 15.5px; fill: var(--dv-ink-2); }
+    .lr-lane {
+      font-family: var(--dv-mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+    }
+    .lr-lane-agent { fill: var(--dv-accent); }
+    .lr-lane-human { fill: var(--dv-focus); }
+    .lr-metric {
+      font-family: var(--dv-mono);
+      font-size: 46px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      fill: var(--dv-accent);
+    }
+    .lr-rate {
+      font-family: var(--dv-mono);
+      font-size: 17px;
+      font-weight: 700;
+      fill: var(--dv-ink);
+    }
+    .lr-lead {
+      font-family: var(--dv-mono);
+      font-size: 20px;
+      letter-spacing: 0.06em;
+      fill: var(--dv-ink-2);
+    }
+    .lr-note { font-size: 14px; fill: var(--dv-ink-2); }
+    .lr-cap { font-size: 13.5px; fill: var(--dv-ink-3); }
+    .lr-foot { font-size: 14px; fill: var(--dv-ink-3); }
+    .lr-tag {
+      font-family: var(--dv-mono);
+      font-size: 12px;
+      letter-spacing: 0.09em;
+      text-anchor: end;
+      fill: var(--dv-ink-3);
+    }
+    .lr-pan { fill: var(--dv-panel); stroke: var(--dv-rule); stroke-width: 1; }
+    .lr-guide { stroke: var(--dv-grid); stroke-width: 1; }
+    .lr-base { stroke: var(--dv-rule); stroke-width: 1; fill: none; }
+    .lr-tick { stroke: var(--dv-rule-2); stroke-width: 1; fill: none; }
+    .lr-comb-idle { stroke: var(--dv-rule-2); stroke-width: 3; fill: none; }
+    .lr-comb-run { stroke: var(--dv-accent); stroke-width: 3; fill: none; }
+    .lr-head { fill: var(--dv-accent); }
+    .lr-beat {
+      fill: var(--dv-focus-soft);
+      stroke: var(--dv-focus-line);
+      stroke-width: 1;
+      stroke-dasharray: 5 4;
+    }
+    .lr-beatmark { fill: var(--dv-focus); }
+    .lr-beat-rule, .lr-beat-edge { fill: var(--dv-focus); }
+
+    /* Base styles below are the completed resting state: a finished sweep and a
+       finished pass. The animations rewind from there. */
+    .lr-sweep {
+      transform-box: view-box;
+      transform-origin: 420px 310px;
+      transform: scaleX(1);
+      animation: lr-sweep 0.8s linear infinite;
+    }
+    .lr-head {
+      transform: translateX(0);
+      animation: lr-head 0.8s linear infinite,
+                 lr-fade-agent 0.8s linear infinite;
+    }
+    .lr-beat { animation: lr-beat 3.2s linear infinite; }
+    .lr-beat-edge {
+      transform: translateX(0);
+      animation: lr-edge 3.2s cubic-bezier(0.4, 0, 0.3, 1) infinite,
+                 lr-fade-human 3.2s linear infinite;
+    }
+    .lr-beat-rule {
+      transform: scaleX(1);
+      transform-box: view-box;
+      transform-origin: 420px 488px;
+      animation: lr-rule 3.2s cubic-bezier(0.4, 0, 0.3, 1) infinite,
+                 lr-fade-human 3.2s linear infinite;
+    }
+
+    @keyframes lr-sweep {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    @keyframes lr-head {
+      from { transform: translateX(-674px); }
+      to { transform: translateX(0); }
+    }
+    @keyframes lr-fade-agent {
+      0%, 88% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    /* A dwell is repeated keyframes, so the bar stops dead between beats. */
+    @keyframes lr-beat {
+      0% { width: 0; }
+      26% { width: 226.67px; }
+      42% { width: 226.67px; }
+      62% { width: 453.33px; }
+      76% { width: 453.33px; }
+      100% { width: 680px; }
+    }
+    @keyframes lr-rule {
+      0% { transform: scaleX(0); }
+      26% { transform: scaleX(0.3333); }
+      42% { transform: scaleX(0.3333); }
+      62% { transform: scaleX(0.6667); }
+      76% { transform: scaleX(0.6667); }
+      100% { transform: scaleX(1); }
+    }
+    @keyframes lr-edge {
+      0% { transform: translateX(-674px); }
+      26% { transform: translateX(-447.33px); }
+      42% { transform: translateX(-447.33px); }
+      62% { transform: translateX(-220.67px); }
+      76% { transform: translateX(-220.67px); }
+      100% { transform: translateX(0); }
+    }
+    @keyframes lr-fade-human {
+      0%, 90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lr-sweep, .lr-head, .lr-beat, .lr-beat-edge, .lr-beat-rule {
+        animation: none;
+      }
+    }
+  </style>
+
+  <defs>
+    <mask id="lr-sweep-mask">
+      <rect class="lr-sweep" x="420" y="302" width="680" height="62" fill="#fff"/>
+    </mask>
+  </defs>
+
+  <rect x="64" y="68" width="20" height="2" fill="var(--dv-accent)"/>
+  <text class="lr-kick" x="94" y="69">MEASURED, NOT ESTIMATED</text>
+  <text class="lr-title" x="64" y="114">One wall clock, two shapes of loop</text>
+  <text class="lr-sub" x="64" y="150">The agent reads the screen and acts inside one cycle. A person takes the same decision one turn at a time.</text>
+
+  <line x1="64" y1="180" x2="1136" y2="180" stroke="var(--dv-rule)" stroke-width="1"/>
+
+  <rect class="lr-pan" x="64" y="208" width="1072" height="400" rx="8"/>
+
+  <path class="lr-guide" d="M420 258V590 M590 258V590 M760 258V590 M930 258V590 M1100 258V590"/>
+
+  <circle cx="96" cy="232" r="4" fill="var(--dv-accent)"/>
+  <text class="lr-lane lr-lane-agent" x="108" y="246">ONE WALL CLOCK WINDOW</text>
+
+  <text class="lr-lane lr-lane-agent" x="88" y="296">AGENT INNER LOOP</text>
+  <text class="lr-metric" x="88" y="354">19 ms</text>
+  <text class="lr-note" x="88" y="382">one full observe-then-act cycle</text>
+  <text class="lr-rate" x="88" y="410">52 actions per second</text>
+
+  <g id="lr-agent-lane">
+    <path class="lr-comb-idle" d="M426.54 310v46 M439.62 310v46 M452.69 310v46 M465.77 310v46 M478.85 310v46 M491.92 310v46 M505.00 310v46 M518.08 310v46 M531.15 310v46 M544.23 310v46 M557.31 310v46 M570.38 310v46 M583.46 310v46 M596.54 310v46 M609.62 310v46 M622.69 310v46 M635.77 310v46 M648.85 310v46 M661.92 310v46 M675.00 310v46 M688.08 310v46 M701.15 310v46 M714.23 310v46 M727.31 310v46 M740.38 310v46 M753.46 310v46 M766.54 310v46 M779.62 310v46 M792.69 310v46 M805.77 310v46 M818.85 310v46 M831.92 310v46 M845.00 310v46 M858.08 310v46 M871.15 310v46 M884.23 310v46 M897.31 310v46 M910.38 310v46 M923.46 310v46 M936.54 310v46 M949.62 310v46 M962.69 310v46 M975.77 310v46 M988.85 310v46 M1001.92 310v46 M1015.00 310v46 M1028.08 310v46 M1041.15 310v46 M1054.23 310v46 M1067.31 310v46 M1080.38 310v46 M1093.46 310v46"/>
+    <g mask="url(#lr-sweep-mask)">
+      <path class="lr-comb-run" d="M426.54 310v46 M439.62 310v46 M452.69 310v46 M465.77 310v46 M478.85 310v46 M491.92 310v46 M505.00 310v46 M518.08 310v46 M531.15 310v46 M544.23 310v46 M557.31 310v46 M570.38 310v46 M583.46 310v46 M596.54 310v46 M609.62 310v46 M622.69 310v46 M635.77 310v46 M648.85 310v46 M661.92 310v46 M675.00 310v46 M688.08 310v46 M701.15 310v46 M714.23 310v46 M727.31 310v46 M740.38 310v46 M753.46 310v46 M766.54 310v46 M779.62 310v46 M792.69 310v46 M805.77 310v46 M818.85 310v46 M831.92 310v46 M845.00 310v46 M858.08 310v46 M871.15 310v46 M884.23 310v46 M897.31 310v46 M910.38 310v46 M923.46 310v46 M936.54 310v46 M949.62 310v46 M962.69 310v46 M975.77 310v46 M988.85 310v46 M1001.92 310v46 M1015.00 310v46 M1028.08 310v46 M1041.15 310v46 M1054.23 310v46 M1067.31 310v46 M1080.38 310v46 M1093.46 310v46"/>
+    </g>
+    <rect class="lr-head" x="1094" y="294" width="6" height="68"/>
+    <path class="lr-base" d="M420 364H1100"/>
+    <path class="lr-tick" d="M420 364v8 M590 364v8 M760 364v8 M930 364v8 M1100 364v8"/>
+  </g>
+  <text class="lr-cap" x="420" y="398">one cycle, sweeping the window again and again</text>
+
+  <line x1="64" y1="446" x2="1136" y2="446" stroke="var(--dv-rule)" stroke-width="1"/>
+
+  <text class="lr-lane lr-lane-human" x="88" y="492">A PERSON'S TURN</text>
+  <text class="lr-lead" x="88" y="534">SEE, DECIDE, MOVE</text>
+  <text class="lr-note" x="88" y="560">three deliberate beats</text>
+
+  <g id="lr-human-lane">
+    <rect class="lr-beat" x="420" y="488" width="680" height="48" rx="2"/>
+    <rect class="lr-beat-rule" x="420" y="488" width="680" height="2" rx="1"/>
+    <rect class="lr-beat-edge" x="1094" y="484" width="6" height="56" rx="1"/>
+    <g class="lr-beatmark">
+      <circle cx="646.67" cy="512" r="3"/>
+      <circle cx="873.33" cy="512" r="3"/>
+    </g>
+    <path class="lr-base" d="M420 548H1100"/>
+    <path class="lr-tick" d="M420 548v8 M590 548v8 M760 548v8 M930 548v8 M1100 548v8"/>
+  </g>
+  <text class="lr-cap" x="420" y="576">the same window, crossed once at the pace of a person, drawn schematically</text>
+
+  <circle cx="68" cy="639" r="4" fill="var(--dv-signal)"/>
+  <text class="lr-foot" x="84" y="644">One wall clock window. The agent lane is measured, the person lane is schematic.</text>
+  <text class="lr-tag" x="1136" y="644" text-anchor="end">19 ms, PUBLISHED BY THE PROJECT</text>
+</svg>
