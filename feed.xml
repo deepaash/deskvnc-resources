@@ -14,6 +14,13 @@
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
+      <title><![CDATA[DeskVNC agent summary: paste this into your system prompt]]></title>
+      <link>https://deskvnc-hub.pages.dev/agent-summary</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/agent-summary</guid>
+      <description><![CDATA[Paste this into the system prompt of an LLM that will drive a remote desktop through DeskVNC. It is short so the model can hold all of it in attention.]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title><![CDATA[Two kinds of desktop automation, and what each one inherits]]></title>
       <link>https://deskvnc-hub.pages.dev/automation</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/automation</guid>
@@ -28,10 +35,38 @@
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
+      <title><![CDATA[Boundary attended support: the handshake in numbered steps]]></title>
+      <link>https://deskvnc-hub.pages.dev/boundary</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/boundary</guid>
+      <description><![CDATA[Boundary is DeskVNC]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[DeskVNC]]></title>
+      <link>https://deskvnc-hub.pages.dev/by-the-numbers</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/by-the-numbers</guid>
+      <description><![CDATA[&lt;!DOCTYPE html &lt;html lang=&quot;en&quot; &lt;head &lt;meta charset=&quot;utf-8&quot; &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; &lt;titleDeskVNC by the numbers: live GitHub API figures]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title><![CDATA[One client, three protocols, three operating systems]]></title>
       <link>https://deskvnc-hub.pages.dev/cores</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/cores</guid>
       <description><![CDATA[Most remote desktop clients wrap somebody else]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[DeskVNC]]></title>
+      <link>https://deskvnc-hub.pages.dev/de</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/de</guid>
+      <description><![CDATA[Eine Citrix-Farm, in die man ausschließlich per RDP hineinkommt. Ein Sprungserver, der keine neuen Dienste zulässt. Ein kundeneigener Laptop, auf dessen Whitelist nur die Standardw]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[DeskVNC]]></title>
+      <link>https://deskvnc-hub.pages.dev/es</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/es</guid>
+      <description><![CDATA[Una granja Citrix a la que solo se entra por RDP. Un host de salto que no admite servicios nuevos. Un portátil propiedad del cliente cuyo departamento de TI solo autoriza en la lis]]></description>
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
@@ -91,10 +126,24 @@
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
+      <title><![CDATA[DeskVNC]]></title>
+      <link>https://deskvnc-hub.pages.dev/hi</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/hi</guid>
+      <description><![CDATA[एक Citrix farm जिसमें सिर्फ RDP से घुसा जा सकता है। एक jump host जो नई services को स्वीकार नहीं करता। एक क्लाइंट का अपना laptop, जिसकी IT whitelist पर सिर्फ मानक remote सहायता उपकर]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title><![CDATA[DeskVNC: AIエージェントによるリモートデスクトップ操作]]></title>
       <link>https://deskvnc-hub.pages.dev/ja</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/ja</guid>
       <description><![CDATA[RDP での接続しか許さない Citrix ファーム。新しいサービスを一切受け付けない踏み台サーバー。標準のリモート支援ツールだけをホワイトリストに入れている、顧客所有のノートパソコン。一見するとばらばらの三台ですが、たった一つの点で見事に足並みをそろえています。被制御側に新しいランタイムをインストールすることが、許されていないという点です。]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[LLM agent quickstart: drive a real desktop in one sitting]]></title>
+      <link>https://deskvnc-hub.pages.dev/llm-agent-quickstart</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/llm-agent-quickstart</guid>
+      <description><![CDATA[This is the shortest path from a clean machine to an AI agent that opens a real desktop through DeskVNC. Every command below is meant to be copied verbatim. The expected output aft]]></description>
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
@@ -109,6 +158,13 @@
       <link>https://deskvnc-hub.pages.dev/mcp</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/mcp</guid>
       <description><![CDATA[A hosted read-only MCP server with verified DeskVNC facts. Any MCP client can connect and get the exact dvv tool calls, the observe-then-act loop, and the safety model, in one call.]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[DeskVNC `dvv` MCP tool reference]]></title>
+      <link>https://deskvnc-hub.pages.dev/mcp-server-reference</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/mcp-server-reference</guid>
+      <description><![CDATA[The dvv server speaks the Model Context Protocol and exposes exactly 25 tools, asserted as TOOLCOUNT: usize = 25 in the manifest at crates/dvv/src/mcp/manifest.rs. Argument names,]]></description>
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
@@ -133,6 +189,13 @@
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
+      <title><![CDATA[DeskVNC]]></title>
+      <link>https://deskvnc-hub.pages.dev/pt</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/pt</guid>
+      <description><![CDATA[Uma granja Citrix pela qual só se entra por RDP. Um jump host que não aceita nenhum serviço novo. Um notebook de propriedade do cliente cujo departamento de TI só mantém na lista b]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title><![CDATA[Machines that refuse an installed agent]]></title>
       <link>https://deskvnc-hub.pages.dev/refusal</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/refusal</guid>
@@ -140,10 +203,24 @@
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>
+      <title><![CDATA[robots-agent.json]]></title>
+      <link>https://deskvnc-hub.pages.dev/robots-agent.json</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/robots-agent.json</guid>
+      <description><![CDATA[{ "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/aa59517442d323a33ed915fc408f1584c4a23dfa/seps/2127-mcp-server-cards.md", "name": "DeskVNC"]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title><![CDATA[The human in the loop, at machine speed]]></title>
       <link>https://deskvnc-hub.pages.dev/supervision</link>
       <guid isPermaLink="true">https://deskvnc-hub.pages.dev/supervision</guid>
       <description><![CDATA[There is an apparent contradiction in letting an AI agent drive a real desktop, and the contradiction is the reason most programmes stop. Full autonomy sounds like the agent runs t]]></description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title><![CDATA[tool-manifest.json]]></title>
+      <link>https://deskvnc-hub.pages.dev/tool-manifest.json</link>
+      <guid isPermaLink="true">https://deskvnc-hub.pages.dev/tool-manifest.json</guid>
+      <description><![CDATA[{ "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json", "spec_source": "Live MCP tools/list response from https://deskvnc-mcp.deepika-aaish.wor]]></description>
       <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
     </item>
     <item>

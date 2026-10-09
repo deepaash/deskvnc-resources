@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="t d">
+  <title id="t">DeskVNC source languages, 98.5 percent Rust and TypeScript</title>
+  <desc id="d">Social card. A horizontal bar chart of bytes per language in the DeskVNC repository, taken straight from the GitHub languages endpoint. Rust is 8,473,411 bytes, TypeScript 1,396,424, Python 85,710, Shell 55,942, CSS 11,120 and HTML 382, totalling 10,022,989 bytes, so Rust and TypeScript are 98.5 percent of it. Bar length is proportional to bytes against Rust at the full track width. CSS and HTML fall below one pixel at that scale and are drawn at a 3px minimum, stated on the card. Nothing is extrapolated.</desc>
+  <style>
+.bg      { fill: #fbfcfd; }                 /* --bg */
+.bg-sub  { fill: #f2f5f8; }                 /* --bg-subtle */
+.bg-ins  { fill: #e9eef3; }                 /* --bg-inset */
+.fg      { fill: #12161c; }                 /* --fg */
+.fg-mut  { fill: #414b57; }                 /* --fg-muted */
+.fg-fai  { fill: #5d6875; }                 /* --fg-faint */
+.acc     { fill: #0a58c2; }                 /* --accent */
+.sig     { fill: #1a6f42; }                 /* --signal */
+.s-border { stroke: #ccd5de; fill: none; }  /* --border */
+.s-acc   { stroke: #0a58c2; fill: none; }  /* --accent */
+.s-grid  { stroke: #12161c; stroke-opacity: 0.055; fill: none; } /* --grid-line */
+.sans { font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif; }
+.mono { font-family: ui-monospace, "Cascadia Mono", "SF Mono", SFMono-Regular,
+        Menlo, Consolas, "Liberation Mono", monospace; }
+.lbl { letter-spacing: 0.09em; }            /* --tracking-label */
+.tight { letter-spacing: -0.02em; }         /* --tracking-tight */
+  </style>
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" class="s-grid" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbfcfd" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fbfcfd" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="630" class="bg"/>
+  <rect x="0" y="0" width="1200" height="500" fill="url(#grid)"/>
+  <rect x="0" y="360" width="1200" height="270" fill="url(#fade)"/>
+  <rect x="80" y="108" width="56" height="4" class="acc"/>
+  <text x="152" y="120" class="mono fg-mut lbl" font-size="13" letter-spacing="0.09em">SOURCE LANGUAGES</text>
+  <text x="1120" y="120" class="mono fg lbl" font-size="13" text-anchor="end" letter-spacing="0.04em">DeskVNC</text>
+  <circle cx="1046" cy="116" r="4" class="sig"/>
+  <line x1="80" y1="152" x2="1120" y2="152" class="s-border" stroke-width="1"/>
+  <text x="80" y="194" class="mono fg tight" font-size="34" letter-spacing="-0.02em">98.5% Rust and TypeScript</text>
+  <text x="80" y="224" class="sans fg-mut" font-size="17">of the 10,022,989 bytes GitHub counted across six languages.</text>
+  <text x="80" y="254" class="mono fg-fai lbl" font-size="12" letter-spacing="0.09em">BYTES PER LANGUAGE, SCALED TO RUST</text>
+  <rect x="210.0" y="266" width="730.0" height="22.0" rx="2" class="bg-ins"/>
+  <rect x="210.0" y="266" width="730.00" height="22.0" rx="2" class="acc"/>
+  <text x="80" y="282" class="sans fg" font-size="18">Rust</text>
+  <text x="1120" y="282" class="mono fg" font-size="18" text-anchor="end">84.54%</text>
+  <rect x="210.0" y="302" width="730.0" height="22.0" rx="2" class="bg-ins"/>
+  <rect x="210.0" y="302" width="120.30" height="22.0" rx="2" class="acc"/>
+  <text x="80" y="318" class="sans fg" font-size="18">TypeScript</text>
+  <text x="1120" y="318" class="mono fg" font-size="18" text-anchor="end">13.93%</text>
+  <rect x="210.0" y="338" width="730.0" height="22.0" rx="2" class="bg-ins"/>
+  <rect x="210.0" y="338" width="7.38" height="22.0" rx="2" class="acc"/>
+  <text x="80" y="354" class="sans fg" font-size="18">Python</text>
+  <text x="1120" y="354" class="mono fg" font-size="18" text-anchor="end">0.86%</text>
+  <rect x="210.0" y="374" width="730.0" height="22.0" rx="2" class="bg-ins"/>
+  <rect x="210.0" y="374" width="4.82" height="22.0" rx="2" class="acc"/>
+  <text x="80" y="390" class="sans fg" font-size="18">Shell</text>
+  <text x="1120" y="390" class="mono fg" font-size="18" text-anchor="end">0.56%</text>
+  <rect x="210.0" y="410" width="730.0" height="22.0" rx="2" class="bg-ins"/>
+  <rect x="210.0" y="410" width="3.00" height="22.0" rx="2" class="acc"/>
+  <text x="80" y="426" class="sans fg" font-size="18">CSS</text>
+  <text x="1120" y="426" class="mono fg" font-size="18" text-anchor="end">0.11%</text>
+  <rect x="210.0" y="446" width="730.0" height="22.0" rx="2" class="bg-ins"/>
+  <rect x="210.0" y="446" width="3.00" height="22.0" rx="2" class="acc"/>
+  <text x="80" y="462" class="sans fg" font-size="18">HTML</text>
+  <text x="1120" y="462" class="mono fg" font-size="18" text-anchor="end">0.0038%</text>
+  <text x="80" y="500" class="sans fg-mut" font-size="14">Each bar is bytes per language, scaled so Rust fills the track at 8,473,411 bytes. Total counted: 10,022,989 bytes.</text>
+  <text x="80" y="522" class="sans fg-mut" font-size="14">CSS at 11,120 bytes and HTML at 382 bytes are drawn at a 3px minimum so they stay visible at this scale.</text>
+  <text x="80" y="544" class="sans fg-mut" font-size="14">Source: gh api repos/psmux/DeskVNC/languages, retrieved 9 Oct 2026.</text>
+</svg>

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="t d">
+  <title id="t">The DeskVNC four-call loop and its measured latency</title>
+  <desc id="d">Social card. Four MCP calls, dvv_hosts then dvv_open then dvv_control then dvv_screen, shown in call order, and one chart row per call below them. The latencies are those the DeskVNC README publishes, measured on a 1920x1080 Windows desktop over LAN: dvv_screen at scale 0.25 is 25 ms, dvv_open and attach is 4 ms, and dvv_control acquire is published as under 1 ms, drawn to the 1 ms mark as an upper bound. dvv_hosts has no published timing, so its row carries no bar. The published observe-then-act cycle is 19 ms, which is a separate measurement from the three bars.</desc>
+  <style>
+.bg      { fill: #fbfcfd; }                 /* --bg */
+.bg-sub  { fill: #f2f5f8; }                 /* --bg-subtle */
+.bg-ins  { fill: #e9eef3; }                 /* --bg-inset */
+.fg      { fill: #12161c; }                 /* --fg */
+.fg-mut  { fill: #414b57; }                 /* --fg-muted */
+.fg-fai  { fill: #5d6875; }                 /* --fg-faint */
+.acc     { fill: #0a58c2; }                 /* --accent */
+.sig     { fill: #1a6f42; }                 /* --signal */
+.s-border { stroke: #ccd5de; fill: none; }  /* --border */
+.s-acc   { stroke: #0a58c2; fill: none; }  /* --accent */
+.s-grid  { stroke: #12161c; stroke-opacity: 0.055; fill: none; } /* --grid-line */
+.sans { font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif; }
+.mono { font-family: ui-monospace, "Cascadia Mono", "SF Mono", SFMono-Regular,
+        Menlo, Consolas, "Liberation Mono", monospace; }
+.lbl { letter-spacing: 0.09em; }            /* --tracking-label */
+.tight { letter-spacing: -0.02em; }         /* --tracking-tight */
+  </style>
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" class="s-grid" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbfcfd" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fbfcfd" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="630" class="bg"/>
+  <rect x="0" y="0" width="1200" height="500" fill="url(#grid)"/>
+  <rect x="0" y="360" width="1200" height="270" fill="url(#fade)"/>
+  <rect x="80" y="108" width="56" height="4" class="acc"/>
+  <text x="152" y="120" class="mono fg-mut lbl" font-size="13" letter-spacing="0.09em">THE FOUR-CALL LOOP</text>
+  <text x="1120" y="120" class="mono fg lbl" font-size="13" text-anchor="end" letter-spacing="0.04em">DeskVNC</text>
+  <circle cx="1046" cy="116" r="4" class="sig"/>
+  <line x1="80" y1="152" x2="1120" y2="152" class="s-border" stroke-width="1"/>
+  <text x="80" y="194" class="mono fg tight" font-size="34" letter-spacing="-0.02em">Four calls, one loop</text>
+  <text x="80" y="224" class="sans fg-mut" font-size="17">Each machine is its own limb with its own lease, so ten machines are ten independent loops.</text>
+  <rect x="92" y="242" width="236" height="52" rx="4" class="bg-sub"/>
+  <rect x="92" y="242" width="236" height="52" rx="4" class="s-border" stroke-width="1"/>
+  <text x="210" y="275" class="mono fg" font-size="17" text-anchor="middle">dvv_hosts</text>
+  <polyline points="334,262 342,268 334,274" class="s-acc" stroke-width="2"/>
+  <rect x="352" y="242" width="236" height="52" rx="4" class="bg-sub"/>
+  <rect x="352" y="242" width="236" height="52" rx="4" class="s-border" stroke-width="1"/>
+  <text x="470" y="275" class="mono fg" font-size="17" text-anchor="middle">dvv_open</text>
+  <polyline points="594,262 602,268 594,274" class="s-acc" stroke-width="2"/>
+  <rect x="612" y="242" width="236" height="52" rx="4" class="bg-sub"/>
+  <rect x="612" y="242" width="236" height="52" rx="4" class="s-border" stroke-width="1"/>
+  <text x="730" y="275" class="mono fg" font-size="17" text-anchor="middle">dvv_control</text>
+  <polyline points="854,262 862,268 854,274" class="s-acc" stroke-width="2"/>
+  <rect x="872" y="242" width="236" height="52" rx="4" class="bg-sub"/>
+  <rect x="872" y="242" width="236" height="52" rx="4" class="s-border" stroke-width="1"/>
+  <text x="990" y="275" class="mono fg" font-size="17" text-anchor="middle">dvv_screen</text>
+  <text x="80" y="330" class="mono fg-fai lbl" font-size="12" letter-spacing="0.09em">MEASURED LATENCY PER CALL, IN MILLISECONDS</text>
+  <line x1="330" y1="350" x2="1000" y2="350" class="s-border" stroke-width="1"/>
+  <text x="330" y="344" class="mono fg-fai" font-size="12" text-anchor="middle">0</text>
+  <text x="464" y="344" class="mono fg-fai" font-size="12" text-anchor="middle">5</text>
+  <line x1="464.0" y1="358" x2="464.0" y2="502" class="s-border" stroke-width="1"/>
+  <text x="598" y="344" class="mono fg-fai" font-size="12" text-anchor="middle">10</text>
+  <line x1="598.0" y1="358" x2="598.0" y2="502" class="s-border" stroke-width="1"/>
+  <text x="732" y="344" class="mono fg-fai" font-size="12" text-anchor="middle">15</text>
+  <line x1="732.0" y1="358" x2="732.0" y2="502" class="s-border" stroke-width="1"/>
+  <text x="866" y="344" class="mono fg-fai" font-size="12" text-anchor="middle">20</text>
+  <line x1="866.0" y1="358" x2="866.0" y2="502" class="s-border" stroke-width="1"/>
+  <text x="1000" y="344" class="mono fg-fai" font-size="12" text-anchor="middle">25</text>
+  <line x1="1000.0" y1="358" x2="1000.0" y2="502" class="s-border" stroke-width="1"/>
+  <rect x="330.0" y="364" width="670.0" height="22.0" rx="2" class="bg-ins"/>
+  <rect x="330.0" y="364" width="670.0" height="22.0" rx="2" class="acc"/>
+  <text x="80" y="378" class="mono fg" font-size="17">dvv_screen</text>
+  <text x="80" y="393" class="mono fg-fai" font-size="12">scale 0.25, full frame</text>
+  <text x="1120" y="379" class="mono fg" font-size="17" text-anchor="end">25 ms</text>
+  <rect x="330.0" y="400" width="670.0" height="22.0" rx="2" class="bg-ins"/>
+  <rect x="330.0" y="400" width="107.2" height="22.0" rx="2" class="acc"/>
+  <text x="80" y="414" class="mono fg" font-size="17">dvv_open</text>
+  <text x="80" y="429" class="mono fg-fai" font-size="12">open and attach</text>
+  <text x="1120" y="415" class="mono fg" font-size="17" text-anchor="end">4 ms</text>
+  <rect x="330.0" y="436" width="670.0" height="22.0" rx="2" class="bg-ins"/>
+  <rect x="330.0" y="436" width="26.8" height="22.0" rx="2" class="acc"/>
+  <text x="80" y="450" class="mono fg" font-size="17">dvv_control</text>
+  <text x="80" y="465" class="mono fg-fai" font-size="12">acquire, under 1 ms</text>
+  <text x="1120" y="451" class="mono fg" font-size="17" text-anchor="end">1 ms</text>
+  <rect x="330.0" y="472" width="670.0" height="22.0" rx="2" class="bg-ins"/>
+  <text x="80" y="486" class="mono fg" font-size="17">dvv_hosts</text>
+  <text x="80" y="501" class="mono fg-fai" font-size="12">lists saved hosts</text>
+  <text x="1120" y="487" class="mono fg-fai" font-size="12" text-anchor="end">no timing given</text>
+  <line x1="330" y1="502" x2="1000" y2="502" class="s-border" stroke-width="1"/>
+  <text x="80" y="526" class="sans fg-mut" font-size="14">Source: the DeskVNC README, measured on a 1920x1080 Windows desktop over LAN.</text>
+  <text x="80" y="548" class="sans fg-mut" font-size="14">dvv_control acquire is published as under 1 ms, so its bar is drawn to the 1 ms mark and reads as an upper bound.</text>
+</svg>

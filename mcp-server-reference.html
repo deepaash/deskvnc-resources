@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeskVNC `dvv` MCP tool reference</title>
+<meta name="description" content="The dvv server speaks the Model Context Protocol and exposes exactly 25 tools, asserted as TOOLCOUNT: usize = 25 in the manifest at crates/dvv/src/mcp/manifest.rs. Argument names, ">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/mcp-server-reference">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DeskVNC `dvv` MCP tool reference">
+<meta property="og:description" content="The dvv server speaks the Model Context Protocol and exposes exactly 25 tools, asserted as TOOLCOUNT: usize = 25 in the manifest at crates/dvv/src/mcp/manifest.rs. Argument names, ">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/mcp-server-reference">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="deskvnc-dvv-mcp-tool-reference">DeskVNC <code>dvv</code> MCP tool reference</h2>
+<p>The <code>dvv</code> server speaks the Model Context Protocol and exposes exactly <strong>25</strong> tools, asserted as <code>TOOL_COUNT: usize = 25</code> in the manifest at <code>crates/dvv/src/mcp/manifest.rs</code>. Argument names, types, enums, and required fields below are quoted verbatim from that file. Any field not listed under &quot;Required&quot; is optional.</p>
+<p>Two design choices appear on every tool. The <strong>selector trio</strong> (<code>limbId</code>, <code>groupId</code>, <code>member</code>) lets a tool stay the same whether the agent drives one machine or a hundred. The <strong>generation argument</strong> on every coordinate tool proves the coordinate was computed against the geometry on the wire; a click without it is refused.</p>
+<p>Four codes come up on every agent loop: <code>LIMB_GONE</code>, <code>GEOMETRY_CHANGED</code>, <code>SCREEN_CHANGED</code>, and <code>LEASE_REVOKED</code>. Other codes are named next to the tool that raises them.</p>
+<h3 id="dvv-hosts">dvv_hosts</h3>
+<p>List saved machines and the machines discovery has found, with the protocol and whether a credential is stored. The reply never carries a secret.</p>
+<ul><li><code>discovered</code> (boolean): true to list what discovery has seen.</li></ul>
+<p>Raises <code>POLICY_DENIED</code> without the <code>hosts.read</code> capability. Shell equivalent: <code>dvv hosts</code>.</p>
+<h3 id="dvv-limbs">dvv_limbs</h3>
+<p>Every limb this attachment can see: <code>id</code>, <code>protocol</code>, <code>address</code>, <code>state</code>, <code>size</code>, capabilities, and who holds the lease. A machine DeskVNCViewer already has open but this attachment has not attached is listed under <code>available</code>; passing one of those <code>limbId</code>s attaches it on the way in. No arguments. Shell equivalent: <code>dvv limbs</code>.</p>
+<h3 id="dvv-open">dvv_open</h3>
+<p>Opens a limb against a saved host (by <code>hostId</code>) or an endpoint (by <code>address</code> and <code>protocol</code>). The credential is read from the keychain inside the application. Returns as soon as the session task spawns; poll <code>dvv_status</code> or call <code>dvv_wait</code> with <code>until: &quot;connected&quot;</code>.</p>
+<ul><li><code>hostId</code> (string): a saved machine, from <code>dvv_hosts</code>.</li><li><code>address</code> (string): hostname or IP, for an unsaved machine.</li><li><code>port</code> (number): defaults to 5900 for <code>vnc</code>, 3389 for <code>rdp</code>, 22 for <code>ssh</code>.</li><li><code>protocol</code> (string, enum <code>vnc</code>/<code>rdp</code>/<code>ssh</code>): required with <code>address</code>. Refused with <code>BAD_REQUEST</code> when passed with <code>hostId</code>.</li><li><code>slot</code> (number): 0 attaches to whatever is already live; above 0 opens a fresh session. Refused with <code>SLOT_REFUSED</code> on protocols that do not give concurrent sessions.</li><li><code>perceive</code> (boolean): pay for a framebuffer mirror so <code>dvv_screen</code> has something to read.</li></ul>
+<p>Shell equivalent: <code>dvv open &lt;name or hostId&gt; --perceive</code>.</p>
+<h3 id="dvv-close">dvv_close</h3>
+<p>Closes a limb and releases anything it held. Idempotent: closing a limb that is already gone returns an ordinary success. Every intent in flight is withdrawn and settles first.</p>
+<ul><li><code>limbId</code> (string, required).</li></ul>
+<p>Shell equivalent: <code>dvv close &lt;limbId&gt;</code>.</p>
+<h3 id="dvv-reconnect">dvv_reconnect</h3>
+<p>Drop the connection and dial the machine again, then wait for it to come back. The person at the remote end does nothing; the credential is applied as for any open.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>timeoutMs</code> (number): default 20000.</li></ul>
+<p>Shell equivalent: <code>dvv reconnect &lt;limbId&gt;</code>.</p>
+<h3 id="dvv-status">dvv_status</h3>
+<p>State, protocol, size, geometry generation, lease holder, and the negotiated signals for one limb, as the full <code>dvv.observation.v1</code> object. The cheapest call in the manifest, safe to call constantly. Reads no pixels, so it does not clear the typing fence. After a <code>LEASE_REVOKED</code>, read <code>lease.human_took_over</code> from this object: <code>true</code> means a person is driving and the right move is to stop.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li></ul>
+<p>Shell equivalent: <code>dvv status &lt;limbId&gt;</code>.</p>
+<h3 id="dvv-control">dvv_control</h3>
+<p>Acquire, release, or check the control lease. This is what lets an agent act at all when a person might be present.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>action</code> (string, required, enum <code>acquire</code>/<code>release</code>/<code>status</code>/ <code>yield</code>/<code>yield_status</code>): <code>yield</code> and <code>release</code> are the same act; <code>yield</code> records a reason. <code>yield_status</code> reads who holds the lease without changing anything.</li><li><code>reason</code> (string): shown to the person on <code>acquire</code>, recorded on <code>yield</code>.</li><li><code>waitMs</code> (number, <code>acquire</code> only): 0 fails immediately.</li></ul>
+<p>Raises <code>LEASE_NOT_HELD</code> when an act needs the lease and the agent does not have it, and <code>LEASE_REVOKED</code> when the lease went away under the call. Shell equivalent: <code>dvv control acquire &lt;limbId&gt;</code>.</p>
+<h3 id="dvv-click">dvv_click</h3>
+<p>A pointer event at framebuffer pixel coordinates. Desktop limbs only; terminal limbs return a clean <code>WRONG_PROTOCOL</code> error.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>generation</code> (number): the <code>geometry.generation</code> from the observation this coordinate was computed against.</li><li><code>action</code> (string, required, enum <code>move</code>/<code>click</code>/<code>double</code>/<code>right</code>/ <code>middle</code>/<code>drag</code>/<code>scroll</code>).</li><li><code>x</code> (number): framebuffer pixels from the left.</li><li><code>y</code> (number): framebuffer pixels from the top.</li><li><code>toX</code>, <code>toY</code> (number): drag only, where the button is released.</li><li><code>button</code> (string, enum <code>left</code>/<code>middle</code>/<code>right</code>): drag only.</li><li><code>direction</code> (string, enum <code>up</code>/<code>down</code>/<code>left</code>/<code>right</code>): scroll only, required.</li><li><code>clicks</code> (number): scroll only, wheel clicks. Default 1.</li><li><code>modifiers</code> (array of strings): held for the duration.</li></ul>
+<p>Raises <code>GEOMETRY_CHANGED</code> when the screen resized since the coordinate was computed, <code>UNFENCED</code> when no <code>generation</code> is supplied, <code>OUT_OF_BOUNDS</code> for coordinates outside the framebuffer, and <code>WRONG_PROTOCOL</code> on a terminal limb. Shell equivalent: <code>dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt;</code> and <code>dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt; --action double</code>.</p>
+<h3 id="dvv-type">dvv_type</h3>
+<p>Types a string into whatever has focus. On a desktop limb this is refused with <code>SCREEN_CHANGED</code> unless the agent has called <code>dvv_screen</code> since the last large repaint, and refused outright on a limb that has never been read. Terminal limbs are not fenced, because a PTY echoes what it is sent into a stream you can read back.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>text</code> (string, required).</li><li><code>wpm</code> (number): throttle in words per minute.</li></ul>
+<p>Raises <code>SCREEN_CHANGED</code> and <code>WRONG_PROTOCOL</code> on a desktop limb. Shell equivalent: <code>dvv type &lt;limbId&gt; &quot;text to type&quot;</code>.</p>
+<h3 id="dvv-key">dvv_key</h3>
+<p>One named key or a chord. Fenced exactly like <code>dvv_type</code>: on a screen holding a selection, Enter, Delete, and <code>ctrl+v</code> are as destructive as a letter, so this is refused with <code>SCREEN_CHANGED</code> until the agent has read the screen since the last repaint.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>keys</code> (string, required): one name, or a chord joined with <code>+</code>, for example <code>Enter</code>, <code>Escape</code>, <code>Tab</code>, <code>ctrl+c</code>, <code>alt+F4</code>, <code>ctrl+alt+Delete</code>, <code>super+r</code>.</li></ul>
+<p>Raises <code>SCREEN_CHANGED</code> and <code>UNKNOWN_KEY</code> when the key name is not in the fixed table. Shell equivalent: <code>dvv key &lt;limbId&gt; super+r</code>.</p>
+<h3 id="dvv-screen">dvv_screen</h3>
+<p>What the limb looks like now, with size, geometry generation, and coverage beside it. The call that clears the typing fence: only a call that comes back with pixels counts. <code>form: &quot;damage-crop&quot;</code> after a settled action is the cheapest useful answer on a desktop limb.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>form</code> (string, enum <code>full</code>/<code>region</code>/<code>damage-crop</code>).</li><li><code>region</code> (object): <code>x</code>, <code>y</code>, <code>w</code>, <code>h</code> in native resolution. Used with <code>form: &quot;region&quot;</code> only.</li><li><code>scale</code> (number): whole frame only. Refused beside a region.</li></ul>
+<p>A desktop limb returns an image content block with an <code>imageSpace</code> line beside it giving the region, both dimensions, and the scale: read that line to turn a point on the picture back into a coordinate on the remote. Without <code>perceive: true</code> on <code>dvv_open</code>, a desktop limb refuses rather than hand back a blank picture. Shell equivalent: <code>dvv screen &lt;limbId&gt; --scale 0.5 --out ./dvv-screen.png</code>.</p>
+<h3 id="dvv-wait">dvv_wait</h3>
+<p>Blocks server side until something happens, up to <code>timeoutMs</code>, clamped to 25000 so a wait can never outlive the agent's own call timeout. A timeout is an ordinary success with <code>settled: false</code> and the observation, never an error.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>until</code> (string, required, enum <code>connected</code>/<code>screen-stable</code>/ <code>screen-changed</code>/<code>text</code>/<code>text-gone</code>/<code>idle</code>/<code>exit</code>).</li><li><code>text</code> (string): required for <code>text</code> and <code>text-gone</code>.</li><li><code>quietMs</code> (number): default 750.</li><li><code>timeoutMs</code> (number): default 8000, clamped to 25000.</li></ul>
+<p>Raises <code>NOT_READY</code> or <code>NOT_CONNECTED</code> when the limb has not reached the state asked for, and a plain <code>TIMEOUT</code> when the deadline passed without settling. Shell equivalent: <code>dvv wait &lt;limbId&gt; --until connected</code> and <code>dvv wait &lt;limbId&gt; --until screen-stable</code>.</p>
+<h3 id="dvv-clipboard">dvv_clipboard</h3>
+<p>Reads or writes the remote clipboard. <code>get</code> reads whatever the person at the machine last copied, which is a password more often than anyone would like, and <code>set</code> puts text on the remote clipboard.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>action</code> (string, required, enum <code>get</code>/<code>set</code>).</li><li><code>text</code> (string): set only.</li></ul>
+<p><code>get</code> is not served on this build and returns <code>NOT_IMPLEMENTED</code>; the plane does not subscribe to the event stream that carries the answer. <code>set</code> works. Raises <code>POLICY_DENIED</code> without the corresponding capability.</p>
+<h3 id="dvv-run">dvv_run</h3>
+<p>Runs one command on a terminal limb and returns <code>stdout</code>, <code>stderr</code>, and the exit code. The exit status is never invented: a command killed by a signal reports the signal and no code, a command still running when the deadline passes reports no status at all and says the deadline was what ended it. The channel starts in the home directory with a fresh environment.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>command</code> (string, required): a single string, not an argv vector.</li><li><code>cwd</code> (string): stated rather than assumed.</li><li><code>timeoutMs</code> (number, required): no default.</li><li><code>maxOutputBytes</code> (number): above this the output is truncated and the response says how much went.</li></ul>
+<p>Raises <code>POLICY_DENIED</code> without the <code>exec</code> capability, which is in no role bundle and must be named on the token. Shell equivalent: <code>dvv run &lt;limbId&gt; --timeoutMs 5000 &quot;command&quot;</code>.</p>
+<h3 id="dvv-term-read">dvv_term_read</h3>
+<p>Terminal output since a cursor, or since the limb opened, plus a new cursor. Not served on this build, because the plane keeps no scrollback ring: inventing one from the visible grid would silently lose whatever scrolled off. Returns <code>NOT_IMPLEMENTED</code>; use <code>dvv_run</code> instead.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>since</code> (string): a cursor from an earlier call.</li></ul>
+<h3 id="dvv-term-send">dvv_term_send</h3>
+<p>Raw bytes to the terminal, for the cases a command cannot express: answering a prompt, sending <code>Ctrl+C</code>, driving a full screen program. This is the terminal path that works in this build. Does not wait and does not know whether what was sent worked: pair it with <code>dvv_wait</code>.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>text</code> (string): sent as UTF-8.</li><li><code>bytesHex</code> (string): hex, two characters per byte, no separators. <code>03</code> is <code>Ctrl+C</code>.</li></ul>
+<h3 id="dvv-files">dvv_files</h3>
+<p>File transfer over the machine's own SFTP sidecar, a second SSH connection alongside the screen. Reading needs <code>files.read</code> and writing needs <code>files.write</code>; neither implies the other, because holding the keyboard on a machine is not authority over its disk.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>action</code> (string, required, enum <code>list</code>/<code>get</code>/<code>put</code>/<code>mkdir</code>/ <code>remove</code>/<code>rename</code>/<code>home</code>).</li><li><code>path</code> (string): the remote path. <code>~</code> and <code>~/thing</code> resolve against the remote user's home directory. For <code>rename</code> this is the existing name.</li><li><code>to</code> (string): <code>rename</code> is the new remote path. <code>get</code> is an absolute local path to save the file to.</li><li><code>from</code> (string): <code>put</code> only, an absolute local path.</li><li><code>contentBase64</code> (string): <code>put</code> only, the bytes to write.</li><li><code>mode</code> (number): <code>put</code> only, permission bits.</li><li><code>recursive</code> (boolean): <code>remove</code> only.</li></ul>
+<p>Raises <code>FILES_UNAVAILABLE</code> for a machine with no SSH server, for one the application cannot authenticate to, and for a host key that has not been trusted yet. Transfers are synchronous: a <code>get</code> or a <code>put</code> moves the whole file in windows inside this one call and answers when it is done.</p>
+<h3 id="dvv-transfer">dvv_transfer</h3>
+<p>Nothing to report, by design, and not a build that is missing something. <code>dvv_files</code> does not queue anything on this surface: a <code>get</code> or a <code>put</code> runs to completion inside its own tool call and answers with what it moved, so there is no transfer id to look up with <code>status</code> and nothing in flight for <code>cancel</code> to stop. The tool exists so a name mentioned in a document does not leave an agent guessing.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li><li><code>action</code> (string, required, enum <code>status</code>/<code>cancel</code>).</li><li><code>transferId</code> (string).</li></ul>
+<h3 id="dvv-group-open">dvv_group_open</h3>
+<p>Opens several limbs at once and returns a <code>groupId</code> to address them together (<code>dvv_group_run</code>) or one at a time (any tool's <code>groupId</code> plus <code>member</code>). Every member is a real connection that stays open until <code>dvv_group_close</code>. If any member fails, the ones this call opened are closed again.</p>
+<ul><li><code>hostIds</code> (array of strings): saved machines, from <code>dvv_hosts</code>.</li><li><code>addresses</code> (array of strings): endpoints, for unsaved machines.</li><li><code>protocol</code> (string, enum <code>vnc</code>/<code>rdp</code>/<code>ssh</code>): required with <code>addresses</code>.</li><li><code>perceive</code> (boolean): attach a framebuffer mirror to every member.</li></ul>
+<h3 id="dvv-group-list">dvv_group_list</h3>
+<p>Open groups, or one group's members with their index, <code>limbId</code>, host, and state. Cheap and local: reads the server's own registry, no round trip.</p>
+<ul><li><code>groupId</code> (string).</li></ul>
+<h3 id="dvv-group-grow">dvv_group_grow</h3>
+<p>Opens more limbs and appends them to a group. New members get the next index; existing members are untouched.</p>
+<ul><li><code>groupId</code> (string, required).</li><li><code>hostIds</code> (array of strings).</li><li><code>addresses</code> (array of strings).</li><li><code>protocol</code> (string).</li><li><code>perceive</code> (boolean).</li></ul>
+<h3 id="dvv-group-shrink">dvv_group_shrink</h3>
+<p>Closes the <code>n</code> most recently added members and drops them from the group. Fails rather than clamping when <code>n</code> is larger than the group holds, because a clamp turns close three into close everything.</p>
+<ul><li><code>groupId</code> (string, required).</li><li><code>n</code> (number, required).</li></ul>
+<h3 id="dvv-group-close">dvv_group_close</h3>
+<p>Closes every limb in a group and forgets it. A member that has already gone is not an error.</p>
+<ul><li><code>groupId</code> (string, required).</li></ul>
+<h3 id="dvv-group-run">dvv_group_run</h3>
+<p>Runs one action on every member of a group, concurrently and not in a loop: every member starts before any finishes. One member failing is reported for that member and never stops the others.</p>
+<ul><li><code>groupId</code> (string, required).</li><li><code>action</code> (string, required, enum <code>wait</code>/<code>screen</code>/<code>status</code>/ <code>signals</code>/<code>type</code>/<code>key</code>/<code>click</code>/<code>run</code>).</li><li><code>arguments</code> (object): the arguments the single limb tool of that name takes, minus the selector trio.</li></ul>
+<h3 id="dvv-signals">dvv_signals</h3>
+<p>Which negotiated signals this session has, and what each absence means. Every entry is <code>live</code>, <code>absent</code>, or <code>unknown</code> with a reason, and never a default: <code>absent</code> means the far side does not do it and it is permanent for this session, <code>unknown</code> means nothing has arrived yet and may resolve.</p>
+<ul><li><code>limbId</code>, <code>groupId</code>, <code>member</code> (selector trio).</li></ul>
+<p>Read <code>led_state</code> before typing a password: a defaulted <code>Caps Lock</code> of <code>false</code> is a lie that costs an account lockout. <code>window_structure</code> is always absent on every protocol this build speaks, and that entry exists so the negative is stated rather than inferred from a missing field. Shell equivalent: <code>dvv signals &lt;limbId&gt;</code>.</p>
+<h3 id="how-the-four-codes-fit-the-loop">How the four codes fit the loop</h3>
+<ul><li><code>LIMB_GONE</code>: the limb id resolved to nothing or the selector named no limb. Call <code>dvv_limbs</code> for the current ids; a limb id is reproducible, so the same machine at the same slot has the same id when it comes back.</li><li><code>GEOMETRY_CHANGED</code>: the screen resized under the action and nothing was delivered. Call <code>dvv_screen</code> again and recompute the coordinate against the new generation.</li><li><code>SCREEN_CHANGED</code>: something large repainted since the last pixel read, so nothing was typed. Call <code>dvv_screen</code>, read what has focus and what is selected, and only then type.</li><li><code>LEASE_REVOKED</code>: the lease went away underneath a call that had it. Call <code>dvv_control</code> with <code>action: &quot;yield_status&quot;</code> before anything else. If <code>lease.human_took_over</code> is <code>true</code>, a person is driving and the right move is to stop and tell the user, not to reacquire and retry.</li></ul>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "DeskVNC `dvv` MCP tool reference",
+  "description": "The dvv server speaks the Model Context Protocol and exposes exactly 25 tools, asserted as TOOLCOUNT: usize = 25 in the manifest at crates/dvv/src/mcp/manifest.rs. Argument names, ",
+  "url": "https://deskvnc-hub.pages.dev/mcp-server-reference",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

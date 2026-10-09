@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeskVNC</title>
+<meta name="description" content="एक Citrix farm जिसमें सिर्फ RDP से घुसा जा सकता है। एक jump host जो नई services को स्वीकार नहीं करता। एक क्लाइंट का अपना laptop, जिसकी IT whitelist पर सिर्फ मानक remote सहायता उपकर">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/hi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DeskVNC">
+<meta property="og:description" content="एक Citrix farm जिसमें सिर्फ RDP से घुसा जा सकता है। एक jump host जो नई services को स्वीकार नहीं करता। एक क्लाइंट का अपना laptop, जिसकी IT whitelist पर सिर्फ मानक remote सहायता उपकर">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/hi">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<hr>
+<p>title: &quot;जो मशीनें एजेंट इंस्टॉल करने से इनकार करती हैं, वही हैं जिन तक एजेंट को पहुँचना चाहिए&quot; description: &quot;Citrix, VDI, jump hosts और क्लाइंट के अपने वर्कस्टेशन सर्वसम्मति से कंट्रोल की जाने वाली मशीन पर कोई नया runtime लगाने से मना करते हैं। DeskVNC उस प्रोटोकॉल से AI एजेंट को वहाँ तक ले जाता है जो वे मशीनें पहले से बोलती हैं, बिना endpoint पर कुछ इंस्टॉल किए और इसके साथ कि कोई व्यक्ति किसी भी क्षण नियंत्रण वापस ले सकता है।&quot; date: 2026-10-09 tags: [&quot;रिमोट-डेस्कटॉप&quot;, &quot;एआई-एजेंट&quot;, &quot;mcp&quot;, &quot;vnc&quot;, &quot;rdp&quot;, &quot;ssh&quot;, &quot;citrix&quot;, &quot;vdi&quot;]</p>
+<hr>
+<p>एक Citrix farm जिसमें सिर्फ RDP से घुसा जा सकता है। एक jump host जो नई services को स्वीकार नहीं करता। एक क्लाइंट का अपना laptop, जिसकी IT whitelist पर सिर्फ मानक remote सहायता उपकरण हैं। तीन मशीनें जो अलग दिखती हैं, फिर भी एक ही बात पर एकमत हैं: कंट्रोल की जाने वाली मशीन कोई नया runtime लगाने से इनकार कर देती है।</p>
+<p>यह एकमतता अजीब है, क्योंकि यही वह समूह है जिसे अधिकांश automation प्रोजेक्ट छूना चाहते हैं। RPA platforms एक छोटा resident service इंस्टॉल करते हैं जो screenshots लेता है, input events सुनता है, और डेटा control plane को वापस भेजता है। डेवलपर के laptop पर यह बहुत अच्छा चलता है, production में बार-बार एक ही दीवार से टकराता है। Endpoint पर इंस्टॉल करने से मना करना कोई अपवाद नहीं, यह regulated वातावरणों में productive endpoint की default मुद्रा है।</p>
+<p>विडंबना उद्योग को लंबे समय से रोक रही है: जब एजेंट से automation माँगी जाती है, सबसे दिलचस्प मशीनें ठीक वही होती हैं जिन तक पहुँचना सबसे कठिन है। दरवाज़ा protocol में है।</p>
+<h3 id="">इंस्टॉल करने वाले एजेंट को मना करने वाली छह मशीनें</h3>
+<p>पहली नज़र में ये अलग-अलग वातावरण हैं। निष्कर्ष एक ही है: कंट्रोल की जाने वाली मशीन नया software स्वीकार नहीं करती। DeskVNC उन मशीनों की सूची को लगभग खाली कर देता है जिन्हें RPA परंपरागत रूप से &quot;non-automatable&quot; मानता आया है।</p>
+<p><strong>Citrix की published applications और RemoteApp.</strong> यूज़र जो अपने terminal पर देखता है वह सिर्फ एक एप्लिकेशन की खिड़की है, जबकि processes, file system, clipboard और GPU data center के Citrix host पर चलते हैं। कंट्रोल की जाने वाली मशीन का कोई अस्तित्व ही नहीं है, वह &quot;वह मशीन&quot; जिस पर install किया जाएगा मौजूद ही नहीं है। Terminal सिर्फ एक renderer है, host साझा है, group policy ने उसे कस दिया है, और imaging team RPA runtime को अनुमति नहीं देती।</p>
+<p><strong>Pool वाले VDI desktops.</strong> हर login पर यूज़र को master image से derive किया हुआ नया desktop मिलता है, logout पर वह वापस चला जाता है। User profiles redirect होते हैं, डिस्क design के अनुसार non-persistent है। User side का install session के साथ गायब, system side का install image baseline का उल्लंघन।</p>
+<p><strong>Jump hosts और bastion gateways.</strong> Jump host का काम ही यही है कि मना करे। Security team ने जिन कुछ protocols को चुना है सिर्फ वे ही पास होते हैं। नई install की अनुमति मिलते ही audit surface एक रात में फूल जाती है।</p>
+<p><strong>क्लाइंट की अपनी, सख्ती से प्रबंधित workstations.</strong> क्लाइंट की IT team application whitelist चलाती है, AppLocker या MDM deploy करती है, local administrator अधिकार छीनती है, अनजान binaries को रोकती है। किसी vendor के लिए install महीनों की खरीद बातचीत है।</p>
+<p><strong>Kiosks और shell replacement.</strong> पूरी मशीन सिर्फ एक एप्लिकेशन या एक web page चलाने के लिए बदल दी गई है, और कुछ नहीं दिखाती। Explorer बदला, task manager बंद, signed images नियमित flow से बँटते हैं। जो shell किसी दूसरी binary को चालू करने दे, वह kiosk shell नहीं रही।</p>
+<p><strong>बंद किए गए server images.</strong> अक्सर Windows Server Core, desktop के बिना, Explorer के बिना, बहुत सीमित प्रशासनिक उपकरणों के साथ, और एक स्थानीय नीति के साथ जो agent software की install को स्पष्ट रूप से प्रतिबंधित करती है। &quot;Desktop experience&quot; वाले संस्करण में भी change advisory board अनुरोध खारिज कर देता है।</p>
+<h3 id="protocol">Protocol का रास्ता इन मशीनों को एक-एक करके कैसे जोड़ता है</h3>
+<p>ऊपर बताई गई छह श्रेणियाँ, design हो या compliance, एक-एक display या terminal protocol सुनती हैं जिन्हें वे पहले से स्वीकार करती हैं। Citrix host operations के लिए RDP खोलता है, और VNC servers image के साथ आते हैं। Jump host SSH को पास होने देता है। क्लाइंट के laptop पर उसकी अपनी IT team ने standard tool से remote support का रास्ता पहले ही खोल रखा है। Kiosk image operators के लिए RDP पहले से लाई होती है। बंद किया गया server परिभाषा के अनुसार RDP, WinRM या SSH से प्रबंधित होता है।</p>
+<p>DeskVNC का <code>dvv</code> control plane इन्हीं तीन protocols को सीधे बोलता है। कंट्रोल की जाने वाली मशीन पर वह कुछ भी install नहीं करता। Client side पर वह कोई नई process नहीं लाता। इंसान और एजेंट एक ही frame को देखते हैं, क्योंकि ऐसा ही बनाया गया है। Lease मॉडल हर session के लिए होता है और हर क्षण वापस लिया जा सकता है: जैसे ही operator कंट्रोल की जाने वाली मशीन से window पर click करता है, control एजेंट से व्यक्ति को चला जाता है, अगला <code>dvv_click</code> <code>LEASE_REVOKED</code> लौटाता है, और एजेंट तुरंत समझ जाता है कि रुकना है। एजेंट operator से control छीनता नहीं, वह शुरू से ही उसे सौंपने के लिए design किया गया है। स्क्रीन किसकी है, यह हर क्षण स्पष्ट रहता है।</p>
+<p>यह README के उस वाक्य का engineering भाषा में विस्तार है:</p>
+<blockquote><p>जो funded tools एजेंट को Windows desktop इस्तेमाल करने देते हैं, वे सभी उस desktop पर एक एजेंट install करते हैं, जिसे Citrix पर, VDI पर, jump hosts पर और क्लाइंट की अपनी किसी भी मशीन पर मना कर दिया जाता है। <strong>पर जिस protocol को वे मशीनें पहले से बोलती हैं, वह पास हो जाता है।</strong></p></blockquote>
+<h3 id="observe-act-loop-json">Observe और act का loop, असली JSON के साथ</h3>
+<p><code>dvv</code> MCP server DeskVNC client के साथ एक ही process में चलता है। Client endpoint तक connection पकड़े रहता है, और एजेंट सिर्फ यह तय करता है कि कौन सी key दबानी है और किस coordinate पर click करना है। हर click के साथ <code>generation</code> होता है जो पिछले screenshot से पढ़ा गया है। <strong>पुरानी हो चुकी screen पर compute किए गए clicks protocol layer तक पहुँचने से पहले ही अस्वीकार कर दिए जाते हैं</strong>, जिससे एजेंट और endpoint दोनों तरफ &quot;जहाँ सोचा था वहाँ click पहुँच गया&quot; वाला हादसा रुक जाता है।</p>
+<p><code>dvv_hosts</code> बताता है कि क्या खोला जा सकता है। <code>dvv_open</code> को <code>perceive: true</code> के साथ भेजने पर connection, screen और state एक ही call में तैयार हो जाते हैं। <code>dvv_control</code> एक exclusive input lease ले लेता है। इसके बाद एजेंट दो call के स्थिर loop में प्रवेश करता है: देखो, करो। फिर देखो, फिर करो। पहली call मशीन खोलती है, उसके बाद की calls loop को बिना रुके चलाती रहती हैं।</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_hosts   {}                                    // what there is to open
+dvv_open    {&quot;hostId&quot;: &quot;&lt;id&gt;&quot;, &quot;perceive&quot;: true}  // -&gt; limbId, size, state
+dvv_control {&quot;limbId&quot;: &quot;...&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}
+dvv_click   {&quot;limbId&quot;: &quot;...&quot;, &quot;x&quot;: 700, &quot;y&quot;: 400, &quot;generation&quot;: 1}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;damage-crop&quot;}  // look again
+dvv_type    {&quot;limbId&quot;: &quot;...&quot;, &quot;text&quot;: &quot;notepad&quot;, &quot;wpm&quot;: 3000}
+dvv_key     {&quot;limbId&quot;: &quot;...&quot;, &quot;keys&quot;: &quot;meta+r&quot;}</code></pre></div>
+<p>जिन एजेंट्स के पास MCP tools नहीं हैं, वे <code>dvv setup</code> के बाद command line से बराबर रास्ता पा सकते हैं:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-sh">dvv hosts
+dvv limbs
+dvv open &lt;name or hostId&gt; --perceive
+dvv wait &lt;limbId&gt; --until connected
+dvv control acquire &lt;limbId&gt;
+dvv screen &lt;limbId&gt; --scale 0.5 --out ./dvv-screen.png
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt;
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt; --action double
+dvv type &lt;limbId&gt; &quot;text to type&quot;
+dvv key &lt;limbId&gt; super+r
+dvv wait &lt;limbId&gt; --until screen-stable
+dvv reconnect &lt;limbId&gt;
+dvv close &lt;limbId&gt;</code></pre></div>
+<p>हर मशीन अपने lease के साथ एक स्वतंत्र limb है: दस मशीनें मतलब दस ऐसे loops जो एक-दूसरे में हस्तक्षेप नहीं करते। <code>dvv_screen</code> एक <code>imageSpace</code> पंक्ति भी छापता है जो घटाए गए निर्देशांकों और मशीन के असली निर्देशांकों के बीच के अनुपात को स्पष्ट करती है। <code>--scale 0.5</code> पर image में (mx, my) बिंदु मशीन पर (mx<em>2, my</em>2) के बराबर है। अगर एजेंट यह रूपांतरण भूल जाता है, तो click geometry की असंगति के कारण बाहर जाने से पहले ही अस्वीकार हो जाता है।</p>
+<p><code>generation</code> state machine के स्तर पर एक safety fence है। एजेंट का भीतरी loop तीन चरणों का होता है: देखो, सोचो, करो। अगर तीसरा चरण ऐसी दुनिया पर चलता है जो अब मौजूद नहीं है, तो परिणाम गंभीर होते हैं। <code>generation</code> एक monotonic पूर्णांक है जो हर frame के साथ चलता है; अगला input उसे वापस ले जाना ज़रूरी है। जैसे ही screen आगे बढ़ती है, पुराने <code>generation</code> पर compute किए गए clicks अस्वीकार हो जाते हैं, एजेंट screen फिर से पढ़ता है और निर्देशांकों की फिर से गणना करता है। इस fence के लिए अतिरिक्त vision या planning models की ज़रूरत नहीं: हर call में दो पूर्णांक काफी हैं।</p>
+<h3 id="">मापे गए आँकड़े</h3>
+<p>नीचे के आँकड़े प्रोजेक्ट द्वारा प्रकाशित benchmark suite से हैं, जो 1920x1080 के असली Windows desktop पर LAN के पार मापे गए हैं:</p>
+<ul><li><code>dvv_open</code> और connection: <strong>4 ms</strong></li><li><code>dvv_control</code> से lease लेना: <strong>1 ms से कम</strong></li><li><code>dvv_screen</code> <code>scale: 0.25</code> पर: <strong>25 ms</strong></li><li>&quot;देखो और फिर करो&quot; का पूरा cycle: <strong>19 ms</strong>, लगभग <strong>52 actions प्रति सेकंड</strong></li><li><code>dvv_type</code> <code>wpm: 12000</code> पर: <strong>447 अक्षर प्रति सेकंड</strong></li></ul>
+<p>19 ms की संख्या एक स्पष्ट कारण से उभरती है: यह एजेंट के बाहरी loop, यानी language model call (निचले सिरे पर सैकड़ों ms, ऊपरी सिरे पर सेकंड) की लागत से एक साइज़ छोटी है। 19 ms के भीतरी loop के साथ, model दो सोच के बीच में दर्जनों actions घुसा सकता है। एजेंट को screen का &quot;इंतज़ार&quot; नहीं करना पड़ता, और न ही वह उस धीमे इंतज़ार में फँसता है जो एक इंसान धीमे VNC के सामने झेलता है।</p>
+<p>19 ms का भीतरी loop एक interactive session में click और अगले repaint के बीच के इंसानी perceptual round-trip से भी छोटा है। एजेंट किसी इंसान की नकल नहीं करता, वह एक loop चलाता है जिसे इंसान बंद नहीं कर सकता।</p>
+<h3 id="dvv-mcp-server-register">एजेंट में <code>dvv</code> MCP server register करना</h3>
+<p>DeskVNC client के distribution package में <code>dvv</code> server और उसे document करने वाला skill description पहले से शामिल है। repository में <code>skills/deskvnc/SKILL.md</code> वह प्रवेश बिंदु है जिसे कोई एजेंट skills directory scan करते समय पढ़ता है, इसलिए शुरू से ही एक ऐसा रास्ता मौजूद है जिससे एजेंट यह क्षमता खुद ढूँढ सकता है।</p>
+<p>किसी सामान्य MCP client में register करना दो कदमों का काम है। पहला, client operator की तरफ install होता है, चाहे Windows हो, macOS हो या Linux। credentials OS के keychain में रखे जाते हैं, इसलिए शुरुआती अवस्था पहले से सुरक्षित है। दूसरा, <code>dvv</code> को एजेंट की configuration में MCP server के रूप में register किया जाता है। अधिकांश मामलों में हर system के लिए executable के पथ के साथ एक stdio पंक्ति काफी होती है: Windows पर <code>%LOCALAPPDATA%\DeskVNCViewer\dvv.exe</code> या <code>C:\Program Files\DeskVNCViewer\dvv.exe</code>, macOS पर <code>/Applications/DeskVNCViewer.app/Contents/MacOS/dvv</code>, Linux पर <code>/usr/bin/dvv</code>.</p>
+<p>Registration के बाद एजेंट को <code>dvv_*</code> उपकरणों का एक समूह दिखता है जो host discovery, connection, leases, screenshot, click, typing, keys, clipboard, files, terminal पढ़ने-लिखने, SSH से command execution को कवर करता है, और <code>dvv_group_</code> prefix के साथ कई मशीनों को एक इकाई की तरह सँभालने के लिए उपकरणों का एक समूह देता है। सब कुछ पहले ही क्षण से काम करता है।</p>
+<p>Loop के भीतर एजेंट को सँभालने होते हैं सिर्फ दो error codes। <code>LIMB_GONE</code> का मतलब है कि limb खो गया है; <code>dvv_limbs</code> से फिर से list करके दोबारा खोला जाता है। <code>SCREEN_CHANGED</code> का मतलब है कि screen आगे बढ़ गई है; फिर से पढ़कर दोबारा कोशिश की जाती है। दोनों recoverable हैं, और design के अनुसार एक ही सही जवाब है: &quot;रुको और फिर से पढ़ो&quot;।</p>
+<h3 id="setup">पूरे setup की सीमा</h3>
+<p>कंट्रोल की जाने वाली मशीन default रूप से नई runtimes install करने से मना करती है। फिर भी, हर उस वातावरण में जो install से मना करता है, एक display या terminal protocol बचा रहता है जिससे उसके अपने operators पहुँचते हैं। वह protocol सुरक्षा मॉडल का असली भार वह बल्ली है: security team उस पर भरोसा करती है, audit team ने उसे पहले ही मंज़ूर किया है, और change advisory board ने उसे पहले ही मुक्त किया है। जो एजेंट उस protocol को बोलता है, वह उस दरवाज़े से घुसता है जो कंट्रोल की जाने वाली मशीन के पास पहले से खुला है। जो एजेंट install माँगता है, वह security team ने वर्षों में सिकोड़ी हुई surface को फिर से खुलवा देता है। पहला scale करता है, दूसरा नहीं।</p>
+<p>DeskVNC client Rust पर Tauri 2 में लिखा हुआ एक native एप्लिकेशन है, Windows, macOS और Linux पर उपलब्ध है, और MIT OR Apache-2.0 की दोहरी license के तहत प्रकाशित है। <code>dvv</code> MCP server, endpoint पर install का पूरा अभाव और किसी भी क्षण व्यक्ति द्वारा नियंत्रण वापस लेने की क्षमता, इन तीनों का संयोग protocol के रास्ते की engineering form है।</p>
+<p>तीसरा तत्व key है। ठीक इसलिए कि कोई व्यक्ति कभी भी नियंत्रण वापस ले सकता है, automation एक स्पष्ट तथ्य पर टिकी है: कोई किसी की मशीन पर काम कर रहा है। एजेंट मुख्य पात्र नहीं, मेहमान है। मेहमान मालिक की स्क्रीन उधार लेकर चलता है, और मालिक लौटे तो सीट छोड़ देता है। यह काम सही और तेज़ी से करना ही काफी है ताकि अधिकांश वे मशीनें जो install से मना करती हैं, &quot;non-automatable&quot; रहना बंद कर दें।</p>
+<p>Repository <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">github.com/psmux/DeskVNC</a> पर है। हिंदी समुदाय के लिए अतिरिक्त सामग्री और अपडेट <a href="https://deskvnc-hub.pages.dev/" target="_blank" rel="noopener noreferrer">deskvnc-hub.pages.dev</a> पर मिलेंगे।</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "DeskVNC",
+  "description": "एक Citrix farm जिसमें सिर्फ RDP से घुसा जा सकता है। एक jump host जो नई services को स्वीकार नहीं करता। एक क्लाइंट का अपना laptop, जिसकी IT whitelist पर सिर्फ मानक remote सहायता उपकर",
+  "url": "https://deskvnc-hub.pages.dev/hi",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

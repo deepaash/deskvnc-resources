@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeskVNC</title>
+<meta name="description" content="Uma granja Citrix pela qual só se entra por RDP. Um jump host que não aceita nenhum serviço novo. Um notebook de propriedade do cliente cujo departamento de TI só mantém na lista b">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/pt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DeskVNC">
+<meta property="og:description" content="Uma granja Citrix pela qual só se entra por RDP. Um jump host que não aceita nenhum serviço novo. Um notebook de propriedade do cliente cujo departamento de TI só mantém na lista b">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/pt">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<hr>
+<p>title: &quot;As máquinas que se recusam a instalar agentes são exatamente as que um agente deveria alcançar&quot; description: &quot;Citrix, VDI, jump hosts e estações de trabalho pertencentes ao cliente recusam de forma unânime qualquer runtime novo na máquina controlada. DeskVNC leva o agente de IA até elas pelo protocolo que elas já falam, sem instalar nada no endpoint e com uma pessoa sempre pronta para retomar o controle.&quot; date: 2026-10-09 tags: [&quot;area-de-trabalho-remota&quot;, &quot;agente-ia&quot;, &quot;mcp&quot;, &quot;vnc&quot;, &quot;rdp&quot;, &quot;ssh&quot;, &quot;citrix&quot;, &quot;vdi&quot;]</p>
+<hr>
+<p>Uma granja Citrix pela qual só se entra por RDP. Um jump host que não aceita nenhum serviço novo. Um notebook de propriedade do cliente cujo departamento de TI só mantém na lista branca as ferramentas padrão de suporte remoto. Três máquinas que parecem distintas e, ainda assim, concordam em um único ponto: a máquina controlada recusa a instalação de qualquer runtime novo.</p>
+<p>Essa coincidência é incômoda, porque é exatamente esse o conjunto que a maioria dos projetos de automação gostaria de alcançar. Plataformas RPA instalam um pequeno serviço residente que tira screenshots, escuta eventos de entrada e devolve dados ao plano de controle. No notebook do desenvolvedor funciona muito bem; em produção, esbarra em uma parede atrás da outra. A recusa de instalar no endpoint não é exceção, é a postura padrão do endpoint produtivo em ambientes regulados.</p>
+<p>A ironia tem pesado o setor: quando se pede automação com um agente, as máquinas mais interessantes são justamente as mais difíceis de alcançar. A porta para atravessar essa parede estava em outro lugar, e está no protocolo. Vamos abri-la passo a passo.</p>
+<h3 id="as-seis-m-quinas-que-rejeitam-agentes-de-instala-o">As seis máquinas que rejeitam agentes de instalação</h3>
+<p>À primeira vista são ambientes diferentes. A conclusão é a mesma: a máquina controlada não aceita software novo. Ferramentas de automação com RPA passaram anos separando o mundo em duas listas, &quot;máquinas em que dá para instalar&quot; e &quot;caixas em que não dá&quot;, empurrando as segundas para a categoria de &quot;não automatizáveis&quot;. DeskVNC reduz essa segunda lista até quase esvaziá-la.</p>
+<p><strong>Aplicativos publicados Citrix e RemoteApp.</strong> O que o usuário vê em seu terminal é a janela de um único aplicativo, enquanto processos, sistema de arquivos, área de transferência e GPU rodam no host Citrix do data center. A máquina controlada simplesmente não existe, não há &quot;aquela máquina&quot; na qual instalar. O terminal é um mero renderizador, o host é compartilhado, a diretiva de grupo trava e a equipe de gestão de imagens não autoriza um runtime de RPA.</p>
+<p><strong>Desktops VDI em pool.</strong> Cada vez que o usuário autentica recebe um desktop novinho, derivado da imagem mestra, e o devolve ao sair. Os perfis de usuário são redirecionados e o disco é não persistente por projeto. O que se instala do lado do usuário se vai com a sessão; o que se instala do lado do sistema infringe a linha de base da imagem.</p>
+<p><strong>Jump hosts e gateways bastião.</strong> O trabalho de um jump host é, justamente, recusar. Só passam os protocolos escolhidos pelo time de segurança. No instante em que se permite instalar software novo, ele deixa de ser jump host, e a superfície auditada dispara de um dia para o outro.</p>
+<p><strong>Estações de trabalho pertencentes ao cliente e geridas com rigor.</strong> O departamento de TI do cliente mantém a lista branca de aplicações, executa AppLocker ou MDM, remove direitos de administrador local e bloqueia binários desconhecidos. Para que um prestador instale algo é preciso uma negociação de meses.</p>
+<p><strong>Quiosques e substituições de shell.</strong> A máquina inteira é reconfigurada para rodar apenas um aplicativo ou uma única página web, sem mostrar mais nada. O Explorer é substituído, o gerenciador de tarefas é desativado, imagens assinadas são distribuídas pelo fluxo regular. Uma shell que permita iniciar outro binário já não é a shell do quiosque.</p>
+<p><strong>Imagens de servidor trancadas.</strong> Muitas vezes Windows Server Core, sem desktop, sem Explorer, com um conjunto bastante restrito de ferramentas administrativas e uma política local que proíbe explicitamente instalar software de agente. Mesmo na variante com &quot;experiência de desktop&quot;, o comitê de mudanças rejeita o pedido.</p>
+<h3 id="como-o-caminho-do-protocolo-conecta-cada-uma-dessas-m-quinas">Como o caminho do protocolo conecta cada uma dessas máquinas</h3>
+<p>As seis categorias acima escutam, seja por projeto, seja por compliance, um único protocolo de visualização ou de terminal que já aceitam. O host Citrix abre RDP para operação, e servidores VNC vêm com a imagem. O jump host libera SSH. No notebook do cliente, o próprio departamento de TI já abriu o caminho de suporte remoto pela ferramenta padrão. A imagem do quiosque traz RDP de fábrica para os operadores. O servidor trancado é gerenciado, por definição, via RDP, WinRM ou SSH.</p>
+<p>O plano de controle <code>dvv</code> do DeskVNC fala diretamente esses três protocolos. Na máquina controlada não instala nada. No cliente não introduz processos novos. Pessoa e agente olham o mesmo frame, porque foi assim que se construiu. O modelo de lease é por sessão e sempre revogável: no instante em que o operador clica na janela a partir da máquina controlada, o controle passa do agente para a pessoa, o próximo <code>dvv_click</code> devolve <code>LEASE_REVOKED</code>, e o agente entende de imediato que deve parar. O agente não toma o controle do operador, foi projetado desde o início para cedê-lo. De quem é a tela fica sempre claro.</p>
+<p>Esta é a versão em linguagem de engenharia da frase do README:</p>
+<blockquote><p>As ferramentas financiadas que permitem a um agente usar um desktop Windows instalam todas um agente nesse desktop, o que é recusado em Citrix, em VDI, em jump hosts e em qualquer máquina de propriedade do cliente. <strong>Um protocolo que essas máquinas já falam, em contrapartida, passa.</strong></p></blockquote>
+<h3 id="o-la-o-observar-e-agir-com-json-real-e-reproduz-vel">O laço observar e agir, com JSON real e reproduzível</h3>
+<p>O servidor MCP <code>dvv</code> roda no mesmo processo do cliente DeskVNC. O cliente sustenta a conexão com o endpoint e o agente só decide qual tecla pressionar e qual coordenada clicar. Cada clique carrega um <code>generation</code> lido do último screenshot. <strong>Cliques calculados a partir de uma tela vencida são rejeitados antes de alcançar a camada de protocolo</strong>, o que evita o acidente de clicar onde se pensava estar, tanto do lado do agente quanto do lado do endpoint.</p>
+<p><code>dvv_hosts</code> lista o que pode ser aberto. <code>dvv_open</code> com <code>perceive: true</code> deixa prontos, em uma única chamada, a conexão, a imagem e o estado. <code>dvv_control</code> obtém um lease exclusivo de entrada. A partir daí o agente entra em um laço estável de duas chamadas: olhar, mover. Olhar de novo, mover de novo. A primeira chamada abre a máquina; as seguintes mantêm o laço rodando sem interrupções.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_hosts   {}                                    // what there is to open
+dvv_open    {&quot;hostId&quot;: &quot;&lt;id&gt;&quot;, &quot;perceive&quot;: true}  // -&gt; limbId, size, state
+dvv_control {&quot;limbId&quot;: &quot;...&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}
+dvv_click   {&quot;limbId&quot;: &quot;...&quot;, &quot;x&quot;: 700, &quot;y&quot;: 400, &quot;generation&quot;: 1}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;damage-crop&quot;}  // look again
+dvv_type    {&quot;limbId&quot;: &quot;...&quot;, &quot;text&quot;: &quot;notepad&quot;, &quot;wpm&quot;: 3000}
+dvv_key     {&quot;limbId&quot;: &quot;...&quot;, &quot;keys&quot;: &quot;meta+r&quot;}</code></pre></div>
+<p>Agentes que não dispõem de ferramentas MCP contam com um caminho equivalente pela linha de comando após executar <code>dvv setup</code>:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-sh">dvv hosts
+dvv limbs
+dvv open &lt;name or hostId&gt; --perceive
+dvv wait &lt;limbId&gt; --until connected
+dvv control acquire &lt;limbId&gt;
+dvv screen &lt;limbId&gt; --scale 0.5 --out ./dvv-screen.png
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt;
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt; --action double
+dvv type &lt;limbId&gt; &quot;text to type&quot;
+dvv key &lt;limbId&gt; super+r
+dvv wait &lt;limbId&gt; --until screen-stable
+dvv reconnect &lt;limbId&gt;
+dvv close &lt;limbId&gt;</code></pre></div>
+<p>Cada máquina é um limb independente com lease próprio: dez máquinas equivalem a dez laços que não se interferem. <code>dvv_screen</code> imprime ainda uma linha <code>imageSpace</code> que esclarece a conversão entre coordenadas reduzidas e coordenadas reais da máquina. Com <code>--scale 0.5</code>, um ponto (mx, my) na imagem equivale a (mx<em>2, my</em>2) na máquina. Se o agente esquece essa conversão, o clique é rejeitado por incoerência geométrica antes de sair.</p>
+<p>O <code>generation</code> é uma cerca de segurança no nível da máquina de estados. O laço interno do agente tem três passos: olhar, decidir, mover. Se o terceiro dispara contra um mundo que já não existe, as consequências são sérias. O <code>generation</code> é um inteiro monótono que viaja com cada frame; a próxima entrada precisa levá-lo de volta. Assim que a tela avança, cliques com <code>generation</code> antigo são rejeitados, o agente lê a tela de novo e recalcula as coordenadas. A cerca não precisa de modelos adicionais de visão nem de planejamento: bastam dois inteiros em cada chamada.</p>
+<h3 id="n-meros-medidos">Números medidos</h3>
+<p>Os valores a seguir vêm da bateria de benchmarks publicada pelo projeto, medidos em um desktop Windows real a 1920x1080 através da LAN:</p>
+<ul><li><code>dvv_open</code> e conexão: <strong>4 ms</strong></li><li><code>dvv_control</code> para obter o lease: <strong>menos de 1 ms</strong></li><li><code>dvv_screen</code> com <code>scale: 0.25</code>: <strong>25 ms</strong></li><li>Um ciclo completo de &quot;observar e depois executar&quot;: <strong>19 ms</strong>, cerca de <strong>52 ações por segundo</strong></li><li><code>dvv_type</code> com <code>wpm: 12000</code>: <strong>447 caracteres por segundo</strong></li></ul>
+<p>O número 19 ms se destaca por uma razão clara: está fora da escala do custo do laço externo do agente, ou seja, a chamada ao modelo de linguagem (centenas de milissegundos no extremo baixo, segundos no alto). Com um laço interno de 19 ms, o modelo consegue intercalar dezenas de ações entre dois raciocínios. O agente não precisa &quot;esperar a tela&quot; nem cai naquela espera lenta que uma pessoa sofre diante de um VNC lento.</p>
+<p>O laço interno de 19 ms é mais curto que o round-trip perceptual humano entre clicar e ver o próximo repaint em uma sessão interativa. O agente não imita uma pessoa, executa um laço que uma pessoa não consegue fechar.</p>
+<h3 id="registrando-o-servidor-mcp-dvv-no-agente">Registrando o servidor MCP <code>dvv</code> no agente</h3>
+<p>O pacote de distribuição do cliente DeskVNC já traz o servidor <code>dvv</code> e a descrição da skill que o documenta. No repositório, <code>skills/deskvnc/SKILL.md</code> é o ponto de entrada que um agente percorre ao varrer um diretório de skills, o que deixa desde o início um conduto para que o agente descubra essa capacidade por conta própria.</p>
+<p>O registro em um cliente MCP comum se resume a dois passos. Primeiro, instala-se o cliente no lado do operador, seja Windows, macOS ou Linux. As credenciais ficam a cargo do chaveiro do sistema operacional, de modo que o estado inicial já é seguro. Segundo, registra-se <code>dvv</code> como servidor MCP no arquivo de configuração do agente. Na maioria dos casos basta uma linha de stdio com o caminho do executável correspondente a cada sistema: no Windows, <code>%LOCALAPPDATA%\DeskVNCViewer\dvv.exe</code> ou <code>C:\Program Files\DeskVNCViewer\dvv.exe</code>; no macOS, <code>/Applications/DeskVNCViewer.app/Contents/MacOS/dvv</code>; no Linux, <code>/usr/bin/dvv</code>.</p>
+<p>Depois do registro, o agente vê um conjunto de ferramentas <code>dvv_*</code> que cobrem descoberta de hosts, conexão, leases, captura de tela, clique, digitação, teclas, área de transferência, arquivos, leitura e escrita do terminal, execução de comandos por SSH e, com o prefixo <code>dvv_group_</code>, um lote para tratar várias máquinas como um único conjunto. Tudo funciona desde o primeiro momento.</p>
+<p>Os códigos de erro que o agente precisa tratar dentro do laço são apenas dois. <code>LIMB_GONE</code> significa que o limb se perdeu; lista-se de novo com <code>dvv_limbs</code> e reabre-se. <code>SCREEN_CHANGED</code> significa que a tela avançou; lê-se de novo e tenta-se outra vez. Ambos são recuperáveis e a única resposta correta é &quot;parar e ler de novo&quot;.</p>
+<h3 id="a-fronteira-do-conjunto">A fronteira do conjunto</h3>
+<p>A máquina controlada recusa por padrão a instalação de runtimes novos. No entanto, em todo ambiente que recusa instalação fica sempre um protocolo de visualização ou de terminal pelo qual passam os seus próprios operadores. Esse protocolo é a viga de carga real do modelo de segurança: o time de segurança confia nele, o time de auditoria já o aprovou e o comitê de mudanças já o liberou. Um agente que fala esse protocolo entra pela porta que a máquina controlada já tinha aberta. Um agente que pede instalação força a reabertura da superfície que o time de segurança levou anos para encolher. O primeiro escala, o segundo não.</p>
+<p>O cliente DeskVNC é um aplicativo nativo escrito em Rust sobre Tauri 2, disponível para Windows, macOS e Linux, publicado sob a licença dupla MIT OR Apache-2.0. A conjunção do servidor MCP <code>dvv</code>, da ausência total de instalação no endpoint e da possibilidade de uma pessoa retomar o controle a qualquer momento é a forma de engenharia do caminho pelo protocolo.</p>
+<p>O terceiro elemento é chave. Justamente porque uma pessoa pode retomar o controle quando quiser, a automação se assenta sobre um fato óbvio: alguém está usando a máquina de alguém. O agente não é o protagonista, é o convidado. O convidado se move com a tela cedida pelo dono e, quando o dono volta, cede o assento. Fazer isso bem, e fazer rápido, basta para que a maioria das máquinas que recusam instalação deixe de ser &quot;máquinas não automatizáveis&quot;.</p>
+<p>O repositório está em <a href="https://github.com/psmux/DeskVNC" target="_blank" rel="noopener noreferrer">github.com/psmux/DeskVNC</a>. Recursos e atualizações adicionais para a comunidade lusófona estão em <a href="https://deskvnc-hub.pages.dev/" target="_blank" rel="noopener noreferrer">deskvnc-hub.pages.dev</a>.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "DeskVNC",
+  "description": "Uma granja Citrix pela qual só se entra por RDP. Um jump host que não aceita nenhum serviço novo. Um notebook de propriedade do cliente cujo departamento de TI só mantém na lista b",
+  "url": "https://deskvnc-hub.pages.dev/pt",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

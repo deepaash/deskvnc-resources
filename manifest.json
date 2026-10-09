@@ -14,7 +14,7 @@
       "deskvnc_setup"
     ]
   },
-  "generated": "2026-10-09T02:48:48.385Z",
+  "generated": "2026-10-09T03:13:11.159Z",
   "pages": [
     {
       "path": "/",
@@ -23,6 +23,14 @@
       "description": "DeskVNC is one native client for VNC, RDP and SSH on Windows, macOS and Linux. Its dvv MCP server lets an AI agent open a saved machine, read the screen and send clicks and keystrokes over the protocol, with nothing installed on the target.",
       "lastmod": "2026-10-09",
       "words": 1704
+    },
+    {
+      "path": "/agent-summary",
+      "url": "https://deskvnc-hub.pages.dev/agent-summary",
+      "title": "DeskVNC agent summary: paste this into your system prompt",
+      "description": "Paste this into the system prompt of an LLM that will drive a remote desktop through DeskVNC. It is short so the model can hold all of it in attention.",
+      "lastmod": "2026-10-09",
+      "words": 499
     },
     {
       "path": "/automation",
@@ -41,12 +49,44 @@
       "words": 964
     },
     {
+      "path": "/boundary",
+      "url": "https://deskvnc-hub.pages.dev/boundary",
+      "title": "Boundary attended support: the handshake in numbered steps",
+      "description": "Boundary is DeskVNC",
+      "lastmod": "2026-10-09",
+      "words": 1417
+    },
+    {
+      "path": "/by-the-numbers",
+      "url": "https://deskvnc-hub.pages.dev/by-the-numbers",
+      "title": "DeskVNC",
+      "description": "&lt;!DOCTYPE html &lt;html lang=&quot;en&quot; &lt;head &lt;meta charset=&quot;utf-8&quot; &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; &lt;titleDeskVNC by the numbers: live GitHub API figures",
+      "lastmod": "2026-10-09",
+      "words": 9092
+    },
+    {
       "path": "/cores",
       "url": "https://deskvnc-hub.pages.dev/cores",
       "title": "One client, three protocols, three operating systems",
       "description": "Most remote desktop clients wrap somebody else",
       "lastmod": "2026-10-09",
       "words": 2054
+    },
+    {
+      "path": "/de",
+      "url": "https://deskvnc-hub.pages.dev/de",
+      "title": "DeskVNC",
+      "description": "Eine Citrix-Farm, in die man ausschließlich per RDP hineinkommt. Ein Sprungserver, der keine neuen Dienste zulässt. Ein kundeneigener Laptop, auf dessen Whitelist nur die Standardw",
+      "lastmod": "2026-10-09",
+      "words": 1959
+    },
+    {
+      "path": "/es",
+      "url": "https://deskvnc-hub.pages.dev/es",
+      "title": "DeskVNC",
+      "description": "Una granja Citrix a la que solo se entra por RDP. Un host de salto que no admite servicios nuevos. Un portátil propiedad del cliente cuyo departamento de TI solo autoriza en la lis",
+      "lastmod": "2026-10-09",
+      "words": 2316
     },
     {
       "path": "/glossary",
@@ -113,12 +153,28 @@
       "words": 1070
     },
     {
+      "path": "/hi",
+      "url": "https://deskvnc-hub.pages.dev/hi",
+      "title": "DeskVNC",
+      "description": "एक Citrix farm जिसमें सिर्फ RDP से घुसा जा सकता है। एक jump host जो नई services को स्वीकार नहीं करता। एक क्लाइंट का अपना laptop, जिसकी IT whitelist पर सिर्फ मानक remote सहायता उपकर",
+      "lastmod": "2026-10-09",
+      "words": 2292
+    },
+    {
       "path": "/ja",
       "url": "https://deskvnc-hub.pages.dev/ja",
       "title": "DeskVNC: AIエージェントによるリモートデスクトップ操作",
       "description": "RDP での接続しか許さない Citrix ファーム。新しいサービスを一切受け付けない踏み台サーバー。標準のリモート支援ツールだけをホワイトリストに入れている、顧客所有のノートパソコン。一見するとばらばらの三台ですが、たった一つの点で見事に足並みをそろえています。被制御側に新しいランタイムをインストールすることが、許されていないという点です。",
       "lastmod": "2026-10-09",
       "words": 482
+    },
+    {
+      "path": "/llm-agent-quickstart",
+      "url": "https://deskvnc-hub.pages.dev/llm-agent-quickstart",
+      "title": "LLM agent quickstart: drive a real desktop in one sitting",
+      "description": "This is the shortest path from a clean machine to an AI agent that opens a real desktop through DeskVNC. Every command below is meant to be copied verbatim. The expected output aft",
+      "lastmod": "2026-10-09",
+      "words": 1534
     },
     {
       "path": "/loop",
@@ -135,6 +191,14 @@
       "description": "A hosted read-only MCP server with verified DeskVNC facts. Any MCP client can connect and get the exact dvv tool calls, the observe-then-act loop, and the safety model, in one call.",
       "lastmod": "2026-10-09",
       "words": 473
+    },
+    {
+      "path": "/mcp-server-reference",
+      "url": "https://deskvnc-hub.pages.dev/mcp-server-reference",
+      "title": "DeskVNC `dvv` MCP tool reference",
+      "description": "The dvv server speaks the Model Context Protocol and exposes exactly 25 tools, asserted as TOOLCOUNT: usize = 25 in the manifest at crates/dvv/src/mcp/manifest.rs. Argument names,",
+      "lastmod": "2026-10-09",
+      "words": 2526
     },
     {
       "path": "/measure-url-health",
@@ -161,6 +225,14 @@
       "words": 947
     },
     {
+      "path": "/pt",
+      "url": "https://deskvnc-hub.pages.dev/pt",
+      "title": "DeskVNC",
+      "description": "Uma granja Citrix pela qual só se entra por RDP. Um jump host que não aceita nenhum serviço novo. Um notebook de propriedade do cliente cujo departamento de TI só mantém na lista b",
+      "lastmod": "2026-10-09",
+      "words": 2203
+    },
+    {
       "path": "/README.md",
       "url": "https://deskvnc-hub.pages.dev/README.md",
       "title": "README.md",
@@ -177,12 +249,28 @@
       "words": 2027
     },
     {
+      "path": "/robots-agent.json",
+      "url": "https://deskvnc-hub.pages.dev/robots-agent.json",
+      "title": "robots-agent.json",
+      "description": "{ \"$schema\": \"https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/aa59517442d323a33ed915fc408f1584c4a23dfa/seps/2127-mcp-server-cards.md\", \"name\": \"DeskVNC\"",
+      "lastmod": "2026-10-09",
+      "words": 600
+    },
+    {
       "path": "/supervision",
       "url": "https://deskvnc-hub.pages.dev/supervision",
       "title": "The human in the loop, at machine speed",
       "description": "There is an apparent contradiction in letting an AI agent drive a real desktop, and the contradiction is the reason most programmes stop. Full autonomy sounds like the agent runs t",
       "lastmod": "2026-10-09",
       "words": 1977
+    },
+    {
+      "path": "/tool-manifest.json",
+      "url": "https://deskvnc-hub.pages.dev/tool-manifest.json",
+      "title": "tool-manifest.json",
+      "description": "{ \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\", \"spec_source\": \"Live MCP tools/list response from https://deskvnc-mcp.deepika-aaish.wor",
+      "lastmod": "2026-10-09",
+      "words": 445
     },
     {
       "path": "/troubleshooting",

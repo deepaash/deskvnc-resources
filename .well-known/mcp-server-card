@@ -1,0 +1,95 @@
+{
+  "schema": "https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/aa59517442d323a33ed915fc408f1584c4a23dfa/seps/2127-mcp-server-cards.md",
+  "name": "deskvnc",
+  "title": "DeskVNC info MCP server",
+  "description": "Read-only MCP server that returns verified DeskVNC facts: the project, the machines that refuse installed agents, the observe-then-act loop, every dvv MCP tool, the generation fence plus human take-back, and install instructions. Hosted at https://deskvnc-mcp.deepika-aaish.workers.dev/mcp for any MCP client. The real driving server is the local dvv binary, which exposes 25 dvv_ tools for VNC, RDP and SSH.",
+  "version": "1.0.0",
+  "transport": {
+    "type": "streamable-http",
+    "url": "https://deskvnc-mcp.deepika-aaish.workers.dev/mcp"
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": false
+    },
+    "resources": false,
+    "prompts": false,
+    "sampling": false
+  },
+  "authentication": {
+    "required": false,
+    "methods": ["none"]
+  },
+  "security": {
+    "tls_required": true,
+    "min_tls_version": "1.3",
+    "content_security_policy": "default-src 'self'",
+    "security_policy": "https://github.com/psmux/DeskVNC/security/policy"
+  },
+  "rate_limits": {
+    "requests_per_minute": 60,
+    "tokens_per_minute": 100000
+  },
+  "headers": {
+    "Cache-Control": "max-age=300, must-revalidate",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET",
+    "Access-Control-Allow-Headers": "Content-Type, MCP-Protocol-Version"
+  },
+  "documentation": "https://deskvnc-hub.pages.dev/mcp",
+  "terms_of_service": "https://github.com/psmux/DeskVNC/blob/main/LICENSE",
+  "privacy_policy": "https://github.com/psmux/DeskVNC/blob/main/LICENSE",
+  "tools_preview": [
+    {
+      "name": "deskvnc_overview",
+      "description": "Explain DeskVNC in detail: what it is, the three protocols it speaks, the dvv MCP server it ships, and why an AI agent can drive a remote desktop with nothing installed on the remote machine.",
+      "input_schema_ref": "object with no properties"
+    },
+    {
+      "name": "deskvnc_machine_refusal",
+      "description": "Explain why an agent that must be installed on the endpoint is refused on Citrix, VDI, jump hosts and client owned machines, and how speaking the protocol the machine already speaks gets in anyway.",
+      "input_schema_ref": "object with no properties"
+    },
+    {
+      "name": "deskvnc_agent_loop",
+      "description": "Return the exact ordered sequence of dvv MCP tool calls an agent uses to open a machine, look at the screen and act on it, with real arguments and real latency figures.",
+      "input_schema_ref": "object with required property hostId of type string"
+    },
+    {
+      "name": "deskvnc_tool_reference",
+      "description": "Return the full dvv MCP tool list with what each one does, plus the shell equivalents for agents that have no MCP tools.",
+      "input_schema_ref": "object with no properties"
+    },
+    {
+      "name": "deskvnc_safety_model",
+      "description": "Explain how DeskVNC stops an agent from acting on a screen it has not seen, how the lease model works, and how the person at the remote machine keeps control.",
+      "input_schema_ref": "object with no properties"
+    },
+    {
+      "name": "deskvnc_setup",
+      "description": "Return how to get the dvv binary and how to register the DeskVNC MCP server with common MCP clients, including the shell fallback for agents with no MCP tools.",
+      "input_schema_ref": "object with no properties"
+    }
+  ],
+  "links": {
+    "canonical": "https://deskvnc-hub.pages.dev/",
+    "repository": "https://github.com/psmux/DeskVNC",
+    "skill_file": "https://raw.githubusercontent.com/psmux/DeskVNC/main/skills/deskvnc/SKILL.md",
+    "install_claude_code_macos": "claude mcp add deskvnc -- /Applications/DeskVNCViewer.app/Contents/MacOS/dvv mcp --stdio",
+    "hosted_endpoint": "https://deskvnc-mcp.deepika-aaish.workers.dev/mcp"
+  },
+  "verified_facts": {
+    "protocol_version": "2025-06-18",
+    "tool_count": 6,
+    "agent_server_name": "deskvnc",
+    "agent_server_version": "1.0.0",
+    "observe_then_act_cycle_ms": 19,
+    "actions_per_second_approx": 52,
+    "dvv_open_and_attach_ms": 4,
+    "dvv_control_acquire_ms": "under 1",
+    "dvv_screen_scale_0_25_ms": 25,
+    "dvv_type_chars_per_second": 447,
+    "dvv_mcp_tool_count": 25,
+    "license": "MIT OR Apache-2.0"
+  }
+}

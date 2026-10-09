@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="t d">
+  <title id="t">DeskVNC release cadence, 26 releases across eleven weeks</title>
+  <desc id="d">Social card. A bar chart of releases published per seven-day week for DeskVNC, plotted from the GitHub releases endpoint. The chart covers the eleven seven-day weeks running from Monday 27 July 2026 to Monday 5 October 2026, and every one of those weeks appears, including the four with no release, which are drawn as a zero bar. Peak is 7 releases in the week of 27 July. No trend line is drawn and no value is extrapolated.</desc>
+  <style>
+.bg      { fill: #fbfcfd; }                 /* --bg */
+.bg-sub  { fill: #f2f5f8; }                 /* --bg-subtle */
+.bg-ins  { fill: #e9eef3; }                 /* --bg-inset */
+.fg      { fill: #12161c; }                 /* --fg */
+.fg-mut  { fill: #414b57; }                 /* --fg-muted */
+.fg-fai  { fill: #5d6875; }                 /* --fg-faint */
+.acc     { fill: #0a58c2; }                 /* --accent */
+.sig     { fill: #1a6f42; }                 /* --signal */
+.s-border { stroke: #ccd5de; fill: none; }  /* --border */
+.s-acc   { stroke: #0a58c2; fill: none; }  /* --accent */
+.s-grid  { stroke: #12161c; stroke-opacity: 0.055; fill: none; } /* --grid-line */
+.sans { font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif; }
+.mono { font-family: ui-monospace, "Cascadia Mono", "SF Mono", SFMono-Regular,
+        Menlo, Consolas, "Liberation Mono", monospace; }
+.lbl { letter-spacing: 0.09em; }            /* --tracking-label */
+.tight { letter-spacing: -0.02em; }         /* --tracking-tight */
+  </style>
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" class="s-grid" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbfcfd" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fbfcfd" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="630" class="bg"/>
+  <rect x="0" y="0" width="1200" height="500" fill="url(#grid)"/>
+  <rect x="0" y="360" width="1200" height="270" fill="url(#fade)"/>
+  <rect x="80" y="108" width="56" height="4" class="acc"/>
+  <text x="152" y="120" class="mono fg-mut lbl" font-size="13" letter-spacing="0.09em">RELEASE CADENCE</text>
+  <text x="1120" y="120" class="mono fg lbl" font-size="13" text-anchor="end" letter-spacing="0.04em">DeskVNC</text>
+  <circle cx="1046" cy="116" r="4" class="sig"/>
+  <line x1="80" y1="152" x2="1120" y2="152" class="s-border" stroke-width="1"/>
+  <text x="80" y="194" class="mono fg tight" font-size="34" letter-spacing="-0.02em">26 releases in 71 days</text>
+  <text x="80" y="224" class="sans fg-mut" font-size="17">Eleven seven-day weeks from 27 Jul to 5 Oct 2026. Weeks with no release are plotted as zero.</text>
+  <text x="80" y="254" class="mono fg-fai lbl" font-size="12" letter-spacing="0.09em">RELEASES PUBLISHED PER WEEK</text>
+  <line x1="118.0" y1="410.3" x2="1120.0" y2="410.3" class="s-border" stroke-width="1"/>
+  <text x="104" y="414.3" class="mono fg-fai" font-size="12" text-anchor="end">2</text>
+  <line x1="118.0" y1="368.6" x2="1120.0" y2="368.6" class="s-border" stroke-width="1"/>
+  <text x="104" y="372.6" class="mono fg-fai" font-size="12" text-anchor="end">4</text>
+  <line x1="118.0" y1="326.9" x2="1120.0" y2="326.9" class="s-border" stroke-width="1"/>
+  <text x="104" y="330.9" class="mono fg-fai" font-size="12" text-anchor="end">6</text>
+  <line x1="118.0" y1="452.0" x2="1120.0" y2="452.0" class="s-border" stroke-width="1"/>
+  <rect x="136.5" y="306.0" width="54.0" height="146.0" rx="2" class="acc"/>
+  <text x="163.5" y="294.0" class="mono fg" font-size="15" text-anchor="middle">7</text>
+  <text x="163.5" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Jul 27</text>
+  <rect x="227.6" y="347.7" width="54.0" height="104.3" rx="2" class="acc"/>
+  <text x="254.6" y="335.7" class="mono fg" font-size="15" text-anchor="middle">5</text>
+  <text x="254.6" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Aug 03</text>
+  <rect x="318.7" y="448.0" width="54.0" height="4" rx="2" class="fg-fai"/>
+  <text x="345.7" y="440.0" class="mono fg-fai" font-size="15" text-anchor="middle">0</text>
+  <text x="345.7" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Aug 10</text>
+  <rect x="409.8" y="389.4" width="54.0" height="62.6" rx="2" class="acc"/>
+  <text x="436.8" y="377.4" class="mono fg" font-size="15" text-anchor="middle">3</text>
+  <text x="436.8" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Aug 17</text>
+  <rect x="500.9" y="448.0" width="54.0" height="4" rx="2" class="fg-fai"/>
+  <text x="527.9" y="440.0" class="mono fg-fai" font-size="15" text-anchor="middle">0</text>
+  <text x="527.9" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Aug 24</text>
+  <rect x="592.0" y="448.0" width="54.0" height="4" rx="2" class="fg-fai"/>
+  <text x="619.0" y="440.0" class="mono fg-fai" font-size="15" text-anchor="middle">0</text>
+  <text x="619.0" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Aug 31</text>
+  <rect x="683.1" y="448.0" width="54.0" height="4" rx="2" class="fg-fai"/>
+  <text x="710.1" y="440.0" class="mono fg-fai" font-size="15" text-anchor="middle">0</text>
+  <text x="710.1" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Sep 07</text>
+  <rect x="774.2" y="410.3" width="54.0" height="41.7" rx="2" class="acc"/>
+  <text x="801.2" y="398.3" class="mono fg" font-size="15" text-anchor="middle">2</text>
+  <text x="801.2" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Sep 14</text>
+  <rect x="865.3" y="389.4" width="54.0" height="62.6" rx="2" class="acc"/>
+  <text x="892.3" y="377.4" class="mono fg" font-size="15" text-anchor="middle">3</text>
+  <text x="892.3" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Sep 21</text>
+  <rect x="956.4" y="389.4" width="54.0" height="62.6" rx="2" class="acc"/>
+  <text x="983.4" y="377.4" class="mono fg" font-size="15" text-anchor="middle">3</text>
+  <text x="983.4" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Sep 28</text>
+  <rect x="1047.5" y="389.4" width="54.0" height="62.6" rx="2" class="acc"/>
+  <text x="1074.5" y="377.4" class="mono fg" font-size="15" text-anchor="middle">3</text>
+  <text x="1074.5" y="472" class="mono fg-fai" font-size="12" text-anchor="middle">Oct 05</text>
+  <text x="80" y="507" class="sans fg-mut" font-size="14">Each bar counts the releases published in that seven-day week. A bar of zero means none that week.</text>
+  <text x="80" y="529" class="sans fg-mut" font-size="14">Source: gh api repos/psmux/DeskVNC/releases, retrieved 9 Oct 2026.</text>
+  <text x="80" y="551" class="sans fg-mut" font-size="14">Same endpoint: 1,040 asset downloads over the 71 days since the first release, that total divided by 71 days.</text>
+</svg>

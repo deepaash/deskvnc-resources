@@ -1,0 +1,97 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "spec_source": "Live MCP tools/list response from https://deskvnc-mcp.deepika-aaish.workers.dev/mcp, captured 2026-10-09. Every tool name, description and inputSchema here is the exact value the server returns.",
+  "endpoint": "https://deskvnc-mcp.deepika-aaish.workers.dev/mcp",
+  "protocol_version": "2025-06-18",
+  "server": {
+    "name": "deskvnc",
+    "version": "1.0.0",
+    "instructions": "DeskVNC speaks VNC, RDP and SSH and ships the dvv MCP server, so an AI agent can drive a real remote desktop with nothing installed on the remote machine. Call deskvnc_agent_loop for the exact ordered tool calls with real arguments, deskvnc_tool_reference for every dvv call, and deskvnc_safety_model for the generation fence and human take-back."
+  },
+  "tools": [
+    {
+      "name": "deskvnc_overview",
+      "title": "What DeskVNC is",
+      "description": "Explain DeskVNC in detail: what it is, the three protocols it speaks, the dvv MCP server it ships, and why an AI agent can drive a remote desktop with nothing installed on the remote machine.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "deskvnc_machine_refusal",
+      "title": "Machines that refuse installed agents",
+      "description": "Explain why an agent that must be installed on the endpoint is refused on Citrix, VDI, jump hosts and client owned machines, and how speaking the protocol the machine already speaks gets in anyway.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "deskvnc_agent_loop",
+      "title": "The observe-then-act loop",
+      "description": "Return the exact ordered sequence of dvv MCP tool calls an agent uses to open a machine, look at the screen and act on it, with real arguments and real latency figures.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "hostId": {
+            "type": "string",
+            "description": "The saved host to open, as returned by dvv_hosts."
+          }
+        },
+        "required": ["hostId"],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "deskvnc_tool_reference",
+      "title": "Every dvv tool",
+      "description": "Return the full dvv MCP tool list with what each one does, plus the shell equivalents for agents that have no MCP tools.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "deskvnc_safety_model",
+      "title": "The generation fence, leases and human take-back",
+      "description": "Explain how DeskVNC stops an agent from acting on a screen it has not seen, how the lease model works, and how the person at the remote machine keeps control.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    },
+    {
+      "name": "deskvnc_setup",
+      "title": "Install and register the dvv MCP server",
+      "description": "Return how to get the dvv binary and how to register the DeskVNC MCP server with common MCP clients, including the shell fallback for agents with no MCP tools.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true
+      }
+    }
+  ]
+}

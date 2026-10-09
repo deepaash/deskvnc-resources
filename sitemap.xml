@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://deskvnc-hub.pages.dev/</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/agent-summary</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/automation</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/benchmarks</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/boundary</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/by-the-numbers</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/cores</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/de</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/es</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/glossary</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/guides</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/guides/claude-code</loc><lastmod>2026-10-09</lastmod></url>
@@ -12,15 +17,21 @@
   <url><loc>https://deskvnc-hub.pages.dev/guides/gemini-cli</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/guides/opencode</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/guides/vscode</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/hi</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/ja</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/llm-agent-quickstart</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/loop</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/mcp</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/mcp-server-reference</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/measure-url-health</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/methodology</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/playground</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/pt</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/README.md</loc><lastmod>2026-10-08</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/refusal</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/robots-agent.json</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/supervision</loc><lastmod>2026-10-09</lastmod></url>
+  <url><loc>https://deskvnc-hub.pages.dev/tool-manifest.json</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/troubleshooting</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/usecases</loc><lastmod>2026-10-09</lastmod></url>
   <url><loc>https://deskvnc-hub.pages.dev/zh</loc><lastmod>2026-10-09</lastmod></url>

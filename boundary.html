@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boundary attended support: the handshake in numbered steps</title>
+<meta name="description" content="Boundary is DeskVNC's attended support mode. It is for helping someone at a remote machine when the two of you are not on the same network, and the person at the other end stays in">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/boundary">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Boundary attended support: the handshake in numbered steps">
+<meta property="og:description" content="Boundary is DeskVNC's attended support mode. It is for helping someone at a remote machine when the two of you are not on the same network, and the person at the other end stays in">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/boundary">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="attended-support-with-boundary-end-to-end">Attended support with Boundary, end to end</h2>
+<p>Boundary is DeskVNC's attended support mode. It is for helping someone at a remote machine when the two of you are not on the same network, and the person at the other end stays in charge. This page walks the full flow, from downloading the support app to closing the session, including the shorter handoff with a code service.</p>
+<p>The shape of the flow is simple: you send the support app to the person who needs help, they generate a one time invitation or a short code on their machine, they approve your connection, and you join from DeskVNC. Boundary tries a direct encrypted path first and uses its relay as a fallback when the networks do not allow a direct path. No account is required, and the recipient can revoke control or end the session at any moment.</p>
+<h3 id="install-the-worker-side">Install the worker side</h3>
+<p>Boundary support opens from inside DeskVNCViewer, the same client that drives VNC, RDP and SSH. Download the build for the host that will be running the support session from the <a href="https://github.com/psmux/DeskVNC/releases/latest" target="_blank" rel="noopener noreferrer">latest DeskVNC release</a> and open it once to register the helper.</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Platform</th>
+<th>File</th>
+</tr></thead><tbody>
+<tr>
+<td>macOS 12 or newer</td>
+<td><code>DeskVNCViewer_&lt;version&gt;_universal.dmg</code></td>
+</tr>
+<tr>
+<td>Windows 10 or 11</td>
+<td><code>DeskVNCViewer_&lt;version&gt;_x64-setup.exe</code></td>
+</tr>
+<tr>
+<td>Linux, x86_64</td>
+<td>the x86_64 binary in a tarball</td>
+</tr>
+<tr>
+<td>Any Linux</td>
+<td><code>DeskVNCViewer_&lt;version&gt;_amd64.AppImage</code></td>
+</tr>
+</tbody></table></div>
+<p>The macOS build is signed and notarized, so it opens normally. The Windows installer is signed too. On Windows, if SmartScreen asks, choose <strong>More info</strong>, then <strong>Run anyway</strong>; the publisher line should read <strong>Open Source Developer Godwin Josh</strong>.</p>
+<h3 id="send-the-support-app">Send the support app</h3>
+<p>The same release page carries <strong>DeskVNC Support</strong>, a small app whose only job is to give a person a way to invite you in. Send the file to the person who needs help. The file is small and self contained, and the recipient does not need to install anything else. On macOS it is signed and notarized, on Windows it is signed, and on Linux it ships as an x86_64 binary in a tarball.</p>
+<p>A practical handoff is to send the file as an email attachment, a chat message, or a link to a specific asset on the release page. The recipient downloads it, opens it, and is ready for the next step.</p>
+<h3 id="recipient-get-a-code-or-create-an-invitation">Recipient: get a code or create an invitation</h3>
+<p>DeskVNC Support opens to a single screen with two buttons. The choice between them depends on whether a Boundary code service is configured for the recipient.</p>
+<p>If a code service is configured, the recipient presses <strong>Get a code</strong>. DeskVNC Support reaches the code service, gets a fresh code, and displays it as four digit groups, like <code>1234 5678 9012</code>. The recipient reads the groups out loud, over the phone, in a chat, or however the two of you communicate. The code is good for one lookup. Once you look it up on your side, the code is spent, and the person at the remote computer still approves the session. That separation is the safety property: a code is not a credential, it is an address, and the recipient makes the decision to let you in.</p>
+<p>If no code service is configured, the recipient presses <strong>Create invitation</strong> instead. DeskVNC Support generates a single use invitation, displays it as a long string, and waits. The recipient copies the invitation and sends it to you out of band. The full invitation remains available when no code service is configured, and it works the same way: you paste it on your side and the person at the remote computer approves the session.</p>
+<p>The recipient is shown the access request on screen before the session starts. The prompt names who is asking, and the recipient either approves or declines. A decline is final, and the code or invitation is spent.</p>
+<h3 id="worker-open-boundary-support-and-connect">Worker: open Boundary support and connect</h3>
+<p>On the worker side, open <strong>Boundary support</strong> from inside DeskVNCViewer. The dialog asks for the invitation or the code, depending on which the recipient gave you.</p>
+<p>For a code handoff, the worker types the four digit groups in the order they were spoken, separated by spaces, exactly as <code>1234 5678 9012</code>. The server looks the code up against the code service and resolves it to a live invitation. The lookup is the single allowed use; the code is spent the moment the worker submits it.</p>
+<p>For an invitation handoff, the worker pastes the long invitation string. The dialog accepts it as a single block.</p>
+<p>Once the code or invitation resolves, the worker side shows a connection summary: the name of the recipient's machine, the address Boundary will try, and a button to start the session. The worker presses the button, and Boundary tries a direct encrypted path first. A direct path is a peer to peer negotiation between the two machines: Boundary opens a UDP path, negotiates keys, and verifies that the recipient's machine is reachable. When the networks cooperate, the session runs over that direct path and no traffic is relayed.</p>
+<p>When the networks do not allow a direct path, Boundary falls back to its relay. The relay carries the encrypted session traffic without being able to read it, and the same security properties hold. The worker side does not have to know which path is in use; the connection just opens.</p>
+<h3 id="during-the-session">During the session</h3>
+<p>The session is a normal DeskVNC session. The worker has the ordinary toolbar at hand: input, display, scaling, clipboard, file transfer, screenshot, fullscreen, and a clean way out. The remote machine appears as a tile in the worker's window with an indicator showing that it is a support session.</p>
+<p>Two things are different on the recipient's side and worth naming. First, on macOS the support app prompts for <strong>Screen Recording</strong> and <strong>Accessibility</strong> permissions the first time sharing or control needs them. Granting them is required for the session to work, and they can be revoked later in System Settings without breaking the rest of the app. Second, the recipient can revoke control or end the session at any moment. A revoke releases the worker's held keys and buttons so a half finished drag cannot strand the desktop, and the worker side sees the session end with a clear message.</p>
+<p>A worker who needs to hand the machine back to the recipient during the session can do so by clicking the <strong>Take the wheel</strong> control on the recipient's pane, which revokes the worker's control without ending the session. The worker resumes by pressing the same control again.</p>
+<h3 id="code-service-vs-private-service">Code service vs private service</h3>
+<p>The default code service is the shared Boundary service, which is good enough for most one off help sessions. Configure it by pointing the support app at the public Boundary service during the first launch, and the recipient's <strong>Get a code</strong> button starts producing codes that resolve through that service.</p>
+<p>For a shorter handoff inside an organisation, run a private Boundary code service. Private services have the same shape as the shared one: the support app reaches the service over the network, gets a code, and the worker side looks it up against the same service. A private service means codes only resolve inside the organisation, which is a tighter trust boundary and a shorter handoff. The repository's <code>14-support-codes.md</code> file documents private code services for operators who want to run their own.</p>
+<p>In every case, the security property is the same: the code is an address, not a credential. A person at the remote computer still approves the session, and a code is spent the moment the worker side resolves it.</p>
+<h3 id="closing-the-session">Closing the session</h3>
+<p>When the work is done, the worker presses the end session button on the Boundary support dialog, or quits DeskVNCViewer. The recipient's side ends the session immediately, the screen sharing stops, and the support app returns to its home screen. The recipient can also end the session at any moment from the same dialog, and the worker side sees the session end with a clear message.</p>
+<p>A code or invitation is one use, so a follow up session needs a fresh code or invitation from the recipient. The boundary design treats each session as a deliberate act on both sides, and the work to send a code or paste an invitation is the price of that deliberation.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Boundary attended support: the handshake in numbered steps",
+  "description": "Boundary is DeskVNC's attended support mode. It is for helping someone at a remote machine when the two of you are not on the same network, and the person at the other end stays in",
+  "url": "https://deskvnc-hub.pages.dev/boundary",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

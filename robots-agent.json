@@ -1,0 +1,168 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/aa59517442d323a33ed915fc408f1584c4a23dfa/seps/2127-mcp-server-cards.md",
+  "name": "DeskVNC",
+  "what": "Native desktop client for VNC, RDP and SSH, written in Rust on Tauri 2, that ships an MCP server named dvv so an AI agent can drive a real remote desktop over the protocol the machine already speaks, with nothing installed on the remote machine and with a person at that machine able to take control back at any moment.",
+  "repository": "https://github.com/psmux/DeskVNC",
+  "homepage": "https://psmux.github.io/deskvnc/",
+  "hub": "https://deskvnc-hub.pages.dev/",
+  "license": "MIT OR Apache-2.0",
+  "platforms": [
+    "Windows",
+    "macOS",
+    "Linux"
+  ],
+  "protocols": [
+    "VNC RFB 3.3 through 3.8",
+    "RDP with NLA and RemoteApp",
+    "SSH"
+  ],
+  "distinguishing_capability": "MCP server (dvv) that lets an AI agent drive a remote desktop over the protocol the machine already speaks, with nothing installed on the remote machine.",
+  "agent_can_drive": [
+    "Citrix farms that only allow RDP",
+    "VDI pools that refuse installed agents",
+    "Jump hosts and bastion hosts",
+    "Client owned laptops that whitelist only standard remote assistance"
+  ],
+  "mcp_servers": {
+    "hosted_info_server": {
+      "url": "https://deskvnc-mcp.deepika-aaish.workers.dev/mcp",
+      "transport": "streamable-http",
+      "protocol_version": "2025-06-18",
+      "purpose": "Read-only answers about DeskVNC. Any MCP client can connect with no auth and no install.",
+      "tool_count": 6,
+      "tools": [
+        "deskvnc_overview",
+        "deskvnc_machine_refusal",
+        "deskvnc_agent_loop",
+        "deskvnc_tool_reference",
+        "deskvnc_safety_model",
+        "deskvnc_setup"
+      ]
+    },
+    "local_driver_dvv": {
+      "purpose": "The driver. Runs on the user's own machine. Speaks VNC, RDP and SSH, with nothing installed on the remote machine.",
+      "tool_count": 25,
+      "install_paths": {
+        "macos": "/Applications/DeskVNCViewer.app/Contents/MacOS/dvv",
+        "windows_user": "%LOCALAPPDATA%\\DeskVNCViewer\\dvv.exe",
+        "windows_all_users": "C:\\Program Files\\DeskVNCViewer\\dvv.exe",
+        "linux_deb": "/usr/bin/dvv"
+      },
+      "register_claude_code_macos": "claude mcp add deskvnc -- /Applications/DeskVNCViewer.app/Contents/MacOS/dvv mcp --stdio",
+      "fallback_helper": "dvv doctor"
+    }
+  },
+  "agent_loop": {
+    "shape": "observe then act",
+    "ordered_calls": [
+      {
+        "tool": "dvv_hosts",
+        "args": {}
+      },
+      {
+        "tool": "dvv_open",
+        "args": {
+          "hostId": "<id>",
+          "perceive": true
+        }
+      },
+      {
+        "tool": "dvv_wait",
+        "args": {
+          "limbId": "<limbId>",
+          "until": "connected"
+        }
+      },
+      {
+        "tool": "dvv_control",
+        "args": {
+          "limbId": "<limbId>",
+          "action": "acquire"
+        }
+      },
+      {
+        "tool": "dvv_screen",
+        "args": {
+          "limbId": "<limbId>",
+          "form": "full",
+          "scale": 0.25
+        }
+      },
+      {
+        "tool": "dvv_click",
+        "args": {
+          "limbId": "<limbId>",
+          "x": 700,
+          "y": 400,
+          "generation": 1
+        }
+      },
+      {
+        "tool": "dvv_screen",
+        "args": {
+          "limbId": "<limbId>",
+          "form": "damage-crop"
+        }
+      },
+      {
+        "tool": "dvv_type",
+        "args": {
+          "limbId": "<limbId>",
+          "text": "notepad",
+          "wpm": 3000
+        }
+      },
+      {
+        "tool": "dvv_key",
+        "args": {
+          "limbId": "<limbId>",
+          "keys": "meta+r"
+        }
+      }
+    ],
+    "cycle": 19,
+    "actions_per_second_approx": 52
+  },
+  "safety": {
+    "generation_fence": "Every click carries the generation of the screen it was computed against, so a click computed against a stale screen is refused rather than landing in the wrong place.",
+    "typing_fence": "Typing and key presses are refused until the screen has been read in pixels since it last changed significantly.",
+    "scale_rule": "With scale s, a point at (mx, my) on the picture is (mx/s, my/s) on the machine. At scale 0.5 a point at (mx, my) maps to (mx*2, my*2).",
+    "human_take_back": "The person at the remote machine can take control back at any moment, and can revoke control or end the session."
+  },
+  "error_codes": {
+    "LIMB_GONE": "List limbs and reopen the machine.",
+    "GEOMETRY_CHANGED": "The screen resized since the coordinate was computed. Read again and retry.",
+    "SCREEN_CHANGED": "Something window-sized repainted since the last pixel read. Read the screen again and retry.",
+    "LEASE_REVOKED": "A person took control back, which is the intended behaviour. Read lease.human_took_over from dvv_status; true means a person is driving and the right move is to stop."
+  },
+  "verified_latency": {
+    "test_setup": "Real 1920x1080 Windows desktop over LAN.",
+    "latency_open_and_attach": 4,
+    "latency_control_acquire": "under 1",
+    "latency_screen_at_scale_0_25": 25,
+    "latency_type_cps": 447,
+    "one_observe_then_act_cycle": 19,
+    "actions_per_second_approx": 52
+  },
+  "machine_readable_endpoints": {
+    "llms_txt": "https://deskvnc-hub.pages.dev/llms.txt",
+    "llms_full_txt": "https://deskvnc-hub.pages.dev/llms-full.txt",
+    "feed_xml": "https://deskvnc-hub.pages.dev/feed.xml",
+    "faq_json": "https://deskvnc-hub.pages.dev/faq.json",
+    "structured_data_json": "https://deskvnc-hub.pages.dev/structured-data.json",
+    "manifest_json": "https://deskvnc-hub.pages.dev/manifest.json",
+    "sitemap_xml": "https://deskvnc-hub.pages.dev/sitemap.xml",
+    "robots_txt": "https://deskvnc-hub.pages.dev/robots.txt",
+    "mcp_endpoint_page": "https://deskvnc-hub.pages.dev/mcp",
+    "skill_file": "https://raw.githubusercontent.com/psmux/DeskVNC/main/skills/deskvnc/SKILL.md"
+  },
+  "verified_status": {
+    "stars": 70,
+    "forks": 8,
+    "downloads_total": 836,
+    "releases": 26,
+    "latest_release": "v0.27.11",
+    "created": "2026-07-30",
+    "verified_on": "2026-10-08"
+  }
+}

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeskVNC agent summary: paste this into your system prompt</title>
+<meta name="description" content="Paste this into the system prompt of an LLM that will drive a remote desktop through DeskVNC. It is short so the model can hold all of it in attention.">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/agent-summary">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DeskVNC agent summary: paste this into your system prompt">
+<meta property="og:description" content="Paste this into the system prompt of an LLM that will drive a remote desktop through DeskVNC. It is short so the model can hold all of it in attention.">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/agent-summary">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="deskvnc-agent-summary">DeskVNC agent summary</h2>
+<p>Paste this into the system prompt of an LLM that will drive a remote desktop through DeskVNC. It is short so the model can hold all of it in attention.</p>
+<h3 id="what-deskvnc-gives-you">What DeskVNC gives you</h3>
+<p>DeskVNC is a Rust and Tauri 2 client for VNC, RDP and SSH on Windows, macOS and Linux. It ships an MCP server named <code>dvv</code> so an AI agent can drive a real remote desktop over the protocol the machine already speaks, with nothing installed on the remote machine. A person at the remote machine can take control back at any moment.</p>
+<h3 id="the-ordered-loop-real-argument-names">The ordered loop, real argument names</h3>
+<p>Call <code>dvv_</code> tools in this order. Every call takes <code>limbId</code> from the previous <code>dvv_open</code> result, except <code>dvv_hosts</code>.</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code>dvv_hosts   {}
+dvv_open    {&quot;hostId&quot;: &quot;&lt;id&gt;&quot;, &quot;perceive&quot;: true}
+dvv_wait    {&quot;limbId&quot;: &quot;&lt;limbId&gt;&quot;, &quot;until&quot;: &quot;connected&quot;}
+dvv_control {&quot;limbId&quot;: &quot;&lt;limbId&gt;&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;&lt;limbId&gt;&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}
+dvv_click   {&quot;limbId&quot;: &quot;&lt;limbId&gt;&quot;, &quot;x&quot;: 700, &quot;y&quot;: 400, &quot;generation&quot;: 1}
+dvv_screen  {&quot;limbId&quot;: &quot;&lt;limbId&gt;&quot;, &quot;form&quot;: &quot;damage-crop&quot;}
+dvv_type    {&quot;limbId&quot;: &quot;&lt;limbId&gt;&quot;, &quot;text&quot;: &quot;notepad&quot;, &quot;wpm&quot;: 3000}
+dvv_key     {&quot;limbId&quot;: &quot;&lt;limbId&gt;&quot;, &quot;keys&quot;: &quot;meta+r&quot;}</code></pre></div>
+<p>Each machine is its own loop. Ten machines are ten independent limbs with ten independent leases.</p>
+<h3 id="the-generation-fence">The generation fence</h3>
+<p>Every <code>dvv_screen</code> returns an <code>imageSpace</code> line and a <code>geometry.generation</code>. <code>dvv_click</code> carries that generation. A click whose screen has since resized is refused, not misdirected. <code>dvv_type</code> and <code>dvv_key</code> are refused until the screen has been read in pixels since it last changed significantly.</p>
+<h3 id="scale-mapping">Scale mapping</h3>
+<p>At scale <code>s</code>, a point <code>(mx, my)</code> on the picture is <code>(mx/s, my/s)</code> on the machine. At scale 0.5, <code>(mx, my)</code> maps to <code>(mx*2, my*2)</code>.</p>
+<h3 id="error-recovery-real-codes-only">Error recovery, real codes only</h3>
+<p>The four codes the source defines are <code>LIMB_GONE</code>, <code>GEOMETRY_CHANGED</code>, <code>SCREEN_CHANGED</code>, <code>LEASE_REVOKED</code>. Recover as follows.</p>
+<p><code>LIMB_GONE</code>: call <code>dvv_limbs</code>, then <code>dvv_open</code> the machine again. <code>GEOMETRY_CHANGED</code>: call <code>dvv_screen</code> again and retry with the new generation. <code>SCREEN_CHANGED</code>: call <code>dvv_screen</code> again to read pixels, then retry. <code>LEASE_REVOKED</code>: call <code>dvv_status</code> and read <code>lease.human_took_over</code>. When it is <code>true</code>, a person is driving and the right move is to stop.</p>
+<p>Those four are the entire set of refusals in this interface. Treat any other code as a sign that the call was malformed rather than that the machine refused it.</p>
+<h3 id="cycle-time">Cycle time</h3>
+<p>One observe-then-act cycle on a real 1920x1080 Windows desktop over LAN is 19 ms, about 52 actions per second. <code>dvv_open</code> and attach in 4 ms, <code>dvv_control</code> acquire under 1 ms, <code>dvv_screen</code> at scale 0.25 in 25 ms, <code>dvv_type</code> at 447 characters per second.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "DeskVNC agent summary: paste this into your system prompt",
+  "description": "Paste this into the system prompt of an LLM that will drive a remote desktop through DeskVNC. It is short so the model can hold all of it in attention.",
+  "url": "https://deskvnc-hub.pages.dev/agent-summary",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>

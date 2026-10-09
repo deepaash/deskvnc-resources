@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM agent quickstart: drive a real desktop in one sitting</title>
+<meta name="description" content="This is the shortest path from a clean machine to an AI agent that opens a real desktop through DeskVNC. Every command below is meant to be copied verbatim. The expected output aft">
+<link rel="canonical" href="https://deskvnc-hub.pages.dev/llm-agent-quickstart">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM agent quickstart: drive a real desktop in one sitting">
+<meta property="og:description" content="This is the shortest path from a clean machine to an AI agent that opens a real desktop through DeskVNC. Every command below is meant to be copied verbatim. The expected output aft">
+<meta property="og:url" content="https://deskvnc-hub.pages.dev/llm-agent-quickstart">
+<meta property="og:image" content="https://deskvnc-hub.pages.dev/img/session.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/style.css">
+<link rel="alternate" type="application/rss+xml" title="DeskVNC hub" href="/feed.xml">
+
+</head>
+<body>
+
+<header class="site-head">
+  <a class="brand" href="/">
+    <img src="/img/logo.svg" alt="DeskVNC" width="36" height="36">
+    <span>DeskVNC</span>
+  </a>
+  <nav>
+    <a href="/guides.html">Guides</a>
+    <a href="/usecases.html">Use cases</a>
+    <a href="/benchmarks.html">Benchmarks</a>
+    <a href="/mcp.html">MCP</a>
+  </nav>
+</header>
+
+<main class="prose">
+<h2 id="llm-agent-quickstart-drive-a-real-desktop-in-one-sitting">LLM agent quickstart: drive a real desktop in one sitting</h2>
+<p>This is the shortest path from a clean machine to an AI agent that opens a real desktop through DeskVNC. Every command below is meant to be copied verbatim. The expected output after each step is described, so an agent can self check before moving on.</p>
+<p>The agent here is Claude Code. The <code>dvv</code> server is the same MCP server for OpenCode, Codex CLI, Pi, Gemini CLI, Cursor and the rest, so the only thing that changes for another client is the registration line.</p>
+<h3 id="step-1-get-the-binary">Step 1: get the binary</h3>
+<p>Download the build for the agent host from the <a href="https://github.com/psmux/DeskVNC/releases/latest" target="_blank" rel="noopener noreferrer">latest DeskVNC release</a>.</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Platform</th>
+<th>File</th>
+</tr></thead><tbody>
+<tr>
+<td>macOS 12 or newer</td>
+<td><code>DeskVNCViewer_&lt;version&gt;_universal.dmg</code></td>
+</tr>
+<tr>
+<td>Windows 10 or 11</td>
+<td><code>DeskVNCViewer_&lt;version&gt;_x64-setup.exe</code></td>
+</tr>
+<tr>
+<td>Debian, Ubuntu</td>
+<td><code>DeskVNCViewer_&lt;version&gt;_amd64.deb</code></td>
+</tr>
+<tr>
+<td>Fedora, RHEL</td>
+<td><code>DeskVNCViewer-&lt;version&gt;-1.x86_64.rpm</code></td>
+</tr>
+<tr>
+<td>Any x64 Linux</td>
+<td><code>DeskVNCViewer_&lt;version&gt;_amd64.AppImage</code></td>
+</tr>
+</tbody></table></div>
+<p>On macOS, open the DMG and drag the app to Applications. The build is signed with a Developer ID and notarized by Apple, so it opens normally without a &quot;damaged and can't be opened&quot; dialog. On Windows, the installer is signed; if SmartScreen asks once, choose <strong>More info</strong>, then <strong>Run anyway</strong>. The publisher line should read <strong>Open Source Developer Godwin Josh</strong>.</p>
+<p>Expected result: a working <code>DeskVNCViewer</code> icon in the launcher. The bundled <code>dvv</code> executable is what registers with the agent client in the next step. From v0.27.5 on macOS, and v0.27.6 on Windows and Linux, that executable is shipped inside the install. Earlier releases omitted it on some platforms; if the <strong>AI Agents</strong> panel reports no bundled executable, install a newer build or build <code>dvv</code> from source with <code>cargo build -p dvv</code> and use that absolute path in step 3.</p>
+<h3 id="step-2-open-the-app-once-and-save-a-machine">Step 2: open the app once and save a machine</h3>
+<p>Start DeskVNCViewer. The first launch walks through two permission prompts on macOS: <strong>Local Network</strong> (for mDNS discovery) and <strong>Accessibility</strong> (only if global input capture is turned on). Both can be declined or accepted later without breaking the agent.</p>
+<p>In the app, press <strong>New Host</strong> and save one machine with its password, or paste an address straight into the bar at the top and press <strong>Connect</strong>, which saves nothing. Double click a saved tile to confirm the connection works. Closing the viewer is fine: the agent will start it again.</p>
+<p>Expected result: at least one tile in the host library, with a live thumbnail, and a credential in the operating system keychain.</p>
+<h3 id="step-3-switch-the-agent-plane-on">Step 3: switch the agent plane on</h3>
+<p>Open the <strong>AI Agents</strong> panel in DeskVNCViewer and switch the plane on. It is off by default and stays off until a person turns it on, so this step is the gate. The app then scans the local machine for installed agents and points each one at the bundled <code>dvv</code> binary.</p>
+<p>Expected result: a list of detected agents in the panel, each checked and ready.</p>
+<h3 id="step-4-register-the-mcp-server">Step 4: register the MCP server</h3>
+<p>For Claude Code, the app's <strong>AI Agents</strong> panel offers a one click <strong>Register with Claude Code</strong> button that runs the right <code>claude mcp add</code> line. For everything else, run the line by hand. The exact command for each platform is:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-sh"># macOS
+claude mcp add --scope user deskvnc -- /Applications/DeskVNCViewer.app/Contents/MacOS/dvv mcp --stdio
+
+# Windows (run in PowerShell or cmd)
+claude mcp add --scope user deskvnc -- &quot;%LOCALAPPDATA%\DeskVNCViewer\dvv.exe&quot; mcp --stdio
+
+# Linux
+claude mcp add --scope user deskvnc -- /usr/bin/dvv mcp --stdio</code></pre></div>
+<p>OpenCode, Codex CLI, Cursor, VS Code, Windsurf and Gemini CLI take the same shape: a command plus arguments, registered in their <code>mcp</code> config. The <code>dvv setup</code> command writes all of them at once and also drops the agent skill into each client's skills directory.</p>
+<p>Expected result from <code>claude mcp list</code> after restart: a row named <code>deskvnc</code> with command <code>/Applications/DeskVNCViewer.app/Contents/MacOS/dvv mcp --stdio</code> (or the platform equivalent) and a green status. OpenCode reports the same in its MCP panel.</p>
+<h3 id="step-5-the-first-loop">Step 5: the first loop</h3>
+<p>Restart the agent so it picks up the new MCP server, then ask it to do something on the saved machine by name. The first four calls of the loop, in order:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_hosts   {}                                    // what there is to open
+dvv_open    {&quot;hostId&quot;: &quot;&lt;id&gt;&quot;, &quot;perceive&quot;: true}  // -&gt; limbId, size, state
+dvv_control {&quot;limbId&quot;: &quot;...&quot;, &quot;action&quot;: &quot;acquire&quot;}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;full&quot;, &quot;scale&quot;: 0.25}</code></pre></div>
+<p>After the first screen read, the agent has a <code>generation</code> and a size. The next two calls are the observe then act pair the benchmark numbers in the README are measured against:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_click   {&quot;limbId&quot;: &quot;...&quot;, &quot;x&quot;: 700, &quot;y&quot;: 400, &quot;generation&quot;: 1}
+dvv_screen  {&quot;limbId&quot;: &quot;...&quot;, &quot;form&quot;: &quot;damage-crop&quot;}  // look again
+dvv_type    {&quot;limbId&quot;: &quot;...&quot;, &quot;text&quot;: &quot;notepad&quot;, &quot;wpm&quot;: 3000}
+dvv_key     {&quot;limbId&quot;: &quot;...&quot;, &quot;keys&quot;: &quot;meta+r&quot;}</code></pre></div>
+<p>A fresh <code>dvv_screen</code> on a primed mirror can answer with a request for one more full refresh. That is ordinary priming behaviour, not an error. Call <code>dvv_screen</code> again with <code>form: &quot;full&quot;</code> and carry on.</p>
+<p>Expected result: a typed string, a key chord, and a settled screen, all inside one observe-then-act cycle. The figures the project publishes are 4 ms for <code>dvv_open</code> and attach, under 1 ms for <code>dvv_control</code> acquire, 25 ms for <code>dvv_screen</code> at <code>scale: 0.25</code>, and 19 ms for one full cycle, about 52 actions per second. <code>wpm</code> is a throttle in words per minute, so omitting it types as fast as the wire carries; <code>dvv_type</code> runs at 447 characters per second. A first call on a fresh mirror is slower by the priming handshake.</p>
+<h3 id="step-6-read-refusal-codes-as-designed-behaviour">Step 6: read refusal codes as designed behaviour</h3>
+<p>The loop is fenced in two places, and both fences are features, not failures. The agent meets them on the first task; the right move is to recognise them and act.</p>
+<p><code>GEOMETRY_CHANGED</code>: a click carries a <code>generation</code> read from a prior <code>dvv_screen</code>. If the screen resized between the read and the click, the call is refused with <code>GEOMETRY_CHANGED</code> and nothing is delivered. The fix is one more <code>dvv_screen</code> and one more recomputation of the coordinate. A click never lands somewhere unintended, and the agent never has to ask whether it did.</p>
+<p><code>SCREEN_CHANGED</code>: <code>dvv_type</code> and <code>dvv_key</code> are refused with <code>SCREEN_CHANGED</code> when something window sized has repainted since the last <code>dvv_screen</code>, and refused outright on a limb that has never been read at all. A keystroke carries no coordinate, so it lands wherever focus is, and focus moves when a dialog or an application appears. One <code>dvv_screen</code> clears the fence, and <code>dvv_status</code> does not (it reads no pixels, deliberately). There is no override. The fix is to call <code>dvv_screen</code>, read what has focus and what is selected, and only then type.</p>
+<p><code>LEASE_REVOKED</code>: a person took the wheel, which is the intended behaviour. The right move is to stop, not to retry. Call <code>dvv_control</code> with <code>action: &quot;yield_status&quot;</code> and read <code>lease.human_took_over</code>. If it is <code>true</code>, a person is driving now and the agent should tell the user what it was doing, then stand down until the human hands control back. Held keys and buttons were already released when the lease went away, so a half finished drag cannot strand the desktop.</p>
+<p>There is also a fourth ordinary result, not a refusal: a <code>dvv_wait</code> that times out. It returns <code>settled: false</code> and the observation, never an error. Call again or read <code>dvv_status</code> to see whether the limb is still connected.</p>
+<p>The four codes an agent sees on a real loop are the only codes it needs to know by name. Every other code the manifest can raise arrives with a sentence that names the next step, so the agent reads the message rather than the code in those cases.</p>
+<h3 id="step-7-close-the-limb">Step 7: close the limb</h3>
+<p>When the task is done, close the limb so the next call does not pay for an idle connection:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-jsonc">dvv_close   {&quot;limbId&quot;: &quot;...&quot;}</code></pre></div>
+<p><code>dvv_close</code> is idempotent. Closing a limb that is already gone returns an ordinary success. Every intent still in flight is withdrawn and settles first.</p>
+<h3 id="shell-equivalent">Shell equivalent</h3>
+<p>For agents without MCP tools, or for an operator working alongside the agent, the same loop is the <code>dvv</code> command line. After <code>dvv setup</code> has wired the binary onto <code>PATH</code>, the loop reads:</p>
+<div class="code-wrap"><button class="copy-btn" type="button" data-copy>Copy</button><pre><code class="language-sh">dvv hosts
+dvv limbs
+dvv open &lt;name or hostId&gt; --perceive
+dvv wait &lt;limbId&gt; --until connected
+dvv control acquire &lt;limbId&gt;
+dvv screen &lt;limbId&gt; --scale 0.5 --out ./dvv-screen.png
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt;
+dvv click &lt;limbId&gt; &lt;x&gt; &lt;y&gt; --action double
+dvv type &lt;limbId&gt; &quot;text to type&quot;
+dvv key &lt;limbId&gt; super+r
+dvv wait &lt;limbId&gt; --until screen-stable
+dvv reconnect &lt;limbId&gt;
+dvv close &lt;limbId&gt;</code></pre></div>
+<p><code>dvv screen</code> writes the picture to disk and prints the path, which Pi's <code>read</code> tool opens as an image. The shell path runs the same dispatch table as the MCP server, so a call behaves identically regardless of how the agent reached it.</p>
+</main>
+
+<footer class="site-foot">
+  <p>
+    DeskVNC is a native client for VNC, RDP and SSH, dual licensed
+    <a href="https://github.com/psmux/DeskVNC">MIT OR Apache-2.0</a>. The official project page is at
+    <a href="https://psmux.github.io/deskvnc/">psmux.github.io/deskvnc</a>.
+  </p>
+</footer>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "LLM agent quickstart: drive a real desktop in one sitting",
+  "description": "This is the shortest path from a clean machine to an AI agent that opens a real desktop through DeskVNC. Every command below is meant to be copied verbatim. The expected output aft",
+  "url": "https://deskvnc-hub.pages.dev/llm-agent-quickstart",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "author": {
+    "@type": "Organization",
+    "name": "DeskVNC"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "DeskVNC",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/psmux/DeskVNC"
+  },
+  "keywords": "MCP, AI agent, remote desktop, VNC, RDP, SSH, Rust, Tauri, automation"
+}
+</script>
+
+</body>
+</html>
